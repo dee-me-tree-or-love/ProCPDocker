@@ -155,6 +155,13 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Container.cs" />
+    <Compile Include="Models\ContainerCollection.cs" />
+    <Compile Include="Models\Dock.cs" />
+    <Compile Include="Models\Loader.cs" />
+    <Compile Include="Models\Ship.cs" />
+    <Compile Include="Models\Task.cs" />
+    <Compile Include="Models\Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -197,7 +204,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
