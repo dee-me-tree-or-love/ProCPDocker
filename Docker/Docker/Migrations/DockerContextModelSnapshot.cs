@@ -13,7 +13,8 @@ namespace Docker.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .HasAnnotation("ProductVersion", "1.1.1");
+                .HasAnnotation("ProductVersion", "1.1.1")
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Docker.Models.Container", b =>
                 {
@@ -21,6 +22,10 @@ namespace Docker.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<int?>("ContainerLocationID");
+
+                    b.Property<int?>("ShipID");
+
+                    b.Property<int?>("ShipID1");
 
                     b.Property<int>("X");
 
@@ -31,6 +36,10 @@ namespace Docker.Migrations
                     b.HasKey("ID");
 
                     b.HasIndex("ContainerLocationID");
+
+                    b.HasIndex("ShipID");
+
+                    b.HasIndex("ShipID1");
 
                     b.ToTable("Containers");
                 });
@@ -149,6 +158,14 @@ namespace Docker.Migrations
                     b.HasOne("Docker.Models.ContainerCollection", "ContainerLocation")
                         .WithMany("Containers")
                         .HasForeignKey("ContainerLocationID");
+
+                    b.HasOne("Docker.Models.Ship")
+                        .WithMany("ContainersToLoad")
+                        .HasForeignKey("ShipID");
+
+                    b.HasOne("Docker.Models.Ship")
+                        .WithMany("ContainersToUnload")
+                        .HasForeignKey("ShipID1");
                 });
 
             modelBuilder.Entity("Docker.Models.Task", b =>

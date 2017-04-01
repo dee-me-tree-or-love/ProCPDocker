@@ -10,6 +10,9 @@ namespace Docker.Models
 
         public String Tag { get; set; }
 
+        public ICollection<Container> ContainersToLoad { get; set; }
+        public ICollection<Container> ContainersToUnload { get; set; }
+
         // gives errors due to not supported primitive types
 
         // If you specify ICollection<T>, EF creates a HashSet<T> collection by default.

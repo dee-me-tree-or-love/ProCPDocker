@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Docker.Migrations
 {
-    public partial class InitialMigration : Migration
+    public partial class InitMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,7 +14,7 @@ namespace Docker.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
                 },
                 constraints: table =>
                 {
@@ -25,7 +26,7 @@ namespace Docker.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Discriminator = table.Column<string>(nullable: false),
                     Name = table.Column<string>(nullable: true),
                     X = table.Column<int>(nullable: false),
@@ -57,8 +58,10 @@ namespace Docker.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     ContainerLocationID = table.Column<int>(nullable: true),
+                    ShipID = table.Column<int>(nullable: true),
+                    ShipID1 = table.Column<int>(nullable: true),
                     X = table.Column<int>(nullable: false),
                     Y = table.Column<int>(nullable: false),
                     Z = table.Column<int>(nullable: false)
@@ -72,6 +75,18 @@ namespace Docker.Migrations
                         principalTable: "Storages",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Containers_Storages_ShipID",
+                        column: x => x.ShipID,
+                        principalTable: "Storages",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Containers_Storages_ShipID1",
+                        column: x => x.ShipID1,
+                        principalTable: "Storages",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -79,7 +94,7 @@ namespace Docker.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     DestinationID = table.Column<int>(nullable: true),
                     IsCompleted = table.Column<bool>(nullable: false),
                     LoaderID = table.Column<int>(nullable: true),
@@ -116,7 +131,7 @@ namespace Docker.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     AssignedTaskID = table.Column<int>(nullable: true),
                     LoaderID = table.Column<int>(nullable: true)
                 },
@@ -141,6 +156,16 @@ namespace Docker.Migrations
                 name: "IX_Containers_ContainerLocationID",
                 table: "Containers",
                 column: "ContainerLocationID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Containers_ShipID",
+                table: "Containers",
+                column: "ShipID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Containers_ShipID1",
+                table: "Containers",
+                column: "ShipID1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Storages_DockedShipID",

@@ -17,12 +17,15 @@ namespace Docker.DAL
         public DbSet<ContainerCollection> Storages { get; set; }
         public DbSet<Task> Tasks { get; set; }
         public DbSet<Worker> Workers { get; set; }
-        public DbSet<Docker.Models.Dock> Dock { get; set; }
+        public DbSet<Dock> Docks { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=docker.db");
+            var connection = @"Server=(localdb)\mssqllocaldb;Database=DockerDataBase;Trusted_Connection=True;";
+            //optionsBuilder.UseSqlite("data source=docker.db"); // does not work due to sqlite limitations
+            optionsBuilder.UseSqlServer(connection);
         }
+
     }
 }
