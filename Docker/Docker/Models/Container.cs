@@ -7,9 +7,7 @@
         // do we really need this attribute?
         // decision to make this an inner class is:
         // I do not think this class requires a separate model for itself.
-        public class Address
-        {
-            // x position in the stack
+                    // x position in the stack
             public int X { get; set; }
 
             // y position in the stack
@@ -20,8 +18,6 @@
 
             // the current storage location
             public ContainerCollection ContainerLocation { get; set; }
-        }
-
-        public Address Location { get; set; }
+        
     }
 }

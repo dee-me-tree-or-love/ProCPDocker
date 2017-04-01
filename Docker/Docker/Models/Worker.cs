@@ -6,6 +6,7 @@
     /// </summary>
     public class Worker
     {
+        public int ID { get; set; }
         public Task AssignedTask { get; set; }
 
         /// PROPOSITION: could we add a speed?

@@ -17,5 +17,6 @@ namespace Docker.DAL
         public DbSet<ContainerCollection> Storages { get; set; }
         public DbSet<Task> Tasks { get; set; }
         public DbSet<Worker> Workers { get; set; }
+        public DbSet<Docker.Models.Dock> Dock { get; set; }
     }
 }
