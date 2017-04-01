@@ -31,8 +31,7 @@ namespace Docker
             // Task builder service
             services.AddSingleton<ITaskBuilderService, TaskBuilder>();
             // DB context
-            services.AddDbContext<DockerContext>(options => 
-                            options.UseSqlite("Data Source=docker.db"));
+            services.AddDbContext<DockerContext>();
 
         }
 
