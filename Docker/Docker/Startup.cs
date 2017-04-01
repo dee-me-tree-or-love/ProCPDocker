@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Docker.DAL;
 
 namespace Docker
 {
@@ -26,8 +28,14 @@ namespace Docker
         {
             // Add framework services.
             services.AddMvc();
+            // Task builder service
             services.AddSingleton<ITaskBuilderService, TaskBuilder>();
+            // DB context
+            services.AddDbContext<DockerContext>(options => 
+                            options.UseSqlite("Data Source=docker.db"));
+
         }
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -47,6 +55,8 @@ namespace Docker
 
             app.UseStaticFiles();
 
+
+            // Add custom routes here
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
