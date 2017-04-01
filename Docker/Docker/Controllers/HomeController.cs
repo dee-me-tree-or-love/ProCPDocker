@@ -16,25 +16,12 @@ namespace Docker.Controllers
 
         public IActionResult Index()
         {
-            List<Task> tasks = _taskBuilder.GetTasksForDock("2323");
+            List<Task> tasks = _taskBuilder.GetTasksForDock(null, "2323");
+            ViewData["tasks"] = tasks;
             return View();
         }
 
         public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
-        }
-
-        public IActionResult Error()
         {
             return View();
         }
