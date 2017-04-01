@@ -7,10 +7,10 @@ namespace Docker.DAL
 {
     public class DockerContext : DbContext
     {
-        public DockerContext(DbContextOptions<DockerContext> options) 
-            : base(options)
-        {
-        }
+        //public DockerContext(DbContextOptions<DockerContext> options) 
+        //    : base(options)
+        //{
+        //}
 
         public DbSet<Ship> Ships { get; set; }
         public DbSet<Container> Containers { get; set; }
@@ -18,5 +18,11 @@ namespace Docker.DAL
         public DbSet<Task> Tasks { get; set; }
         public DbSet<Worker> Workers { get; set; }
         public DbSet<Docker.Models.Dock> Dock { get; set; }
+
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite("Data Source=docker.db");
+        }
     }
 }
