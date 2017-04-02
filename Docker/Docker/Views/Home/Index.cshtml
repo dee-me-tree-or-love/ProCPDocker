@@ -6,11 +6,40 @@
     List<Docker.Models.Task> tasks = (List<Docker.Models.Task>)ViewData["tasks"];
     Docker.Models.Task selectedTask = null;
     //Get current tasks from loader
+
+    //test data
+    int dummyX = 2;
+    Random rn = new Random();
+    Docker.Models.Ship ship;
+    ship = new Docker.Models.Ship();
+    ship.X = 3;
+    ship.Y = 3;
+    ship.Z = 3;
+    ship.Containers = new List<Docker.Models.Container>();
+    ship.Name = "MAR32";
+
+    for (int x = 0; x < ship.X; x++)
+    {
+        for (int y = 0; y < ship.Y; y++)
+        {
+            for (int z = 0; z < ship.Z; z++)
+            {
+                ship.Containers.Add(new Docker.Models.Container()
+                {
+                    ContainerLocation = ship,
+                    X = x,
+                    Y = y,
+                    Z = z,
+                    ID = rn.Next(0, int.MaxValue)
+                });
+            }
+        }
+    }
 }
 <div class="col-md-9">
     <table class="table">
         <tr>
-            <td>Ship Side</td>
+            <td>@await Component.InvokeAsync("FrontSlice", ship)</td>
             <td>Ship Front</td>
             <td>Dock Side</td>
             <td>Dock Front</td>
@@ -63,7 +92,7 @@
                     Docker.Models.Task task = tasks[i];
 
                     <tr>
-                        <td>@task.Payload.ID</td>
+                       <td>@task.Payload.ID</td>
                         <td>
                             @task.Payload.ContainerLocation.Name
                             <br />@task.Payload.X : @task.Payload.Y : @task.Payload.Z
