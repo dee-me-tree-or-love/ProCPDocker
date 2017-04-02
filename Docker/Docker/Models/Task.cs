@@ -2,6 +2,14 @@
 
 namespace Docker.Models
 {
+
+    public enum TaskStatus
+    {
+        READY,
+        INPROGRESS,
+        FINISHED
+    }
+
     /// <summary>
     /// The purpose of the task for now is just relocating
     /// the container X from
@@ -22,7 +30,9 @@ namespace Docker.Models
 
         // We could use a Status property to analyze the processing
         // Could we use an enumeration??
-        public Boolean IsCompleted { get; set; }
+        // public Boolean IsCompleted { get; set; } // needs to be removed
+
+        public TaskStatus Status { get; set; }
 
         public ContainerCollection Destination { get; set; }
 

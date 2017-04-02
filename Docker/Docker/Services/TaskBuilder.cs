@@ -58,7 +58,7 @@ namespace Docker.Services
                     Destination = ship,
                     RequiredTime = new TimeSpan(0, rn.Next(2, 10), 0),
                     TimeCreated = DateTime.Now,
-                    IsCompleted = false,
+                    Status = TaskStatus.READY,
                     Payload = ((List<Container>)d.Containers)[i],
                     TimeModified = DateTime.Now
                 });
