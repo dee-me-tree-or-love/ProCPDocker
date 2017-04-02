@@ -13,5 +13,8 @@
         /// then we could calculate how much time
         /// did (or even would) it take the worker to complete
         /// the assigned task
+        /// 
+
+        /// NOW THIS MODEL SEEMS QUITE REDUNDANT, SINCE LOADER HAS OVERTAKEN THE RESPONSIBLITIES 
     }
 }

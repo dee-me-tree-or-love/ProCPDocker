@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Docker.Models
 {
@@ -9,6 +10,10 @@ namespace Docker.Models
         // the collection type should probably be adjusted
         public ICollection<Task> Tasks { get; set; }
 
-        public ICollection<Worker> LoadingWorkers { get; set; }
+        /// <summary>
+        /// Now became redundant, and probably needs cleaning up
+        /// </summary>
+        //public ICollection<Worker> LoadingWorkers { get; set; }
+
     }
 }

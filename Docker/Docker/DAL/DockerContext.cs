@@ -16,8 +16,9 @@ namespace Docker.DAL
         public DbSet<Container> Containers { get; set; }
         public DbSet<ContainerCollection> Storages { get; set; }
         public DbSet<Task> Tasks { get; set; }
-        public DbSet<Worker> Workers { get; set; }
+        //public DbSet<Worker> Workers { get; set; } // no need in this anymore
         public DbSet<Dock> Docks { get; set; }
+        public DbSet<Loader> Loaders { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

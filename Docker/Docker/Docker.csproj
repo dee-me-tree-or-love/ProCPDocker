@@ -4,6 +4,10 @@
     <TargetFramework>net452</TargetFramework>
     <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Models\Worker.cs" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EntityFramework" Version="6.1.3" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />

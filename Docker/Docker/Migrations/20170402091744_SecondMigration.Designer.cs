@@ -8,9 +8,10 @@ using Docker.DAL;
 namespace Docker.Migrations
 {
     [DbContext(typeof(DockerContext))]
-    partial class DockerContextModelSnapshot : ModelSnapshot
+    [Migration("20170402091744_SecondMigration")]
+    partial class SecondMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.1")

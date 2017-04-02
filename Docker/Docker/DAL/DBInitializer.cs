@@ -32,14 +32,17 @@ namespace Docker.DAL
             int dockX = 5;
             int dockY = 5;
             int dockZ = 5;
+
+            Loader ldr = new Loader();
             // this goes to the db
             Dock tempDock = new Dock()
             {
-                X = 5,
-                Y = 5,
-                Z = 5,
+                X =dockX,
+                Y = dockY,
+                Z = dockZ,
                 DockedShip = ships[0],
-                Name = "Dock23"
+                Name = "Dock23",
+                LoadingManager = ldr,// could be not useful
             };
             // this goes to the db
             var conts = new List<Container>();
@@ -67,7 +70,7 @@ namespace Docker.DAL
             {
                 _context.Ships.Add(s);
             }
-
+            _context.Loaders.Add(ldr);
             _context.Docks.Add(tempDock);
             foreach (Container c in conts)
             {

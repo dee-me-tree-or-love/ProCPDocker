@@ -10,6 +10,9 @@
                     // x position in the stack
             public int X { get; set; }
 
+            // unique identity of the container
+            public string SerialNumber { get; set; }
+
             // y position in the stack
             public int Y { get; set; }
 
