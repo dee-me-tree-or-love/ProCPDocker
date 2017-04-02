@@ -24,7 +24,7 @@ namespace Docker.Services
 
                 Models.Task t = new Task
                 {
-                    Destination = dock,
+                    Destination = ship,
                     Payload = container,
                     RequiredTime = new TimeSpan(0, random.Next(2, 10), 0),
                     Status = TaskStatus.READY,
@@ -36,6 +36,7 @@ namespace Docker.Services
             }
             try
             {
+                DBFaker.tasks = lt; // to be deleted once the database is fixed
                 _dbContext.SaveChanges();
                 return lt;
             }

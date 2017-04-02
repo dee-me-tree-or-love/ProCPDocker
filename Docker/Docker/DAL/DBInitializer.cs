@@ -41,7 +41,7 @@ namespace Docker.DAL
                 LoadingManager = ldr // could be not useful
             };
             //Create Containers for dock
-            List<Container> Containers = new List<Container>();
+            List<Container> cntnrs = new List<Container>();
 
             int count = 0;
             for (int x = 0; x < dockX; x++)
@@ -50,7 +50,7 @@ namespace Docker.DAL
                 {
                     for (int z = 0; z < dockZ; z++)
                     {
-                        Containers.Add(new Container()
+                        cntnrs.Add(new Container()
                         {
                             ContainerLocation = tempDock,
                             X = x,
@@ -62,7 +62,7 @@ namespace Docker.DAL
                     }
                 }
             }
-            tempDock.Containers = Containers;
+            tempDock.Containers = cntnrs;
 
             //Create empty ship with 15 containers to load
             Ship[] ships = new Ship[]
@@ -95,8 +95,17 @@ namespace Docker.DAL
             };
             DBInitializer.ship = ships[0];
             DBInitializer.dock = tempDock;
+
+            DBFaker.ships = ships.ToList();
+            DBFaker.docks = new List<Dock>
+            {
+                tempDock
+            };
+            DBFaker.containers = cntnrs;
             return; //TODO Remove when we fix the DB
-            foreach (Container c in Containers)
+
+
+            foreach (Container c in cntnrs)
             {
                 _context.Containers.Add(c);
             }

@@ -36,15 +36,29 @@ namespace Docker.Controllers
 
         public IActionResult ProcessTask()
         {
-            Ship ship = DBInitializer.ship;
-            Dock dock = DBInitializer.dock;
+            Ship ship = DBFaker.ships[0];
+            Dock dock = DBFaker.docks[0];
 
             _loader.ProcessTasks(dock.Name);
 
-            var tasks = _dbContext.Tasks.ToList();
+            //var tasks = _dbContext.Tasks.ToList();
+            var tasks = DBFaker.tasks;
 
-            Models.Task crntTask = _dbContext.Tasks.Where(t => t.Status == TaskStatus.INPROGRESS).First(); // get the first task that is in progrDeess, for later - select all and adjust the index to have a list of executed tasks in progress 
-            
+            //Models.Task crntTask = _dbContext.Tasks.Where(t => t.Status == TaskStatus.INPROGRESS).First(); // get the first task that is in progrDeess, for later - select all and adjust the index to have a list of executed tasks in progress 
+            Models.Task crntTask = null;
+            foreach(Models.Task t in tasks)
+            {
+                if(t.Status == TaskStatus.INPROGRESS)
+                {
+                    crntTask = t;
+                    break;
+                }
+            }
+            if(crntTask == null)
+            {
+                crntTask = DBFaker.GetNextReadyTask();
+            }
+
             //crntTask.Payload = _dbContext.Containers.Where(c => c.TaskID == crntTask.ID).Single();
             ViewData["current"] = crntTask; 
             ViewData["tasks"] = tasks;

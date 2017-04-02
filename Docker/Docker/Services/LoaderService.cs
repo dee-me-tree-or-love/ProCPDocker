@@ -37,15 +37,28 @@ namespace Docker.Services
             // perform the movement of the payload 
             Container cntr = t.Payload;
             ContainerCollection currentLocation = cntr.ContainerLocation;
-
+            
             // start tracking the update
-
+            // swap the location
             currentLocation.Containers.Remove(cntr);
             t.Destination.Containers.Add(cntr);
             cntr.ContainerLocation = t.Destination;
+            // it is added to the somewhere, and then the actualy xyz are allocated
+            int[] XYZ =  cntr.ContainerLocation.DetermineNewLocation();
 
-            _context.Update(cntr);
-            _context.Update(currentLocation);
+            try
+            {
+                cntr.X = XYZ[0]; // gets the data
+                cntr.Y = XYZ[1]; // for the correct location
+                cntr.Z = XYZ[2]; // in termns of x, y and z coordinates
+            }
+            catch
+            {
+                return;
+            }
+
+            _context.Containers.Update(cntr);
+            _context.Storages.Update(currentLocation);
             _context.Tasks.Update(t);
         }
 
@@ -55,14 +68,21 @@ namespace Docker.Services
         /// <param name="t"></param>
         public void DoTask(Models.Task t)
         {
-            this.TouchTask(t); // modify the task <--> set new date of change
-            t.Status = Models.TaskStatus.INPROGRESS;
-            // does not substract - do some tests
-            t.RequiredTime.Subtract(new TimeSpan(0, 1, 0)); // substracts 1 minute by default -- further can be changed to make faster/slower
-            _context.Tasks.Update(t);
-            if (t.RequiredTime <= TimeSpan.Zero)
+            if (t.Destination.GetMaximumStorage() > t.Destination.Containers.Count) // only if the destination can contain the thing
             {
-                this.CompleteTask(t);
+                this.TouchTask(t); // modify the task <--> set new date of change
+                t.Status = Models.TaskStatus.INPROGRESS;
+                // does not substract - do some tests
+                t.RequiredTime = t.RequiredTime.Subtract(new TimeSpan(0, 1, 0)); // substracts 1 minute by default -- further can be changed to make faster/slower
+                _context.Tasks.Update(t);
+                if (t.RequiredTime <= TimeSpan.Zero)
+                {
+                    this.CompleteTask(t);
+                }
+            }
+            else
+            {
+                return;
             }
         }
 
@@ -89,11 +109,29 @@ namespace Docker.Services
                 // further will be replaced by c.Loaders.Count
 
                 // try selecting the tasks that are already in progress
-                var c = _context.Storages.Where(s => s.Name.ToUpper() == dockId.ToUpper()).First();
+                //var c = _context.Storages.Where(s => s.Name.ToUpper() == dockId.ToUpper()).First();
+                ContainerCollection c = null;
+                foreach (ContainerCollection cc in DBFaker.docks)
+                {
+                    if (cc.Name == dockId)
+                    {
+                        c = cc;
+                        break;
+                    }
+                }
 
-                var inprogressTasks = _context.Tasks
-                    .Where(t => t.Payload.ContainerLocation == c && t.Status == Models.TaskStatus.INPROGRESS)
-                    .ToList();
+                //var inprogressTasks = _context.Tasks
+                //    .Where(t => t.Payload.ContainerLocation == c && t.Status == Models.TaskStatus.INPROGRESS)
+                //    .ToList();
+
+                List<Models.Task> inprogressTasks = new List<Models.Task>();
+                foreach (Models.Task t in DBFaker.tasks)
+                {
+                    if (t.Status == Models.TaskStatus.INPROGRESS)
+                    {
+                        inprogressTasks.Add(t);
+                    }
+                }
 
                 if (inprogressTasks.Count > 0)
                 {
@@ -106,7 +144,7 @@ namespace Docker.Services
                 }
                 // make an iteration                    
                 // if no in progress tasks found - try starting the new task
-                if(inprogressTasks.Count < LoaderCount)
+                if (inprogressTasks.Count < LoaderCount)
                 {
                     // start the number of taks 
                     for (int i = 0; i < LoaderCount - inprogressTasks.Count; i++)
@@ -119,8 +157,6 @@ namespace Docker.Services
                     }
                     _context.SaveChanges();
                 }
-                
-
             }
             catch (Exception e)
             {
@@ -132,11 +168,15 @@ namespace Docker.Services
 
         public Models.Task StartNewTaskForDock(string dockId)
         {
-            var c = _context.Storages.Where(s => s.Name.ToUpper() == dockId.ToUpper()).First();
+            // uncomment when the database will be in place
+            //var c = _context.Storages.Where(s => s.Name.ToUpper() == dockId.ToUpper()).First();
 
-            var readyTask = _context.Tasks
-                .Where(t => t.Payload.ContainerLocation == c && t.Status == Models.TaskStatus.READY)
-                .First();
+            //var readyTask = _context.Tasks
+            //    .Where(t => t.Payload.ContainerLocation == c && t.Status == Models.TaskStatus.READY)
+            //    .First();
+
+            Models.Task readyTask = null;
+            readyTask = DBFaker.GetNextReadyTask();
 
             return readyTask;
         }
