@@ -6,7 +6,7 @@ using Docker.Models;
 
 namespace Docker.Services
 {
-    interface ILoaderService
+    public interface ILoaderService
     {
         /// get ready tasks
         /// get tasks in progress

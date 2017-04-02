@@ -7,6 +7,7 @@
 
         // Loader is the instance of the thing that will be executing tasks
         // TODO: implement Loader
+        public int LoadingManagerID { get; set; }
         public Loader LoadingManager { get; set; }
     }
 }

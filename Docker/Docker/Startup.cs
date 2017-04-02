@@ -32,6 +32,8 @@ namespace Docker
             services.AddSingleton<ITaskBuilderService, TaskBuilder>();
             // DB context
             services.AddDbContext<DockerContext>();
+            // Loader service
+            services.AddSingleton<ILoaderService, LoaderService>();
 
         }
 

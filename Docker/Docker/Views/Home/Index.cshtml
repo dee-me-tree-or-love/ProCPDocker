@@ -5,6 +5,7 @@
 @{
     List<Docker.Models.Task> tasks = (List<Docker.Models.Task>)ViewData["tasks"];
     Docker.Models.Task selectedTask = null;
+    Docker.Models.Task current = (Docker.Models.Task)ViewData["current"];
     //Get current tasks from loader
 
     //test data
@@ -61,9 +62,9 @@
         <div class="panel panel-success">
             <div class="panel-heading text-center"><h4>Current Tasks</h4></div>
             @*Loop trough current tasks*@
+            @Html.ActionLink("Do task", "ProcessTask", "Home")
             @if (tasks.Count > 0)
             {
-                Docker.Models.Task current = tasks[0];
                 <div class="panel-body">
                     <div class="col-md-8">
                         <div class="col-md-6">
@@ -73,8 +74,8 @@
                         </div>
                         <div class="col-md-6">
                             <div class="row">@current.Payload.ID</div>
-                            <div class="row">@current.Payload.ContainerLocation.Name @current.Payload.X:@current.Payload.Y:@current.Payload.Z</div>
-                            <div class="row">@current.Destination.Name</div>
+                            <div class="row">@*current.Payload.ContainerLocation.Name*@ @current.Payload.X:@current.Payload.Y:@current.Payload.Z</div>
+                            <div class="row">@**@current.Destination.Name</div>
                         </div>
                     </div>
                     <div class="col-md-4 text-left">

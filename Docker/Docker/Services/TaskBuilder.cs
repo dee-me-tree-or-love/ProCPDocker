@@ -15,12 +15,14 @@ namespace Docker.Services
             this._dbContext = dbContext;
         }
 
-        public bool GenerateTasksForShip(Ship ship, ContainerCollection dock)
+        public List<Models.Task> GenerateTasksForShip(Ship ship, ContainerCollection dock)
         {
             Random random = new Random();
-            foreach (Container container in ship.ContainersToLoad)
+            List<Models.Task> lt = new List<Task>();
+            foreach (Container container in ship.LoadContainers)
             {
-                _dbContext.Add(new Task
+
+                Models.Task t = new Task
                 {
                     Destination = dock,
                     Payload = container,
@@ -28,16 +30,18 @@ namespace Docker.Services
                     Status = TaskStatus.READY,
                     TimeCreated = DateTime.Now,
                     TimeModified = DateTime.Now
-                });
+                };
+                lt.Add(t);
+                _dbContext.Add(t);
             }
             try
             {
                 _dbContext.SaveChanges();
-                return true;
+                return lt;
             }
             catch (Exception)
             {
-                return false;
+                return null;
             }
         }
     }

@@ -14,6 +14,5 @@ namespace Docker.Models
         /// Now became redundant, and probably needs cleaning up
         /// </summary>
         //public ICollection<Worker> LoadingWorkers { get; set; }
-
     }
 }

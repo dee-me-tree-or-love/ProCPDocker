@@ -57,6 +57,7 @@ namespace Docker.Services
         {
             this.TouchTask(t); // modify the task <--> set new date of change
             t.Status = Models.TaskStatus.INPROGRESS;
+            // does not substract - do some tests
             t.RequiredTime.Subtract(new TimeSpan(0, 1, 0)); // substracts 1 minute by default -- further can be changed to make faster/slower
             _context.Tasks.Update(t);
             if (t.RequiredTime <= TimeSpan.Zero)

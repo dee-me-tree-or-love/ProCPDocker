@@ -18,6 +18,8 @@ namespace Docker.Models
     public class Task : IComparable<Task>
     {
         public int ID { get; set; }
+
+        //public int PayloadID { get; set; }
         public Container Payload { get; set; }
 
         // time that it would most likely take to complete the task
@@ -46,6 +48,7 @@ namespace Docker.Models
 
         public TaskStatus Status { get; set; }
 
+        public int DestinationID { get; set; }
         public ContainerCollection Destination { get; set; }
 
         public int CompareTo(Task obj)

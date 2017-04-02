@@ -10,8 +10,8 @@ namespace Docker.Models
 
         public String Tag { get; set; }
 
-        public ICollection<Container> ContainersToLoad { get; set; }
-        public ICollection<Container> ContainersToUnload { get; set; }
+        public ICollection<Container> LoadContainers { get; set; }
+        public ICollection<Container> UnloadContainers { get; set; }
 
         // gives errors due to not supported primitive types
 

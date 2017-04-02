@@ -72,7 +72,7 @@ namespace Docker.DAL
                     Y = 3,
                     Z = 2,
                     Containers = new List<Container>(),
-                    ContainersToLoad = new List<Container>()
+                    LoadContainers = new List<Container>()
                     {
                         //Container location will be filled from Container Finder Service
                         new Container{SerialNumber  = containerSerialNumbers[0],ContainerLocation = tempDock,X=0,Y=0,Z=0},
