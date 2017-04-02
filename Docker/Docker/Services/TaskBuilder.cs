@@ -63,6 +63,7 @@ namespace Docker.Services
                     TimeModified = DateTime.Now
                 });
             }
+            tasks.Sort();
             TaskBuilder.tasks = tasks;
         }
 

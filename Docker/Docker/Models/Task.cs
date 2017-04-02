@@ -7,7 +7,7 @@ namespace Docker.Models
     /// the container X from
     /// its current location A to certain location B
     /// </summary>
-    public class Task
+    public class Task : IComparable<Task>
     {
         public int ID { get; set; }
         public Container Payload { get; set; }
@@ -25,5 +25,10 @@ namespace Docker.Models
         public Boolean IsCompleted { get; set; }
 
         public ContainerCollection Destination { get; set; }
+
+        public int CompareTo(Task obj)
+        {
+            return this.Payload.ID.CompareTo(obj.Payload.ID);
+        }
     }
 }
