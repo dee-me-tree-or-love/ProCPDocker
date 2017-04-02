@@ -21,7 +21,19 @@ namespace Docker.Models
         public Container Payload { get; set; }
 
         // time that it would most likely take to complete the task
-        public TimeSpan RequiredTime { get; set; }
+        private TimeSpan _requiredTime;
+        public TimeSpan RequiredTime
+        {
+            get { return this._requiredTime; }
+            set
+            {
+                this._requiredTime = value;
+                if(this._requiredTime <= TimeSpan.Zero)
+                {
+                    this.Status = TaskStatus.FINISHED;
+                }
+            }
+        }
 
         // time tracking for task appearance and modifications
         public DateTime TimeCreated { get; set; }
