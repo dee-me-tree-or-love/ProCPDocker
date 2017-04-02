@@ -20,10 +20,10 @@ namespace Docker.Controllers
 
         public IActionResult Index()
         {
-            Ship ship = _dbContext.Ships.Where(s => s.Name.ToUpper() == "MAR32").First();
-            Dock dock = _dbContext.Docks.Where(d => d.Name.ToUpper() == "DOCK23").First();
-            //Ship ship = DBInitializer.ship;
-            //Dock dock = DBInitializer.dock;
+            //Ship ship = _dbContext.Ships.Where(s => s.Name.ToUpper() == "MAR32").First();
+            //Dock dock = _dbContext.Docks.Where(d => d.Name.ToUpper() == "DOCK23").First();
+            Ship ship = DBInitializer.ship;
+            Dock dock = DBInitializer.dock;
 
             bool tasks = _taskBuilder.GenerateTasksForShip(ship, dock);
             ViewData["tasks"] = tasks;

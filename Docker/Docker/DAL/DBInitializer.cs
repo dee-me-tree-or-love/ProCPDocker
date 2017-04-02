@@ -14,12 +14,14 @@ namespace Docker.DAL
         {
             _context.Database.EnsureCreated();
 
+            //TODO: Remove when we fix the db
+            /*
             if (_context.Ships.Any())
             {
                 // database was initialized
                 return;
             }
-
+            */
             // adding test ship
 
             //Generate some random container serial numbers
@@ -91,6 +93,9 @@ namespace Docker.DAL
                     },
                     Name ="MAR32" },
             };
+            DBInitializer.ship = ships[0];
+            DBInitializer.dock = tempDock;
+            return; //TODO Remove when we fix the DB
             foreach (Container c in Containers)
             {
                 _context.Containers.Add(c);
