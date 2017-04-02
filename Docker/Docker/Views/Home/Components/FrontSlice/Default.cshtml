@@ -1,0 +1,13 @@
+﻿@model Docker.Models.Container[,]
+
+@foreach (Docker.Models.Container c in @Model)
+{
+    <div>
+        @if (c != null)
+        {
+            <span>ID: @c.ID</span>
+            <br/>
+            <span>X: @c.X Y: @c.Y Z: @c.Z</span>
+        }
+    </div>
+}
