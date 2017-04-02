@@ -8,6 +8,6 @@ namespace Docker.Services
 {
     public interface ITaskBuilderService
     {
-        List<Docker.Models.Task> GetTasksForDock(Ship ship, string dockId);
+        bool GenerateTasksForShip(Ship ship, ContainerCollection dock);
     }
 }

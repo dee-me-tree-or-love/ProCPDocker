@@ -2,84 +2,43 @@
 using System.Collections.Generic;
 using System.Linq;
 using Docker.Models;
+using Docker.DAL;
 
 namespace Docker.Services
 {
     public class TaskBuilder : ITaskBuilderService
     {
-        private static Dock dock;
+        private DockerContext _dbContext;
 
-        private static List<Task> tasks;
-
-        public TaskBuilder()
+        public TaskBuilder(DockerContext dbContext)
         {
-            //Ship is already filled from dock service
-            //For POC crate new ship
-            Random rn = new Random();
-            Ship ship;
-            ship = new Ship();
-            ship.X = 3;
-            ship.Y = 3;
-            ship.Z = 3;
-            ship.Containers = new List<Container>();
-            ship.Name = "MAR32";
-            Dock d = new Dock();
-            d.X = 5;
-            d.Y = 5;
-            d.Z = 5;
-            d.DockedShip = ship;
-            d.Name = "Dock23";
-            d.Containers = new List<Container>();
-            for (int x = 0; x < d.X; x++)
-            {
-                for (int y = 0; y < d.Y; y++)
-                {
-                    for (int z = 0; z < d.Z; z++)
-                    {
-                        d.Containers.Add(new Container()
-                        {
-                            ContainerLocation = d,
-                            X = x,
-                            Y = y,
-                            Z = z,
-                            ID = rn.Next(0, int.MaxValue)
-                        });
-                    }
-                }
-            }
+            this._dbContext = dbContext;
+        }
 
-            TaskBuilder.dock = d;
-
-            List<Task> tasks = new List<Task>();
-            for (int i = 0; i < 29; i++)
+        public bool GenerateTasksForShip(Ship ship, ContainerCollection dock)
+        {
+            Random random = new Random();
+            foreach (Container container in ship.ContainersToLoad)
             {
-                tasks.Add(new Task
+                _dbContext.Add(new Task
                 {
-                    Destination = ship,
-                    RequiredTime = new TimeSpan(0, rn.Next(2, 10), 0),
-                    TimeCreated = DateTime.Now,
+                    Destination = dock,
+                    Payload = container,
+                    RequiredTime = new TimeSpan(0, random.Next(2, 10), 0),
                     Status = TaskStatus.READY,
-                    Payload = ((List<Container>)d.Containers)[i],
+                    TimeCreated = DateTime.Now,
                     TimeModified = DateTime.Now
                 });
             }
-            tasks.Sort();
-            TaskBuilder.tasks = tasks;
-        }
-
-        public List<Task> GetTasksForDock(Ship ship, string dockId)
-        {
-            return TaskBuilder.tasks;
-        }
-
-        /// <summary>
-        /// Loads a container stack from the database
-        /// </summary>
-        /// <param name="id">The id of the stack</param>
-        /// <returns></returns>
-        private ContainerCollection GetContainerStack(int id)
-        {
-            throw new NotImplementedException();
+            try
+            {
+                _dbContext.SaveChanges();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
