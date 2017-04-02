@@ -18,29 +18,36 @@
     ship.Containers = new List<Docker.Models.Container>();
     ship.Name = "MAR32";
 
-    for (int x = 0; x < ship.X; x++)
+    for (int i = 0; i < ship.X || i < ship.Z; i++)
     {
-        for (int y = 0; y < ship.Y; y++)
+        ship.Containers.Add(new Docker.Models.Container()
         {
-            for (int z = 0; z < ship.Z; z++)
-            {
-                ship.Containers.Add(new Docker.Models.Container()
-                {
-                    ContainerLocation = ship,
-                    X = x,
-                    Y = y,
-                    Z = z,
-                    ID = rn.Next(0, int.MaxValue)
-                });
-            }
-        }
+            ContainerLocation = ship,
+            X = i,
+            Y = 0,
+            Z = i,
+            ID = rn.Next(0, int.MaxValue)
+        });
+    }
+
+    for (int i = 0; i < ship.Y || i < ship.Z; i++)
+    {
+        ship.Containers.Add(new Docker.Models.Container()
+        {
+            ContainerLocation = ship,
+            X = 0,
+            Y = i,
+            Z = i,
+            ID = rn.Next(0, int.MaxValue)
+        });
     }
 }
 <div class="col-md-9">
     <table class="table">
         <tr>
+            @*TODO: also pass int as a param to indicate depth of the slice*@
+            <td>@await Component.InvokeAsync("SideSlice", ship)</td>
             <td>@await Component.InvokeAsync("FrontSlice", ship)</td>
-            <td>Ship Front</td>
             <td>Dock Side</td>
             <td>Dock Front</td>
         </tr>
