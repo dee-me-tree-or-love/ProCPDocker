@@ -15,13 +15,13 @@ namespace Docker.DAL
             _context.Database.EnsureCreated();
 
             //TODO: Remove when we fix the db
-            /*
+            /**/
             if (_context.Ships.Any())
             {
                 // database was initialized
                 return;
             }
-            */
+            /**/
             // adding test ship
 
             //Generate some random container serial numbers
@@ -102,7 +102,9 @@ namespace Docker.DAL
                 tempDock
             };
             DBFaker.containers = cntnrs;
-            return; //TODO Remove when we fix the DB
+
+
+            //return; //TODO Remove when we fix the DB
 
 
             foreach (Container c in cntnrs)

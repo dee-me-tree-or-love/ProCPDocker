@@ -23,7 +23,13 @@ namespace Docker.Controllers
 
         public IActionResult Index()
         {
-            //Ship ship = _dbContext.Ships.Where(s => s.Name.ToUpper() == "MAR32").First();
+            _dbContext.Containers.Select(s=> new {s,s.ContainerLocation}).Load();
+            _dbContext.Ships.Where(s => s.Name.ToUpper() == "MAR32").Select(s=> new { s, s.Containers, s.LoadContainers, s.UnloadContainers}).Load();
+            var shipTest = _dbContext.Ships
+                .Include(s => s.Containers)
+                .Include(s => s.LoadContainers)
+                .Include(s => s.UnloadContainers).ToList();
+            var ddcker = _dbContext.Docks.Include(s => s.Containers).First();
             //Dock dock = _dbContext.Docks.Where(d => d.Name.ToUpper() == "DOCK23").First();
             Ship ship = DBInitializer.ship;
             Dock dock = DBInitializer.dock;

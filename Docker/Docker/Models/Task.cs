@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Docker.Models
 {
@@ -19,7 +20,7 @@ namespace Docker.Models
     {
         public int ID { get; set; }
 
-        //public int PayloadID { get; set; }
+        public int PayloadID { get; set; }
         public Container Payload { get; set; }
 
         // time that it would most likely take to complete the task
