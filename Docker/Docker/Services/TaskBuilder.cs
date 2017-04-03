@@ -15,6 +15,11 @@ namespace Docker.Services
             this._dbContext = dbContext;
         }
 
+        public void updateContext(DockerContext dbcontext)
+        {
+            this._dbContext = dbcontext;
+        }
+
         public List<Models.Task> GenerateTasksForShip(Ship ship, ContainerCollection dock)
         {
             Random random = new Random();
@@ -22,7 +27,7 @@ namespace Docker.Services
             foreach (Container container in ship.LoadContainers)
             {
 
-                Models.Task t = new Task
+                Models.Task t = new Task()
                 {
                     Destination = ship,
                     Payload = container,
@@ -36,8 +41,8 @@ namespace Docker.Services
             }
             try
             {
-                DBFaker.tasks = lt; // to be deleted once the database is fixed
-                _dbContext.SaveChanges();
+                //DBFaker.tasks = lt; // to be deleted once the database is fixed
+                int i = _dbContext.SaveChanges();
                 return lt;
             }
             catch (Exception e)

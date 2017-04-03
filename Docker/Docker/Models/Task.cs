@@ -1,5 +1,5 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Docker.Models
 {
@@ -18,6 +18,7 @@ namespace Docker.Models
     /// </summary>
     public class Task : IComparable<Task>
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
 
         public int PayloadID { get; set; }

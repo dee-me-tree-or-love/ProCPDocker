@@ -30,6 +30,11 @@ namespace Docker.Controllers
                 .Include(s => s.LoadContainers)
                 .Include(s => s.UnloadContainers).First();
             var dock = _dbContext.Docks.Include(s => s.Containers).First();
+            _dbContext.Ships.Attach(ship);
+            _dbContext.Docks.Attach(dock);
+
+            _taskBuilder.updateContext(_dbContext);
+            //TaskBuilder _taskBuilder = new TaskBuilder(_dbContext);
             //Dock dock = _dbContext.Docks.Where(d => d.Name.ToUpper() == "DOCK23").First();
             //Ship ship = DBInitializer.ship;
             //Dock dock = DBInitializer.dock;
