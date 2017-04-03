@@ -50,7 +50,7 @@ namespace Docker.Controllers
                 _dbContext.Tasks
                     .Include(t => t.Destination)
                     .Include(t => t.Payload).Load();
-                var dock = _dbContext.Docks.Include(s => s.Containers).First()
+                var dock = _dbContext.Docks.Include(s => s.Containers).First();
                 _loader.ProcessTasks(dock.Name);
                 var tasks = _dbContext.Tasks
                     .Include(t=> t.Destination)
@@ -63,7 +63,9 @@ namespace Docker.Controllers
                     .Where(t => t.Status == TaskStatus.INPROGRESS).First(); // get the first task that is in progrDeess, for later - select all and adjust the index to have a list of executed tasks in progress
                 if (crntTask == null)
                 {
-                    crntTask = _dbContext.Tasks.First();
+                    crntTask = _dbContext.Tasks
+                        .Include(t => t.Destination)
+                        .Include(t => t.Payload).First();
                 }
 
                 //crntTask.Payload = _dbContext.Containers.Where(c => c.TaskID == crntTask.ID).Single();
