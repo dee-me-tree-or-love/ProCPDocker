@@ -20,8 +20,8 @@ namespace Docker.Controllers
             _dbContext = dbContext;
             _loader = loader;
         }
-
-        public IActionResult Index()
+        
+        public IActionResult Index(int x, int y)
         {
             _dbContext.Containers.Select(s=> new {s,s.ContainerLocation}).Load();
             _dbContext.Ships.Where(s => s.Name.ToUpper() == "MAR32").Select(s=> new { s, s.Containers, s.LoadContainers, s.UnloadContainers}).Load();
@@ -38,6 +38,8 @@ namespace Docker.Controllers
             ViewData["tasks"] = tasks;
             ViewData["current"] = tasks[0];
             ViewData["refresh"] = false;
+            ViewData["x"] = 2;
+            ViewData["y"] = 2;
             return View();
         }
 
@@ -80,6 +82,11 @@ namespace Docker.Controllers
             ViewData["refresh"] = false;
             ViewData["tasks"] = null;
             return View("Index");
+        }
+
+        public IActionResult SideSlice(ContainerCollection cC, int depth)
+        {
+            return ViewComponent("SideSlice", new {cc = cC, x = depth});
         }
     }
 }

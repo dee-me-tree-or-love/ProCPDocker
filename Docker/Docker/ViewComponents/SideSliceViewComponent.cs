@@ -9,11 +9,9 @@ namespace Docker.ViewComponents
 {
     public class SideSliceViewComponent : ViewComponent
     {
-        public async Task<IViewComponentResult> InvokeAsync(ContainerCollection cc)
+        public async Task<IViewComponentResult> InvokeAsync(ContainerCollection cc, int x)
         {
-            int x = 0;
             Container[,] slice = new Container[cc.Y, cc.Z];
-
             foreach (Container ccContainer in cc.Containers)
             {
                 int tempX = ccContainer.X;
