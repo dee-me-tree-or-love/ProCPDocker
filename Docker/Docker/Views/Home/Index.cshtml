@@ -8,8 +8,6 @@
     //Get current tasks from loader
 
     //test data
-    int dummyX = Convert.ToInt32(ViewData["x"]);
-    int dummyY = Convert.ToInt32(ViewData["y"]);
     Random rn = new Random();
     Docker.Models.Ship ship;
     ship = new Docker.Models.Ship();
@@ -43,17 +41,21 @@
             <td>
                 <h1>Ship side:</h1>
                 <div class="col-md-12">
-                    <p>Depth: <span class="glyphicon glyphicon-plus"></span> @dummyX <span class="glyphicon glyphicon-minus"></span>
+                    <p>Depth: <span class="glyphicon glyphicon-plus"></span> 0 <span class="glyphicon glyphicon-minus"></span>
                     </p>
                 </div>
-                @await Component.InvokeAsync("SideSlice", new {cc = ship, x = dummyX})
+                <div class="col-md-12">
+                    @await Component.InvokeAsync("SideSlice", new { cc = ship, x = 0 })
+                </div>
             </td>
             <td>
                 <h1>Ship front:</h1>
                 <div class="col-md-12 text-cente">
-                    <p>Depth: <span class="glyphicon glyphicon-plus"></span> @dummyY <span class="glyphicon glyphicon-minus"></span></p>
+                    <p>Depth: <span class="glyphicon glyphicon-plus"></span> 0 <span class="glyphicon glyphicon-minus"></span></p>
                 </div>
-                @await Component.InvokeAsync("FrontSlice", new {cc = ship, y = dummyY})
+                <div class="col-md-12">
+                    @await Component.InvokeAsync("FrontSlice", new { cc = ship, y = 0 })
+                </div>
             </td>
             <td>
                 Dock Side

@@ -8,13 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Docker.ViewComponents
 {
-    [Route("Front")]
     public class FrontSliceViewComponent : ViewComponent
     {
-
         public async Task<IViewComponentResult> InvokeAsync(int y)
         {
-            ContainerCollection cc = DBInitializer.
+            ContainerCollection cc = DBInitializer.ship;
             Container[,] slice = new Container[cc.X, cc.Z];
 
             foreach (Container ccContainer in cc.Containers)
