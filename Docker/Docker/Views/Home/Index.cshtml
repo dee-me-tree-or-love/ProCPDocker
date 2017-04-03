@@ -1,0 +1,163 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@{
+    List<Docker.Models.Task> tasks = (List<Docker.Models.Task>)ViewData["tasks"];
+    Docker.Models.Task current = (Docker.Models.Task)ViewData["current"];
+    //Get current tasks from loader
+
+    //test data
+    int dummyX = 2;
+    Random rn = new Random();
+    Docker.Models.Ship ship;
+    ship = new Docker.Models.Ship();
+    ship.X = 3;
+    ship.Y = 3;
+    ship.Z = 3;
+    ship.Containers = new List<Docker.Models.Container>();
+    ship.Name = "MAR32";
+
+    for (int i = 0; i < ship.X || i < ship.Z; i++)
+    {
+        ship.Containers.Add(new Docker.Models.Container()
+        {
+            ContainerLocation = ship,
+            X = i,
+            Y = 0,
+            Z = i,
+            ID = rn.Next(0, int.MaxValue)
+        });
+    }
+
+    for (int i = 0; i < ship.Y || i < ship.Z; i++)
+    {
+        ship.Containers.Add(new Docker.Models.Container()
+        {
+            ContainerLocation = ship,
+            X = 0,
+            Y = i,
+            Z = i,
+            ID = rn.Next(0, int.MaxValue)
+        });
+    }
+}
+@{
+    if ((bool)ViewData["refresh"])
+    {
+        <meta http-equiv="refresh" content="1;url=/Home/ProcessTask" />
+    }
+}
+<div class="col-md-9">
+    <table class="table">
+        <tr>
+            @*TODO: also pass int as a param to indicate depth of the slice*@
+            <td>@await Component.InvokeAsync("SideSlice", ship)</td>
+            <td>@await Component.InvokeAsync("FrontSlice", ship)</td>
+            <td>Dock Side</td>
+            <td>Dock Front</td>
+        </tr>
+        <tr>
+            <td colspan="4" class="text-center">Ship + Dock picture</td>
+        </tr>
+    </table>
+</div>
+<div class="col-md-3">
+    <div class="table-responsive">
+        <div class="panel panel-success">
+            <div class="panel-heading text-center"><h4>Current Tasks</h4></div>
+            @*Loop trough current tasks*@
+            @Html.ActionLink("Do task", "ProcessTask", "Home")
+            @Html.ActionLink("Complete all", "StopRefresh", "Home")
+            @if (current != null)
+            {
+                <div class="panel-body">
+                    <div class="col-md-8">
+                        <div class="col-md-6">
+                            <div class="row"><span class="glyphicon glyphicon-barcode" aria-hidden="true"></span> Container id</div>
+                            <div class="row"><span class="glyphicon glyphicon-screenshot" aria-hidden="true"></span>Location</div>
+                            <div class="row"><span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>Destination</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">@current.Payload.ID</div>
+                            <div class="row">@*current.Payload.ContainerLocation.Name*@ @current.Payload.X:@current.Payload.Y:@current.Payload.Z</div>
+                            <div class="row">@**@current.Destination.Name</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-left">
+                        <h3>@current.RequiredTime.ToString()</h3>
+                    </div>
+                </div>
+            }
+        </div>
+        <table class="table table-hover table-bordered table-compact">
+            <thead>
+                <tr class="">
+                    <th>Container</th>
+                    <th>Location</th>
+                    <th>Destination</th>
+                    <th>ET</th>
+                    <th>Info</th>
+                </tr>
+            </thead>
+            <tbody class="text-center panel-body">
+                @if(tasks == null){
+                <tr>
+                    <td colspan="5">There are no tasks left</td>
+                </tr>
+                }else{
+
+                @for (int i = 0; i < tasks.Count; i++)
+                {
+                    Docker.Models.Task task = tasks[i];
+
+                    <tr class="@(@task.RequiredTime.TotalMinutes <= 0 ? "bg-success" : "")">
+                        <td>@task.Payload.ID</td>
+                        <td>
+                            @task.Payload.ContainerLocation.Name
+                            <br />@task.Payload.X : @task.Payload.Y : @task.Payload.Z
+                        </td>
+                        <td>@task.Destination.Name</td>
+                        <td>@task.RequiredTime.TotalMinutes minutes</td>
+                        <td>
+                            <button type="button" class="btn-sm btn-info" data-toggle="modal" data-target="#taskInfo-@task.Payload.ID">
+                                Info
+                            </button>
+                        </td>
+                    </tr>
+
+                    <div class="modal fade" id="taskInfo-@task.Payload.ID" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h3 class="modal-title text-center" id="exampleModalLabel">Task details</h3>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-7">
+                                            <p><b>Container: @task.Payload.ID</b></p>
+                                            <p><b>Location: @task.Payload.ContainerLocation.Name - @task.Payload.X : @task.Payload.Y : @task.Payload.Z</b></p>
+                                            <p><b>Destination: @task.Destination.Name</b></p>
+                                            <p><b>Time created: @task.TimeCreated.ToString()</b></p>
+                                            <p><b>Time modified: @task.TimeModified.ToString()</b></p>
+                                            <p><b>ETC: @task.RequiredTime.TotalMinutes minutes</b></p>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <img src="images/container.png" class="img-responsive" alt="Container blue">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <button type="button" class="btn btn-primary btn-sm btn-block" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
