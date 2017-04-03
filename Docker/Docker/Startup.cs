@@ -34,6 +34,8 @@ namespace Docker
             services.AddDbContext<DockerContext>();
             // Loader service
             services.AddSingleton<ILoaderService, LoaderService>();
+            //Dock finder service
+            services.AddSingleton<IDockFinder, DockFinder>();
 
         }
 
