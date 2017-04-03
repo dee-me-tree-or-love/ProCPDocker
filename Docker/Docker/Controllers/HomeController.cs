@@ -31,6 +31,7 @@ namespace Docker.Controllers
             var tasks = _taskBuilder.GenerateTasksForShip(ship, dock);
             ViewData["tasks"] = tasks;
             ViewData["current"] = tasks[0];
+            ViewData["refresh"] = false;
             return View();
         }
 
@@ -44,32 +45,35 @@ namespace Docker.Controllers
             //var tasks = _dbContext.Tasks.ToList();
             var tasks = DBFaker.tasks;
 
-            //Models.Task crntTask = _dbContext.Tasks.Where(t => t.Status == TaskStatus.INPROGRESS).First(); // get the first task that is in progrDeess, for later - select all and adjust the index to have a list of executed tasks in progress 
+            //Models.Task crntTask = _dbContext.Tasks.Where(t => t.Status == TaskStatus.INPROGRESS).First(); // get the first task that is in progrDeess, for later - select all and adjust the index to have a list of executed tasks in progress
             Models.Task crntTask = null;
-            foreach(Models.Task t in tasks)
+            foreach (Models.Task t in tasks)
             {
-                if(t.Status == TaskStatus.INPROGRESS)
+                if (t.Status == TaskStatus.INPROGRESS)
                 {
                     crntTask = t;
                     break;
                 }
             }
-            if(crntTask == null)
+            if (crntTask == null)
             {
                 crntTask = DBFaker.GetNextReadyTask();
             }
 
             //crntTask.Payload = _dbContext.Containers.Where(c => c.TaskID == crntTask.ID).Single();
-            ViewData["current"] = crntTask; 
+            ViewData["current"] = crntTask;
+            ViewData["refresh"] = true;
             ViewData["tasks"] = tasks;
-            
+
             return View("Index");
         }
 
-
-        public IActionResult About()
+        public IActionResult StopRefresh()
         {
-            return View();
+            ViewData["current"] = null;
+            ViewData["refresh"] = false;
+            ViewData["tasks"] = null;
+            return View("Index");
         }
     }
 }

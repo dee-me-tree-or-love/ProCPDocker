@@ -4,7 +4,6 @@
 
 @{
     List<Docker.Models.Task> tasks = (List<Docker.Models.Task>)ViewData["tasks"];
-    Docker.Models.Task selectedTask = null;
     Docker.Models.Task current = (Docker.Models.Task)ViewData["current"];
     //Get current tasks from loader
 
@@ -43,6 +42,12 @@
         });
     }
 }
+@{
+    if ((bool)ViewData["refresh"])
+    {
+        <meta http-equiv="refresh" content="1;url=/Home/ProcessTask" />
+    }
+}
 <div class="col-md-9">
     <table class="table">
         <tr>
@@ -58,12 +63,13 @@
     </table>
 </div>
 <div class="col-md-3">
-    <div class="table-responsive">        
+    <div class="table-responsive">
         <div class="panel panel-success">
             <div class="panel-heading text-center"><h4>Current Tasks</h4></div>
             @*Loop trough current tasks*@
             @Html.ActionLink("Do task", "ProcessTask", "Home")
-            @if (tasks.Count > 0)
+            @Html.ActionLink("Complete all", "StopRefresh", "Home")
+            @if (current != null)
             {
                 <div class="panel-body">
                     <div class="col-md-8">
@@ -85,8 +91,8 @@
             }
         </div>
         <table class="table table-hover table-bordered table-compact">
-            <thead class="text-cente">
-                <tr>
+            <thead>
+                <tr class="">
                     <th>Container</th>
                     <th>Location</th>
                     <th>Destination</th>
@@ -95,12 +101,18 @@
                 </tr>
             </thead>
             <tbody class="text-center panel-body">
-                @for (int i = 1; i < tasks.Count; i++)
+                @if(tasks == null){
+                <tr>
+                    <td colspan="5">There are no tasks left</td>
+                </tr>
+                }else{
+
+                @for (int i = 0; i < tasks.Count; i++)
                 {
                     Docker.Models.Task task = tasks[i];
 
-                    <tr>
-                       <td>@task.Payload.ID</td>
+                    <tr class="@(@task.RequiredTime.TotalMinutes <= 0 ? "bg-success" : "")">
+                        <td>@task.Payload.ID</td>
                         <td>
                             @task.Payload.ContainerLocation.Name
                             <br />@task.Payload.X : @task.Payload.Y : @task.Payload.Z
@@ -143,6 +155,7 @@
                             </div>
                         </div>
                     </div>
+                }
                 }
             </tbody>
         </table>
