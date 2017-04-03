@@ -32,7 +32,7 @@ namespace Docker.Services
                     TimeModified = DateTime.Now
                 };
                 lt.Add(t);
-                _dbContext.Add(t);
+                _dbContext.Tasks.Add(t);
             }
             try
             {
@@ -40,8 +40,9 @@ namespace Docker.Services
                 _dbContext.SaveChanges();
                 return lt;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e);
                 return null;
             }
         }

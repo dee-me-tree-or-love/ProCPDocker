@@ -1,4 +1,6 @@
-﻿namespace Docker.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Docker.Models
 {
     public class Container
     {
@@ -20,6 +22,7 @@
         public int Z { get; set; }
 
         // the current storage location
+        [ForeignKey("ContainerCollection")]
         public int ContainerLocationID { get; set; } // foreign key
         public ContainerCollection ContainerLocation { get; set; }
 

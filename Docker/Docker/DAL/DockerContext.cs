@@ -20,7 +20,6 @@ namespace Docker.DAL
         public DbSet<Dock> Docks { get; set; }
         public DbSet<Loader> Loaders { get; set; }
 
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var connection = @"Server=(localdb)\mssqllocaldb;Database=DockerDataBase;Trusted_Connection=True;";

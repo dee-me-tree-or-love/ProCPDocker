@@ -23,10 +23,16 @@ namespace Docker.Controllers
 
         public IActionResult Index()
         {
-            //Ship ship = _dbContext.Ships.Where(s => s.Name.ToUpper() == "MAR32").First();
+            _dbContext.Containers.Select(s=> new {s,s.ContainerLocation}).Load();
+            _dbContext.Ships.Where(s => s.Name.ToUpper() == "MAR32").Select(s=> new { s, s.Containers, s.LoadContainers, s.UnloadContainers}).Load();
+            var ship = _dbContext.Ships
+                .Include(s => s.Containers)
+                .Include(s => s.LoadContainers)
+                .Include(s => s.UnloadContainers).First();
+            var dock = _dbContext.Docks.Include(s => s.Containers).First();
             //Dock dock = _dbContext.Docks.Where(d => d.Name.ToUpper() == "DOCK23").First();
-            Ship ship = DBInitializer.ship;
-            Dock dock = DBInitializer.dock;
+            //Ship ship = DBInitializer.ship;
+            //Dock dock = DBInitializer.dock;
 
             var tasks = _taskBuilder.GenerateTasksForShip(ship, dock);
             ViewData["tasks"] = tasks;
@@ -37,34 +43,42 @@ namespace Docker.Controllers
 
         public IActionResult ProcessTask()
         {
-            Ship ship = DBFaker.ships[0];
-            Dock dock = DBFaker.docks[0];
-
-            _loader.ProcessTasks(dock.Name);
-
-            //var tasks = _dbContext.Tasks.ToList();
-            var tasks = DBFaker.tasks;
-
-            //Models.Task crntTask = _dbContext.Tasks.Where(t => t.Status == TaskStatus.INPROGRESS).First(); // get the first task that is in progrDeess, for later - select all and adjust the index to have a list of executed tasks in progress
-            Models.Task crntTask = null;
-            foreach (Models.Task t in tasks)
+            //Ship ship = DBFaker.ships[0];
+            //Dock dock = DBFaker.docks[0];
+            try
             {
-                if (t.Status == TaskStatus.INPROGRESS)
+                _dbContext.Tasks
+                    .Include(t => t.Destination)
+                    .Include(t => t.Payload).Load();
+                var dock = _dbContext.Docks.Include(s => s.Containers).First();
+                _loader.ProcessTasks(dock.Name);
+                var tasks = _dbContext.Tasks
+                    .Include(t=> t.Destination)
+                    .Include(t => t.Payload).ToList();
+                //var tasks = DBFaker.tasks;
+
+                Models.Task crntTask = _dbContext.Tasks
+                    .Include(t => t.Destination)
+                    .Include(t => t.Payload)
+                    .Where(t => t.Status == TaskStatus.INPROGRESS).First(); // get the first task that is in progrDeess, for later - select all and adjust the index to have a list of executed tasks in progress
+                if (crntTask == null)
                 {
-                    crntTask = t;
-                    break;
+                    crntTask = _dbContext.Tasks
+                        .Include(t => t.Destination)
+                        .Include(t => t.Payload).First();
                 }
+
+                //crntTask.Payload = _dbContext.Containers.Where(c => c.TaskID == crntTask.ID).Single();
+                ViewData["current"] = crntTask;
+                ViewData["refresh"] = true;
+                ViewData["tasks"] = tasks;
             }
-            if (crntTask == null)
+            catch
             {
-                crntTask = DBFaker.GetNextReadyTask();
+                ViewData["current"] = null;
+                ViewData["refresh"] = null;
+                ViewData["tasks"] = null;
             }
-
-            //crntTask.Payload = _dbContext.Containers.Where(c => c.TaskID == crntTask.ID).Single();
-            ViewData["current"] = crntTask;
-            ViewData["refresh"] = true;
-            ViewData["tasks"] = tasks;
-
             return View("Index");
         }
 
