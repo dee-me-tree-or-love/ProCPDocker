@@ -57,6 +57,8 @@ namespace Docker.Controllers
                     .Include(t => t.Payload).Load();
                 var dock = _dbContext.Docks.Include(s => s.Containers).First();
                 _loader.ProcessTasks(dock.Name);
+
+
                 var tasks = _dbContext.Tasks
                     .Include(t=> t.Destination)
                     .Include(t => t.Payload).ToList();

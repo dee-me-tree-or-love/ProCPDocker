@@ -36,6 +36,7 @@ namespace Docker.Services
                     TimeCreated = DateTime.Now,
                     TimeModified = DateTime.Now
                 };
+
                 lt.Add(t);
                 _dbContext.Tasks.Add(t);
             }
