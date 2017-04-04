@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Data.Entity;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace Docker.Controllers
 {
@@ -78,8 +79,9 @@ namespace Docker.Controllers
                 ViewData["refresh"] = true;
                 ViewData["tasks"] = tasks;
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine(e);
                 ViewData["current"] = null;
                 ViewData["refresh"] = null;
                 ViewData["tasks"] = null;

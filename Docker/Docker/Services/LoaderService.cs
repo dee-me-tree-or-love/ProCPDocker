@@ -109,29 +109,30 @@ namespace Docker.Services
                 // further will be replaced by c.Loaders.Count
 
                 // try selecting the tasks that are already in progress
-                //var c = _context.Storages.Where(s => s.Name.ToUpper() == dockId.ToUpper()).First();
-                ContainerCollection c = null;
-                foreach (ContainerCollection cc in DBFaker.docks)
-                {
-                    if (cc.Name == dockId)
-                    {
-                        c = cc;
-                        break;
-                    }
-                }
+                var c = _context.Storages.Where(s => s.Name.ToUpper() == dockId.ToUpper()).First();
+                //ContainerCollection c = null;
+                //foreach (ContainerCollection cc in DBFaker.docks)
+                //{
+                //    if (cc.Name == dockId)
+                //    {
+                //        c = cc;
+                //        break;
+                //    }
+                //}
 
-                //var inprogressTasks = _context.Tasks
-                //    .Where(t => t.Payload.ContainerLocation == c && t.Status == Models.TaskStatus.INPROGRESS)
-                //    .ToList();
+                var inprogressTasks = _context.Tasks
+                    .Where(t => t.Payload.ContainerLocation == c && t.Status == Models.TaskStatus.INPROGRESS)
+                    .Include(t => t.Destination)
+                    .Include(t => t.Payload).ToList();
 
-                List<Models.Task> inprogressTasks = new List<Models.Task>();
-                foreach (Models.Task t in DBFaker.tasks)
-                {
-                    if (t.Status == Models.TaskStatus.INPROGRESS)
-                    {
-                        inprogressTasks.Add(t);
-                    }
-                }
+                //List<Models.Task> inprogressTasks = new List<Models.Task>();
+                //foreach (Models.Task t in DBFaker.tasks)
+                //{
+                //    if (t.Status == Models.TaskStatus.INPROGRESS)
+                //    {
+                //        inprogressTasks.Add(t);
+                //    }
+                //}
 
                 if (inprogressTasks.Count > 0)
                 {
@@ -166,17 +167,21 @@ namespace Docker.Services
 
         }
 
-        public Models.Task StartNewTaskForDock(string dockId)
+        public Models.Task StartNewTaskForDock(string dockName)
         {
             // uncomment when the database will be in place
             //var c = _context.Storages.Where(s => s.Name.ToUpper() == dockId.ToUpper()).First();
+            _context.Tasks
+                .Where(t => t.Payload.ContainerLocation.Name == dockName && t.Status == Models.TaskStatus.READY)
+                .Include(t => t.Destination)
+                .Include(t => t.Payload).Load();
+            var readyTask = _context.Tasks
+                .Where(t => t.Payload.ContainerLocation.Name == dockName && t.Status == Models.TaskStatus.READY)
+                .Include(t => t.Destination)
+                .Include(t => t.Payload).First();
 
-            //var readyTask = _context.Tasks
-            //    .Where(t => t.Payload.ContainerLocation == c && t.Status == Models.TaskStatus.READY)
-            //    .First();
-
-            Models.Task readyTask = null;
-            readyTask = DBFaker.GetNextReadyTask();
+            //Models.Task readyTask = null;
+            //readyTask = DBFaker.GetNextReadyTask();
 
             return readyTask;
         }
