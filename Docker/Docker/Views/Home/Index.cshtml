@@ -5,6 +5,9 @@
 @{
     List<Docker.Models.Task> tasks = (List<Docker.Models.Task>)ViewData["tasks"];
     Docker.Models.Task current = (Docker.Models.Task)ViewData["current"];
+    // for the ship and dock displays
+    Docker.Models.Ship mainship = (Docker.Models.Ship)ViewData["ship"];
+    Docker.Models.Dock maindock = (Docker.Models.Dock)ViewData["dock"];
     //Get current tasks from loader
 
     //test data
@@ -61,35 +64,113 @@
             <td colspan="4" class="text-center">Ship + Dock picture</td>
         </tr>
     </table>
+    <div class="col-md-4 text-center">
+        <h4>Ship</h4>
+        @if (mainship != null)
+        {
+            <h4>@mainship.Name</h4>
+            <table class="table table-hover table-bordered table-compact">
+                <thead>
+                    <tr class="">
+                        <th>Container</th>
+                        <th>Location</th>
+                        <th>Serial Number</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center panel-body">
+                    @foreach (Docker.Models.Container c in mainship.Containers)
+                    {
+                        <tr>
+                            <td><h6>@c.ID</h6></td>
+                            <td><h6>@c.X ; @c.Y; @c.Z</h6></td>
+                            <td><h6>@c.SerialNumber.Substring(0, 10)...</h6></td>
+                        </tr>
+
+                    }
+                </tbody>
+                </table>
+        }
+        else
+        {
+            <div>
+                <h6>No ships are available...</h6>
+            </div>
+
+        }
+</div>
+    <div class="col-md-4  text-center">
+        <h4>Dock</h4>
+        @if (maindock != null)
+        {
+            <h4>@maindock.Name</h4>
+            <table class="table table-hover table-bordered table-compact">
+                <thead>
+                    <tr class="">
+                        <th>Container</th>
+                        <th>Location</th>
+                        <th>Serial Number</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center panel-body">
+                    @foreach (Docker.Models.Container c in maindock.Containers)
+                    {
+                        <tr>
+                            <td><h6>@c.ID</h6></td>
+                            <td><h6>@c.X ; @c.Y; @c.Z</h6></td>
+                            <td><h6>@c.SerialNumber.Substring(0,10)...</h6></td>
+                        </tr>
+
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div>
+                <h6>No ships are available...</h6>
+            </div>
+
+        }
+    </div>
 </div>
 <div class="col-md-3">
     <div class="table-responsive">
         <div class="panel panel-success">
             <div class="panel-heading text-center"><h4>Current Tasks</h4></div>
             @*Loop trough current tasks*@
-            @Html.ActionLink("Do task", "ProcessTask", "Home")
-            @Html.ActionLink("Complete all", "StopRefresh", "Home")
+            @*@Html.ActionLink("Do task", "ProcessTask", "Home")*@
+            <div class="text-center">
+                <a href="@Url.Action("ProcessTask", "Home")" class="btn btn-secondary">
+                    Do Task
+                    <span class="glyphicon glyphicon glyphicon-play" aria-hidden="true"></span>
+                </a>
+                @* @Html.ActionLink("Complete all", "StopRefresh", "Home")*@
+                <a href="@Url.Action("StopRefresh", "Home")" class="btn btn-secondary">
+                    Stop Refreshing
+                    <span class="glyphicon glyphicon-pause" aria-hidden="true"></span>
+                </a>
+            </div>            
             @if (current != null)
             {
-                <div class="panel-body">
-                    <div class="col-md-8">
-                        <div class="col-md-6">
-                            <div class="row"><span class="glyphicon glyphicon-barcode" aria-hidden="true"></span> Container id</div>
-                            <div class="row"><span class="glyphicon glyphicon-screenshot" aria-hidden="true"></span>Location</div>
-                            <div class="row"><span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>Destination</div>
+                    <div class="panel-body">
+                        <div class="col-md-8">
+                            <div class="col-md-6">
+                                <div class="row"><span class="glyphicon glyphicon-barcode" aria-hidden="true"></span> Container id</div>
+                                <div class="row"><span class="glyphicon glyphicon-screenshot" aria-hidden="true"></span>Location</div>
+                                <div class="row"><span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>Destination</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">@current.Payload.ID</div>
+                                <div class="row">@current.Payload.ContainerLocation.Name @current.Payload.X:@current.Payload.Y:@current.Payload.Z</div>
+                                <div class="row">@current.Destination.Name</div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="row">@current.Payload.ID</div>
-                            <div class="row">@*current.Payload.ContainerLocation.Name*@ @current.Payload.X:@current.Payload.Y:@current.Payload.Z</div>
-                            <div class="row">@**@current.Destination.Name</div>
+                        <div class="col-md-4 text-left">
+                            <h3>@current.RequiredTime.ToString()</h3>
                         </div>
                     </div>
-                    <div class="col-md-4 text-left">
-                        <h3>@current.RequiredTime.ToString()</h3>
-                    </div>
-                </div>
-            }
-        </div>
+                }
+            </div>
         <table class="table table-hover table-bordered table-compact">
             <thead>
                 <tr class="">
@@ -103,7 +184,7 @@
             <tbody class="text-center panel-body">
                 @if(tasks == null){
                 <tr>
-                    <td colspan="5">There are no tasks left</td>
+                    <td colspan="5">There are no tasks left or the process was stopped</td>
                 </tr>
                 }else{
 
@@ -111,7 +192,7 @@
                 {
                     Docker.Models.Task task = tasks[i];
 
-                    <tr class="@(@task.RequiredTime.TotalMinutes <= 0 ? "bg-success" : "")">
+                    <tr class="@(@task.Status == Docker.Models.TaskStatus.FINISHED ? "bg-success" : @task.Status == Docker.Models.TaskStatus.INPROGRESS ? "bg-warning" : "")">
                         <td>@task.Payload.ID</td>
                         <td>
                             @task.Payload.ContainerLocation.Name

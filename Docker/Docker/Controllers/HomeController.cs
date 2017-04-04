@@ -32,6 +32,11 @@ namespace Docker.Controllers
             ViewData["tasks"] = tasks;
             ViewData["current"] = tasks[0];
             ViewData["refresh"] = false;
+
+            
+            ViewData["ship"] = DBFaker.ships[0]; 
+            ViewData["dock"] = DBFaker.docks[0];
+
             return View();
         }
 
@@ -40,10 +45,9 @@ namespace Docker.Controllers
             Ship ship = DBFaker.ships[0];
             Dock dock = DBFaker.docks[0];
 
-            _loader.ProcessTasks(dock.Name);
+            var tasks = _loader.ProcessTasks(dock.Name);
 
-            //var tasks = _dbContext.Tasks.ToList();
-            var tasks = DBFaker.tasks;
+            //var tasks = _dbContext.Tasks.ToList
 
             //Models.Task crntTask = _dbContext.Tasks.Where(t => t.Status == TaskStatus.INPROGRESS).First(); // get the first task that is in progrDeess, for later - select all and adjust the index to have a list of executed tasks in progress
             Models.Task crntTask = null;
@@ -62,9 +66,18 @@ namespace Docker.Controllers
 
             //crntTask.Payload = _dbContext.Containers.Where(c => c.TaskID == crntTask.ID).Single();
             ViewData["current"] = crntTask;
-            ViewData["refresh"] = true;
+            if(crntTask == null)
+            {
+                ViewData["refresh"] = false;
+            }
+            else
+            {
+                ViewData["refresh"] = true;
+            }
+            
             ViewData["tasks"] = tasks;
-
+            ViewData["ship"] = ship;
+            ViewData["dock"] = dock;
             return View("Index");
         }
 
@@ -72,7 +85,12 @@ namespace Docker.Controllers
         {
             ViewData["current"] = null;
             ViewData["refresh"] = false;
-            ViewData["tasks"] = null;
+
+            Ship ship = DBFaker.ships[0];
+            ViewData["ship"] = ship;
+            ViewData["dock"] = DBFaker.docks[0];
+
+            ViewData["tasks"] = DBFaker.tasks;
             return View("Index");
         }
     }
