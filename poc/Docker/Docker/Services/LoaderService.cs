@@ -120,7 +120,7 @@ namespace Docker.Services
                 //    }
                 //}
 
-                
+
 
                 var inprogressTasks = _context.Tasks
                     .Where(t => t.Payload.ContainerLocation == c && t.Status == Models.TaskStatus.INPROGRESS)
@@ -169,9 +169,10 @@ namespace Docker.Services
 
         }
 
-        public Models.Task StartNewTaskForDock(string dockId)
+        public Models.Task StartNewTaskForDock(string dockName)
         {
             // uncomment when the database will be in place
+
             var c = _context.Storages.Where(s => s.Name.ToUpper() == dockId.ToUpper()).First();
 
             var readyTask = _context.Tasks
@@ -181,6 +182,7 @@ namespace Docker.Services
             _context.Entry(readyTask).Reference(p => p.Destination).Load();
             _context.Entry(readyTask).Reference(p => p.Payload).Load();
             _context.Entry(readyTask.Destination).Collection(p => p.Containers).Load();
+
             //Models.Task readyTask = null;
             //readyTask = DBFaker.GetNextReadyTask();
 
