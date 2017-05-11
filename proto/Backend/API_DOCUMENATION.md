@@ -47,6 +47,7 @@
   }
   ```
   #### RETURNS 400 BAD REQUEST 
+  ```
   {
     "message":"",
     "errors":[
@@ -55,6 +56,7 @@
       }
     ]
   }
+  ```
 
 ## /simulation/{simulation_id}
   #### METHOD: GET
