@@ -101,7 +101,7 @@ namespace Docker.Services
             throw new NotImplementedException();
         }
 
-        public void ProcessTasks(string dockId)
+        public List<Models.Task> ProcessTasks(string dockId)
         {
             try
             {
@@ -159,11 +159,12 @@ namespace Docker.Services
                     }
                     _context.SaveChanges();
                 }
+                return DBFaker.tasks;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return;
+                return DBFaker.tasks;
             }
 
         }
