@@ -32,6 +32,7 @@ namespace Docker.Services
         /// The main public entrypoint
         /// </summary>
         /// <param name="dockId"></param>
-        void ProcessTasks(string dockId);
+        /// <returns></returns>
+        List<Models.Task> ProcessTasks(string dockId);
     }
 }

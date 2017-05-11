@@ -22,7 +22,7 @@ namespace Docker.Models
         public int ID { get; set; }
 
         public int PayloadID { get; set; }
-        public Container Payload { get; set; }
+        public virtual Container Payload { get; set; }
 
         // time that it would most likely take to complete the task
         private TimeSpan _requiredTime;
@@ -51,7 +51,7 @@ namespace Docker.Models
         public TaskStatus Status { get; set; }
 
         public int DestinationID { get; set; }
-        public ContainerCollection Destination { get; set; }
+        public virtual ContainerCollection Destination { get; set; }
 
         public int CompareTo(Task obj)
         {
