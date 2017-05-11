@@ -1,3 +1,7 @@
+// turned into a module exporting stuff
+export { HarborBuilder, PathLayerStoragesDocks, PathLayerStoragesDocksDocks, PathLayerStoragesStoragesDocksDocks };
+// maybe there's a better syntax for that?
+
 class HarborBuilder {
 
     constructor(pathLayer) {
@@ -14,6 +18,9 @@ class HarborBuilder {
 
     // assuming the validated and correctly formed input of the configuration
     constructHarbor(configs) {
+        if (configs.hasOwnProperty('connectionPattern')) {
+            console.log("configs has it's own path laying pattern specified, make sure to use it later and not depend on predefined stuff...");
+        }
         let harbor = {
             docks: configs.docks,
             storages: configs.storages,
@@ -22,15 +29,15 @@ class HarborBuilder {
         return harbor;
     }
 
-    // adds the connections between the storages and docks
-    // since the graph is undirected
-    // the edges are defined as: 
-    // { vertices: [] /*at most 2*/, weight: int, }
-    //
-    // pathLayer - an instance of the object that provides path constuction.
-    // 				works like the strategy pattern
-    //  			
     createRandomEdges(docks, storages) {
+        // adds the connections between the storages and docks
+        // since the graph is undirected
+        // the edges are defined as: 
+        // { vertices: [] /*at most 2*/, weight: int, }
+        //
+        // pathLayer - an instance of the object that provides path constuction.
+        // 				works like the strategy pattern
+        //  
         return this.getPathLayer().layPaths(docks, storages);
     }
 }
@@ -133,7 +140,7 @@ class MathStuff {
     }
 }
 
-let logConfigs = (configs) => {
+export let logConfigs = (configs) => {
     console.log("configuration file:");
     console.dir(configs);
     console.log("------")
@@ -154,7 +161,9 @@ let logResults = (harbor) => {
         console.dir(harbor.edges[i]);
     }
 };
+
 // entry
+// to show usage example: 
 
 let configs = require('./harbor_config');
 
