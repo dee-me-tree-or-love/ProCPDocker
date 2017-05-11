@@ -1,10 +1,9 @@
-
-APIs
-
-/new-simulation
-  PUT:
-  - DESCRIPTION - to create new simulations (pass the harbor_config -> validation -> resource creation -> task generation and saving)
-  - PARAMS 
+##/new-simulation
+  ####METHOD: PUT
+  ####DESCRIPTION 
+  To create new simulations (pass the harbor_config -> validation -> resource creation -> task generation and saving)
+  ####PARAMS 
+  ```
   {
     "docks": [
         {
@@ -34,12 +33,15 @@ APIs
         }
     ]
   }
+  ```
   - RETURNS 201 CREATED - if the validation passes
+  ```
   {
     "simulation_id":"",
     "timeline_id":"",
     "configuration_id":""
   }
+  ```
   - RETURNS 400 BAD REQUEST 
   {
     "message":"",
