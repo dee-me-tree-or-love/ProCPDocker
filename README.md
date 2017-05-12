@@ -11,4 +11,4 @@ After this step, the application should be startable be debugging the Docker sol
 ### For the testing
 The testing is implemented using the XUnit framework. To run the unit tests, run the `dotnet ef restore` in the Docker.Tests directory.
 Then all the test should be accessible as usual.  
-#### For more weird stuff, see develop branch :mag:
+#### For more weird stuff, see [develop](https://github.com/dee-me-tree-or-love/ProCPDocker/tree/develop) branch :mag:
