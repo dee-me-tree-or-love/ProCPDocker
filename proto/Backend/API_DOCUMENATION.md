@@ -67,8 +67,11 @@
   #### METHOD: GET
   #### DESCRIPTION 
   To get general information about a specific simulation
+  <!--TODO: should be ignored, so no scope message body in this method -->
   #### PARAMS  
   Scope is what information you want to get in response, all attributes give arrays with ids or count
+  <!--Yes. In other words, any HTTP request message is allowed to contain a message body, and thus must parse messages with that in mind. Server semantics for GET, however, are restricted such that a body, if any, has no semantic meaning to the request. The requirements on parsing are separate from the requirements on method semantics.
+  http://stackoverflow.com/questions/978061/http-get-with-request-body-->
   ```
   {
     "scope":[""]    /* ships, docks, storages, container_count, timelines */
@@ -77,8 +80,9 @@
   #### RETURNS 200 OK
   ```
   {
+    "id":"",
     "date_created":"",
-    "current_time":"",    /* pointer where the database is */
+    "current_time":0,    /* pointer where the database is */
     "current_timeline_id":"",
     "scope":{
       ...
@@ -117,7 +121,7 @@
       {
         "id":"",
         "time_created":"",
-        "time_zero":"",
+        "time_zero":0,
         "parent_timeline_id":"",
       }
     ]
@@ -129,7 +133,7 @@
     "message":""
   }
   ```
-
+<!-- TODO: Are we sure that we need it? -->
 ## /simulation/{simulation_id}/timelines/{timeline_id}
   #### METHOD: GET
   #### DESCRIPTION  
@@ -152,6 +156,8 @@
     "message":""
   }
   ```
+<!-- TODO: maybe also /{ ...| complete }/all to retrieve everything at once? -->
+<!-- TODO: maybe without }/timelines/{ part? -->
 ## /simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all
   #### METHOD: GET
   #### DESCRIPTION  
@@ -198,15 +204,18 @@
   ```
 
 <!-- Separator -->
-
+<!-- not nice to use the path variables for such request?  -->
 # Sync
-## /sync/{simulation_id}/{timeline_id}/{time_stamp}
+## /sync/
   #### METHOD: PATCH
   #### DESCRIPTION  
   To sync the database to a specific timestamp (roll-back/forward)
   #### PARAMS  
   ```
   {
+    "simulation_id":"",
+    "timeline_id":"",
+    "time_stamp":0,
     "return_tasks":true /* optional - deafults to false */
   }
   ```
@@ -238,6 +247,8 @@
   ..../tasks/{simulation_id}/{timeline_id}?limit=10&time_stamp=1231231
   #### DESCRIPTION  
   To get tasks with contained events
+  <!-- params are not appreciated in GET method according to some sources, I dunno.. -->
+ 
   #### PARAMS 
   ```
   {
@@ -245,6 +256,7 @@
     "time_stamp":0      /* optional  - deafults to 0 */
   }
   ```
+   <!-- should we maybe return the simulation id and the timeline id ? -->
   #### RETURNS 200 OK
   ```
   {
@@ -255,7 +267,7 @@
         "extra":{},
         "description":"",
         "status":"",
-        "time_to_complete":0
+        "time_to_complete":0,
         "events":[
           {
             "id":"",
@@ -266,7 +278,7 @@
         ]
       }
     ],
-    "next_time_stamp":""
+    "next_time_stamp":0
   }
   ```
   #### RETURNS 400 BAD REQUEST 
@@ -461,25 +473,21 @@
   #### RETURNS 200 OK  
   ```
   {
-    "ships":[
-      {
-        "id":"",
-        "size":{
-          "x":0,
-          "y":0,
-          "z":0,
-        },
-        "containers_max":0,
-        "containers_current":0,
-        "containers_unload":0,
-        "containers_load":0,
-        "destination":{
-            "id":"",                    
-            "estimated_arrival_time":0
-        },
-        "status":""            /* TODO: think of different option what can happen */
-      }
-    ]
+    "id":"",
+    "size":{
+      "x":0,
+      "y":0,
+      "z":0,
+    },
+    "containers_max":0,
+    "containers_current":0,
+    "containers_unload":0,
+    "containers_load":0,
+    "destination":{
+        "id":"",                    
+        "estimated_arrival_time":0
+    },
+    "status":""            /* TODO: think of different option what can happen */
   }
   ```
 ## /ship/{simulation_id}/{timeline_id}/{storage_id}/containers/all
@@ -662,7 +670,7 @@
           "extra":{},
           "description":"",
           "status":"",
-          "time_to_complete":0
+          "time_to_complete":0,
           "events":[
             {
               "id":"",
