@@ -298,11 +298,11 @@
 
 <!-- Separator -->
 
-# Storages
+# Storage
 ## /storage/{simulation_id}/{timeline_id}/{storage_id}
   #### METHOD: GET
   #### DESCRIPTION  
-  To get the list of storages with general information and references to other related objects
+  To get the storage with general information and references to other related harbor locations.
   #### PARAMS
   #### RETURNS 200 OK  
   ```
@@ -326,6 +326,13 @@
     }
   }
   ```
+  #### RETURNS 404 RESOURCE NOT FOUND
+  If the parameters: either simulation, timeline or storage, are not found.
+  ```
+  {
+    "message":""
+  }
+  ```
 ## /storage/{simulation_id}/{timeline_id}/{storage_id}/containers
   #### METHOD: GET
   #### DESCRIPTION
@@ -337,10 +344,11 @@
   #### RETURNS 200 OK
   ```
   {
+    "id":"",
     "containers":[
       {
-        "id",
-        "descritpion",
+        "id":"",
+        "descritpion":"",
         "address":{
           "location_id":"",      /* TODO: change later? */
           "x":0,
@@ -374,8 +382,8 @@
   #### RETURNS 200 OK
   ```
   {
-    "id",
-    "descritpion",
+    "id":"",
+    "descritpion":"",
     "address":{
       "location_id":"",      /* TODO: change later? */
       "x":0,
@@ -465,7 +473,7 @@
 <!-- Separator -->
 
 # Ship
-## /ship/{simulation_id}/{timeline_id}
+## /ship/{simulation_id}/{timeline_id}/{ship_id}
   #### METHOD: GET
   #### DESCRIPTION  
   To get the list of ships with general information
@@ -502,6 +510,7 @@
   #### RETURNS 200 OK
   ```
   {
+    "ship_id":"",
     "containers_onboard":[
       {
         "id",
@@ -553,10 +562,10 @@
     "message":""
   }
   ```
-## /ship/{simulation_id}/{timeline_id}/{storage_id}/containers/{ onboard | load | unload }
+## /ship/{simulation_id}/{timeline_id}/{ship_id}/containers/{ onboard | load | unload }
   #### METHOD: GET
   #### DESCRIPTION
-  Get the list of containers located in the storage
+  Get the list of containers related to the ship as either : onboard, toload, tounload
   #### PARAMS
   ```
   /* TODO: consider pagination */

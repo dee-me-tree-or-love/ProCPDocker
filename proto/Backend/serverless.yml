@@ -13,7 +13,7 @@ provider:
 
 functions:
 
-# simulation endpoint
+# SIMULATION endpoint
 
   newSimulation:
     handler: API/mock/simulation/handler.newSimulation
@@ -55,6 +55,8 @@ functions:
           method: get
           cors: true
 
+# SYNC
+
 # for some reason didn't  give an endpoint url
 # sync endoint
 # postman output: 
@@ -71,7 +73,7 @@ functions:
           method: patch
           cors: true
 
-# tasks endpoint
+# TASKS endpoint
 
   getTasks:
     handler: API/mock/task/handler.getTasks
@@ -81,9 +83,95 @@ functions:
           method: get
           cors: true
   
+# STORAGE
 
+  getStorage:
+    handler: API/mock/storage/handler.getStorage
+    events:
+      - http:
+          path: /storage/{simulation_id}/{timeline_id}/{storage_id}
+          method: get
+          cors: true
+  
+  getStorageContainers:
+    handler: API/mock/storage/handler.getStorageContainers
+    events: 
+      - http: 
+          path: /storage/{simulation_id}/{timeline_id}/{storage_id}/containers
+          method: get
+          cors: true
 
+# CONTAINER
 
+  getContainer:
+    handler: API/mock/container/handler.getContainer
+    events: 
+      - http: 
+          path: /container/{simulation_id}/{timeline_id}/{container_id}
+          method: get
+          cors: true
+
+# DOCK
+
+  getDock:
+    handler: API/mock/dock/handler.getDock
+    events: 
+      - http: 
+          path: /dock/{simulation_id}/{timeline_id}/{dock_id}
+          method: get
+          cors: true
+
+  getDockContainers:
+    handler: API/mock/dock/handler.getDockContainers
+    events: 
+      - http: 
+          path: /dock/{simulation_id}/{timeline_id}/{dock_id}/containers
+          method: get
+          cors: true    
+
+# SHIP
+
+  getShip:
+    handler: API/mock/ship/handler.getShip
+    events: 
+      - http: 
+          path: /ship/{simulation_id}/{timeline_id}/{ship_id}
+          method: get
+          cors: true          
+
+  getShipContainersAll:
+    handler: API/mock/ship/handler.getShipContainersAll
+    events: 
+      - http: 
+          path: /ship/{simulation_id}/{timeline_id}/{ship_id}/containers/all
+          method: get
+          cors: true  
+
+  getShipContainersOnLocation:
+    handler: API/mock/ship/handler.getShipContainersOnLocation
+    events: 
+      - http: 
+          path: /ship/{simulation_id}/{timeline_id}/{ship_id}/containers/{location}
+          method: get
+          cors: true  
+
+# IMPACTS
+
+  getImpactOptions:
+    handler: API/mock/impact/handler.getOptions
+    events:
+      - http:
+          path: /impact/options/all
+          method: get
+          cors: true
+
+  submitImpact:
+    handler: API/mock/impact/handler.submitImpact
+    events:
+      - http:
+          path: /impact/{simulation_id}/{timeline_id}/{time_stamp}/commit/
+          method: post
+          cors: true
 
 
 #    The following are a few example events you can configure

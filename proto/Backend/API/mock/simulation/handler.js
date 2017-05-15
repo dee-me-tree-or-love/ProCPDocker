@@ -146,7 +146,7 @@ module.exports.getSimulationConfig = (event, context, callback) => {
 //
 // https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idtimelines
 
-module.exports.getSimulationHarborData = (event, context, callback) => {
+module.exports.getSimulationHarborTimelines = (event, context, callback) => {
 
     // TODO: validate if sim and timeline id are ok
 
