@@ -76,4 +76,21 @@ describe('Harbor Builder', function() {
             });
         });
     });
+    describe('verifyShipRules(ship)', function() {
+        describe('check if the business rules imposed on the ship object are okay', function() {
+            it('given negative time of arrival should return 1 error', function() {
+                let result = HarborBuilder.verifyShipRules({
+                    eta: -1,
+                    x: 1,
+                    y: 2,
+                    z: 3,
+                    filled: 10,
+                    unload: 2,
+                    load: 1
+                });
+                // console.dir(result);
+                assert.equal(result.errors.length, 1);
+            })
+        });
+    })
 });

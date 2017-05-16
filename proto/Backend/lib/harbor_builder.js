@@ -1,7 +1,8 @@
 'use strict';
+// to make sure this thing is available outside, just in case
+export { Error };
 
 // utility function for math: 
-
 /**
  * Generates the random integer in range [min,max]
  * @param  {} min
@@ -14,6 +15,8 @@ let getRandomInt = (min, max) => {
 }
 
 // the object that contains the verificator parameters
+// used only in verifyConfigStructure method
+// maybe could be moved there also
 const verificator = {
     configRootName: "configrations",
     // groups are ships, docks and storages
@@ -56,26 +59,29 @@ const verificator = {
     ]
 }
 
+// a class that only has the constructor that defines the structure and adds the data
+// to be used for reporting purposes
+class Error {
+    constructor(message, parent, child) {
+        this.message = message;
+        this.parentSection = parent;
+        this.childAttribute = child;
+    }
+}
 
+// the procedure to verify that the structure of the configuration object received corresponds to the format
 /**
  * Validates the configurations passed by the client for the consistency of the properties and types
  * Does structural and logic validation
  * It will do it in a inorder treewalk (traversal) way
  * @param  {Object} configs - the configration object consisting of docks, storages and ships
- * @returns {Object} Response of a format {isokay: boolean, errors: Object}
+ * @returns {Object} Response of a format 
+ *                  {isokay: boolean, 
+ *                  errors: Error collection}
  */
 module.exports.verifyConfigStructure = (configs) => {
     // the errors will be pushed here
     let errors = [];
-    // a class that only has the constructor that defines the structure and adds the data
-    // to be used for reporting purposes
-    class Error {
-        constructor(message, parent, child) {
-            this.message = message;
-            this.parentSection = parent;
-            this.childAttribute = child;
-        }
-    }
     /* probably better not to have inner classes, but I do not know for sure */
 
 
@@ -157,7 +163,6 @@ module.exports.verifyConfigStructure = (configs) => {
 }
 
 
-
 // the procedure to construct the harbor based on the configurations
 // assuming that the configurations have been verified already
 /**
@@ -222,4 +227,53 @@ module.exports.constructHarbor = (configs, laypaths) => {
     }
 
     return harbor
+}
+
+
+// the procedures to check all the logical rules. 
+// assuming that the verification of the structure has passed
+// are split into smaller methods for better maintenance reasons
+/**
+ * @param  {} ship takes the ship as a parameter
+ * @returns {Object} response of the format 'Error' (see previously)
+ */
+module.exports.verifyShipRules = (ship) => {
+    // could an awesome usecase to make it with callbacks and then we can have a verificator tree for business rules... 
+    // this would be sort of easier to manage further, but whatever, for now this is good as well
+    let errors = [];
+
+    // check time of arrival
+    if (!(ship.eta >= 0 && Number.isInteger(ship.eta))) {
+        errors.push(new Error("Ship's ETA is incorrect. Expected a positive integer"));
+    }
+
+    // check percentages
+    /* could aggregate the percentage check to check if integer and if in range of 0 to 100 for all possible percentages, but it's okay for now */
+    if (checkPercentage(ship.filled) && checkPercentage(ship.unload) && checkPercentage(ship.load)) { // all integers and all non-negative
+        // if so
+        // check if the summation fails
+        if (!((ship.filled + ship.load - ship.unload) >= 0 && (ship.filled + ship.load - ship.unload) <= 100)) {
+            // then it's really bad! 
+            errors.push(new Error("The percentage amounts of filled + load - unload should be in range [0;100]"))
+        }
+    } else {
+        // then some basics of the percentages have failed
+        errors.push(new Error("The percentages have been incorrectly specified..."));
+    }
+
+    // definitely needs a class of its own
+    let result = {
+        isokay: (errors.length == 0),
+        errors: errors,
+    }
+
+    return result;
+}
+
+// a supplimentray method for checking if the size is alright
+let checkSize = (sizable) => {
+    return (sizable.x < 0 || sizable.y < 0 || sizable.z < 0)
+}
+let checkPercentage = (perc) => {
+    return (Number.isInteger(perc) && perc >= 0 && perc <= 100)
 }
