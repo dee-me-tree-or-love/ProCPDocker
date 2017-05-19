@@ -9,14 +9,17 @@ provider:
   runtime: nodejs6.10
   region: eu-central-1
   profile: school
-  # stage: mock?
+  stage: ${opt:stage, self:custom.defaultStage}
+
+custom:
+  defaultStage: dev
 
 functions:
 
 # SIMULATION endpoint
 
   newSimulation:
-    handler: API/mock/simulation/handler.newSimulation
+    handler: API/simulation/handler.newSimulation
     events:
      - http:
          path: simulation/new-simulation
@@ -24,7 +27,7 @@ functions:
          cors: true
          
   getSimulation:
-    handler: API/mock/simulation/handler.getSimulation
+    handler: API/simulation/handler.getSimulation
     events:
       - http:
           path: simulation/{simulation_id}
@@ -32,7 +35,7 @@ functions:
           cors: true      
 
   getSimulationConfig:
-    handler: API/mock/simulation/handler.getSimulationConfig
+    handler: API/simulation/handler.getSimulationConfig
     events:
       - http:
           path: simulation/{simulation_id}/configuration
@@ -40,166 +43,127 @@ functions:
           cors: true     
 
   getSimulationTimelines:
-    handler: API/mock/simulation/handler.getSimulationTimelines
+    handler: API/simulation/handler.getSimulationTimelines
     events:
       - http:
-          path: /simulation/{simulation_id}/timelines
+          path: simulation/{simulation_id}/timelines
           method: get
           cors: true           
   
   getSimulationHarborData:
-    handler: API/mock/simulation/handler.getSimulationHarborData
+    handler: API/simulation/handler.getSimulationHarborData
     events:
       - http:
-          path: /simulation/{simulation_id}/timelines/{timeline_id}/{option}/all
+          path: simulation/{simulation_id}/timelines/{timeline_id}/{option}/all
           method: get
           cors: true
 
 # SYNC
 
-# for some reason didn't  give an endpoint url
-# sync endoint
-# postman output: 
-# {
-#   "message": "Missing Authentication Token"
-# }
-# SOMETHING IS SUPER WRONG WITH THIS ONE
-
   syncStateTo:
-    handler: API/mock/sync/handler.syncTo
+    handler: API/sync/handler.syncTo
     events:
       - http:
-          path: /sync
+          path: sync
           method: patch
           cors: true
 
-# TASKS endpoint
+# TASKS
 
   getTasks:
-    handler: API/mock/task/handler.getTasks
+    handler: API/task/handler.getTasks
     events:
       - http:
-          path: /tasks/{simulation_id}/{timeline_id}
+          path: tasks/{simulation_id}/{timeline_id}
           method: get
           cors: true
   
 # STORAGE
 
   getStorage:
-    handler: API/mock/storage/handler.getStorage
+    handler: API/storage/handler.getStorage
     events:
       - http:
-          path: /storage/{simulation_id}/{timeline_id}/{storage_id}
+          path: storage/{simulation_id}/{timeline_id}/{storage_id}
           method: get
           cors: true
   
   getStorageContainers:
-    handler: API/mock/storage/handler.getStorageContainers
+    handler: API/storage/handler.getStorageContainers
     events: 
       - http: 
-          path: /storage/{simulation_id}/{timeline_id}/{storage_id}/containers
+          path: storage/{simulation_id}/{timeline_id}/{storage_id}/containers
           method: get
           cors: true
 
 # CONTAINER
 
   getContainer:
-    handler: API/mock/container/handler.getContainer
+    handler: API/container/handler.getContainer
     events: 
       - http: 
-          path: /container/{simulation_id}/{timeline_id}/{container_id}
+          path: container/{simulation_id}/{timeline_id}/{container_id}
           method: get
           cors: true
 
 # DOCK
 
   getDock:
-    handler: API/mock/dock/handler.getDock
+    handler: API/dock/handler.getDock
     events: 
       - http: 
-          path: /dock/{simulation_id}/{timeline_id}/{dock_id}
+          path: dock/{simulation_id}/{timeline_id}/{dock_id}
           method: get
           cors: true
 
   getDockContainers:
-    handler: API/mock/dock/handler.getDockContainers
+    handler: API/dock/handler.getDockContainers
     events: 
       - http: 
-          path: /dock/{simulation_id}/{timeline_id}/{dock_id}/containers
+          path: dock/{simulation_id}/{timeline_id}/{dock_id}/containers
           method: get
           cors: true    
 
 # SHIP
 
   getShip:
-    handler: API/mock/ship/handler.getShip
+    handler: API/ship/handler.getShip
     events: 
       - http: 
-          path: /ship/{simulation_id}/{timeline_id}/{ship_id}
+          path: ship/{simulation_id}/{timeline_id}/{ship_id}
           method: get
           cors: true          
 
   getShipContainersAll:
-    handler: API/mock/ship/handler.getShipContainersAll
+    handler: API/ship/handler.getShipContainersAll
     events: 
       - http: 
-          path: /ship/{simulation_id}/{timeline_id}/{ship_id}/containers/all
+          path: ship/{simulation_id}/{timeline_id}/{ship_id}/containers/all
           method: get
           cors: true  
 
   getShipContainersOnLocation:
-    handler: API/mock/ship/handler.getShipContainersOnLocation
+    handler: API/ship/handler.getShipContainersOnLocation
     events: 
       - http: 
-          path: /ship/{simulation_id}/{timeline_id}/{ship_id}/containers/{location}
+          path: ship/{simulation_id}/{timeline_id}/{ship_id}/containers/{location}
           method: get
           cors: true  
 
 # IMPACTS
 
   getImpactOptions:
-    handler: API/mock/impact/handler.getOptions
+    handler: API/impact/handler.getOptions
     events:
       - http:
-          path: /impact/options/all
+          path: impact/options/all
           method: get
           cors: true
 
   submitImpact:
-    handler: API/mock/impact/handler.submitImpact
+    handler: API/impact/handler.submitImpact
     events:
       - http:
-          path: /impact/{simulation_id}/{timeline_id}/{time_stamp}/commit/
+          path: impact/{simulation_id}/{timeline_id}/{time_stamp}/commit/
           method: post
           cors: true
-
-
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - http:
-#          path: users/create
-#          method: get
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-#      - alexaSkill
-#      - iot:
-#          sql: "SELECT * FROM 'some_topic'"
-#      - cloudwatchEvent:
-#          event:
-#            source:
-#              - "aws.ec2"
-#            detail-type:
-#              - "EC2 Instance State-change Notification"
-#            detail:
-#              state:
-#                - pending
-#      - cloudwatchLog: '/aws/lambda/hello'
-
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-

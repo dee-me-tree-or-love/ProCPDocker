@@ -8,11 +8,11 @@ export { Error };
  * @param  {} min
  * @param  {} max
  */
-let getRandomInt = (min, max) => {
+const getRandomInt = (min, max) => {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min;
-}
+};
 
 // the object that contains the verificator parameters
 // used only in verifyConfigStructure method
@@ -57,7 +57,7 @@ const verificator = {
             ],
         }
     ]
-}
+};
 
 // a class that only has the constructor that defines the structure and adds the data
 // to be used for reporting purposes
@@ -219,15 +219,12 @@ module.exports.constructHarbor = (configs, laypaths) => {
 
     let connections = laypaths(configs.docks, configs.storages);
 
-
-    let harbor = {
+    return {
         docks: configs.docks,
         storages: configs.storages,
         edges: connections,
     }
-
-    return harbor
-}
+};
 
 
 // the procedures to check all the logical rules. 

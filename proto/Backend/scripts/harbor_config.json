@@ -1,47 +1,52 @@
 {
-    "docks": [{
-            "id": "1",
-            "loaders": 2
-        },
-        {
-            "id": "2",
-            "loaders": 1
-        }
-    ],
-    "storages": [{
-            "x": 2,
-            "y": 2,
-            "z": 2,
-            "id": "s1",
-            "filled": 40
-        },
-        {
-            "x": 2,
-            "y": 2,
-            "z": 2,
-            "id": "s2",
-            "filled": 80
-        }
-    ],
-    "ships": [{
-            "id": "ship1",
-            "eta": 6,
-            "x": 1,
-            "y": 3,
-            "z": 3,
-            "filled": 50,
-            "unload": 20,
-            "load": 40
-        },
-        {
-            "id": "ship2",
-            "eta": 2,
-            "x": 1,
-            "y": 3,
-            "z": 3,
-            "filled": 50,
-            "unload": 20,
-            "load": 40
-        }
-    ]
+  "docks": [
+    {
+      "id": "1",
+      "nrloaders": 2,
+      "storage_id": 1
+    },
+    {
+      "id": "2",
+      "nrloaders": 2,
+      "storage_id": 1
+    }
+  ],
+  "storages": [
+    {
+      "x": 2,
+      "y": 2,
+      "z": 2,
+      "id": "s1",
+      "filled": 40
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 2,
+      "id": "s2",
+      "filled": 80
+    }
+  ],
+  "ships": [
+    {
+      "id": "ship1",
+      "eta": 6,
+      "x": 1,
+      "y": 3,
+      "z": 3,
+      "filled": 50,
+      "unload": 20,
+      "load": 40
+    },
+    {
+      "id": "ship2",
+      "eta": 2,
+      "x": 1,
+      "y": 3,
+      "z": 3,
+      "filled": 50,
+      "unload": 20,
+      "load": 40
+    }
+  ]
 }

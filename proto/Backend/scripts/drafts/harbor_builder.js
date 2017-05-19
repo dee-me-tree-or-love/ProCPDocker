@@ -25,7 +25,7 @@ class HarborBuilder {
             docks: configs.docks,
             storages: configs.storages,
             edges: this.createRandomEdges(configs.docks, configs.storages),
-        }
+        };
         return harbor;
     }
 
