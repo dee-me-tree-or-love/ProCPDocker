@@ -1,3 +1,9 @@
+// module to be used to 
+// verify that the configuartions submitted correspond to the rules 
+// and
+// make preliminary adjustements to the configurations: like build paths
+// (*maybe the path builder should be moved to another module?*)
+
 'use strict';
 // to make sure this thing is available outside, just in case
 export { Error };

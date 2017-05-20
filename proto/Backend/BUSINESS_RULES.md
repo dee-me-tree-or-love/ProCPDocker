@@ -25,7 +25,7 @@ Let *Y* be the percents of the capacity corresponding to the number of the conta
 Let *Z* be the percentage of the containers that will be *unloaded* from the ship  
 @  
 Then **0 <= *X* + *Y* - *Z* <= 100**  
-#### Docks  
+##### Docks  
 1) Docks have a super method to allocate containers to buffer: they store them in a horizontal stack and can be unlimited in size.
 <!--Let's leave this rule as a should for now?-->
 <!--2) Number of loaders correspond to the dock's processing potential -> The time that any task the dock is responsible of doing will be *T' = T / NrLoaders*-->
