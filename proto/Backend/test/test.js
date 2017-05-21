@@ -151,7 +151,72 @@ describe('Harbor Building and Verification', function() {
 
                 let errors = HarborValidator.verifyConfiguration(configs);
                 assert.equal(errors.length, 0);
+            });
+            it('Giving it a cinfiguration without any data', function() {
+                let errors = HarborValidator.verifyConfiguration({});
+                // console.log(errors);
+                assert.notEqual(errors.length, 0);
             })
+            it('Giving it the data with logical problems', function() {
+                let configs = {
+                    "docks": [{
+                        "id": "1",
+                        "number_loaders": 2
+                    }],
+                    "storages": [{
+                        "x": 2,
+                        "y": 2,
+                        "z": 2,
+                        "id": "s1",
+                        "filled": 110 /* % of total containers in storage*/
+                    }],
+                    "ships": [{
+                        "id": "ship1",
+                        "eta": 6,
+                        "x": 1,
+                        "y": 3,
+                        "z": 3,
+                        "filled": 50,
+                        /* % of total containers onboard*/
+                        "unload": 60,
+                        /* % of total containers to unload */
+                        "load": 40 /* % of total containers to load */
+                    }]
+                }
+                let errors = HarborValidator.verifyConfiguration(configs);
+                console.log(errors);
+                assert.notEqual(errors.length, 0);
+            });
+            it('Try to test with 100 filled, 100 unload and 100 load -> should be okay', function() {
+                let configs = {
+                    "docks": [{
+                        "id": "1",
+                        "number_loaders": 2
+                    }],
+                    "storages": [{
+                        "x": 2,
+                        "y": 2,
+                        "z": 2,
+                        "id": "s1",
+                        "filled": 20 /* % of total containers in storage*/
+                    }],
+                    "ships": [{
+                        "id": "ship1",
+                        "eta": 6,
+                        "x": 1,
+                        "y": 3,
+                        "z": 3,
+                        "filled": 100,
+                        /* % of total containers onboard*/
+                        "unload": 100,
+                        /* % of total containers to unload */
+                        "load": 100 /* % of total containers to load */
+                    }]
+                }
+                let errors = HarborValidator.verifyConfiguration(configs);
+                console.log(errors);
+                assert.equal(errors.length, 0);
+            });
         })
     })
 

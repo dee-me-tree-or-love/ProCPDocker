@@ -193,7 +193,7 @@ class RuleChecker {
 
             // then some basics of the percentages have failed
 
-            errors.push(new Error("The percentages have been incorrectly specified..."));
+            errors.push(new Error("The percentages have been incorrectly specified for the ships"));
         }
 
         return RuleChecker.prepareReturn(errors);
@@ -221,8 +221,12 @@ class RuleChecker {
             errors.push(new Error("The size of the storage should be specified with positive integer x,y,z"))
         }
         // check the percentage to be valid
-        if (RuleChecker.checkPercentage(storage.filled)) {
-            errors.push(new Error("The percentage is not corretly specified"))
+        if (!RuleChecker.checkPercentage(storage.filled)) {
+            // console.log(storage.filled);
+            // let perc = storage.filled;
+            // console.log(Number.isInteger(perc));
+            // console.log(perc >= 0 && perc <= 100)
+            errors.push(new Error("The percentage is not corretly specified for a storage"))
         }
         return RuleChecker.prepareReturn(errors);
     }
@@ -261,22 +265,25 @@ module.exports.verifyConfiguration = (configs) => {
     // then validate the rules
     for (let i = 0; i < configs.ships.length; i++) {
         let rulesCheckResult = RuleChecker.verifyShipRules(configs.ships[i]);
-        if (rulesCheckResult == false) {
+        if (rulesCheckResult.isokay == false) {
             errors.push(rulesCheckResult.errors);
         }
     }
+    console.log(errors);
     for (let i = 0; i < configs.docks.length; i++) {
         let rulesCheckResult = RuleChecker.verifyDockRules(configs.docks[i]);
-        if (rulesCheckResult == false) {
+        if (rulesCheckResult.isokay == false) {
             errors.push(rulesCheckResult.errors);
         }
     }
+    console.log(errors);
     for (let i = 0; i < configs.storages.length; i++) {
         let rulesCheckResult = RuleChecker.verifyStorageRules(configs.storages[i]);
-        if (rulesCheckResult == false) {
+        if (rulesCheckResult.isokay == false) {
             errors.push(rulesCheckResult.errors);
         }
     }
+    console.log(errors);
     return errors;
 };
 
