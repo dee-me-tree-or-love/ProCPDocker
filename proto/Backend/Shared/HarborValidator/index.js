@@ -2,24 +2,9 @@
 // verify that the configuartions submitted correspond to the rules 
 // and
 // make preliminary adjustements to the configurations: like build paths
-
-
 'use strict';
 // to make sure this thing is available outside, just in case
 // export { StructureChecker, Error, RuleChecker };
-
-// utility function for math: 
-/**
- * Generates the random integer in range [min,max]
- * @param  {} min
- * @param  {} max
- */
-const getRandomInt = (min, max) => {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min;
-};
-
 
 // the object that contains the verificator parameters
 // used only in verifyConfigStructure method
@@ -86,7 +71,7 @@ class StructureChecker {
      * Does structural and logic validation
      * It will do it in a inorder treewalk (traversal) way
      * @param  {Object} configs - the configration object consisting of docks, storages and ships
-     * @returns {Object} Response of a format 
+     * @returns {Object} Response of a format
      *                  {isokay: boolean, 
      *                  errors: Error collection}
      */
@@ -149,7 +134,7 @@ class StructureChecker {
                             }
 
                         }
-                    }
+                    };
                     for (let k = 0; k < configs[group.type].length; k++) {
                         // for every object of the group do the checks
                         let candidate = configs[group.type][k];
@@ -165,19 +150,17 @@ class StructureChecker {
             }
         }
 
-        let result = {
+        return {
             isokay: (errors.length == 0),
             errors: errors,
-        }
-
-        return result;
+        };
     }
 }
 
 
 class RuleChecker {
     /**
-     * @param  {} ship takes the ship as a parameter
+     * @param  {Object} ship takes the ship as a parameter
      * @returns {Object} response of the format 'Error' (see previously)
      */
     static verifyShipRules(ship) {
@@ -213,9 +196,7 @@ class RuleChecker {
             errors.push(new Error("The percentages have been incorrectly specified..."));
         }
 
-        let result = RuleChecker.prepareReturn(errors);
-        // console.log(result);
-        return result;
+        return RuleChecker.prepareReturn(errors);
     }
 
     static verifyDockRules(dock) {
@@ -225,7 +206,7 @@ class RuleChecker {
         // check for the number of loaders
 
         if ((dock.number_loaders < 0) || (dock.number_loaders > 4)) {
-            erros.push(new Error("The number of loaders should be in the range [0;4]", ))
+            erros.push(new Error("The number of loaders should be in the range [0;4]"))
         }
 
         return RuleChecker.prepareReturn(errors);
@@ -236,11 +217,11 @@ class RuleChecker {
         let errors = [];
 
         // check the size to be correct
-        if (RuleChecker.checkSize(dock)) {
+        if (RuleChecker.checkSize(storage)) {
             errors.push(new Error("The size of the storage should be specified with positive integer x,y,z"))
         }
         // check the percentage to be valid
-        if (RuleChecker.checkPercentage(dock.filled)) {
+        if (RuleChecker.checkPercentage(storage.filled)) {
             errors.push(new Error("The percentage is not corretly specified"))
         }
         return RuleChecker.prepareReturn(errors);
@@ -249,12 +230,10 @@ class RuleChecker {
     // makes the response
     static prepareReturn(errors) {
         // definitely needs a class of its own
-        let result = {
+        return {
             isokay: (errors.length == 0),
             errors: errors,
-        }
-
-        return result;
+        };
     }
 
     // a supplimentray method for checking if the size is alright
@@ -281,25 +260,25 @@ module.exports.verifyConfiguration = (configs) => {
     // only if the structure is okay
     // then validate the rules
     for (let i = 0; i < configs.ships.length; i++) {
-        let rulesCheckResult = RuleChecker.verifyShipRules(configs.ships[i])
+        let rulesCheckResult = RuleChecker.verifyShipRules(configs.ships[i]);
         if (rulesCheckResult == false) {
             errors.push(rulesCheckResult.errors);
         }
     }
     for (let i = 0; i < configs.docks.length; i++) {
-        let rulesCheckResult = RuleChecker.verifyShipRules(configs.docks[i])
+        let rulesCheckResult = RuleChecker.verifyDockRules(configs.docks[i]);
         if (rulesCheckResult == false) {
             errors.push(rulesCheckResult.errors);
         }
     }
     for (let i = 0; i < configs.storages.length; i++) {
-        let rulesCheckResult = RuleChecker.verifyShipRules(configs.storages[i])
+        let rulesCheckResult = RuleChecker.verifyStorageRules(configs.storages[i]);
         if (rulesCheckResult == false) {
             errors.push(rulesCheckResult.errors);
         }
     }
     return errors;
-}
+};
 
 module.exports.Error = Error;
 module.exports.StructureChecker = StructureChecker;

@@ -264,7 +264,9 @@
       {
         "id":"ffgsdf121dr123esd234s",
         "type":"",                      /* TODO: Think of types */
-        "extra":{},
+        "extra":{
+            
+        },
         "description":"",
         "status":"",
         "time_to_complete":0,

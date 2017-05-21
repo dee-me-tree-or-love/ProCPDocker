@@ -2,68 +2,118 @@
 const LambaHelper = require('basic-lambda-helper');
 const ContainerFactory = require('./Container').ContainerFactory;
 const uuid = require('uuid');
+const validateHarbor = require('harbor-validator').verifyConfiguration();
+validateHarbor({});
 // submit new simulation
 //
 // https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#new-simulation
+console.log(Math.ceil(4*40/100));
 module.exports.newSimulation = (event, context, callback) => {
 
     let lhelper = new LambaHelper(event, context, callback);
     lhelper.parseBody();
 
-    //validation
-    lhelper.checkInputBody(['docks','storages','ships'])
-        .catch(error => {
-
-            lhelper.done({
-                statusCode: 200,
-                body: error
-            });
-        })
-        .then(() => {
-
-            lhelper.done({
-                statusCode: 200,
-                body: {
-                    "test":23
-                }
-            });
-        });
-
-    let configs = JSON.parse(event.body);
-    let errors = [];
-
-    // TODO: needs to validate
-    // make use of the module
-    let validate = (configs, errors) => {
-        // write
-        return true;
-    };
-
-    // declaring response object
-    let response = {
+    let config = event.body;
+    lhelper.done({
         statusCode: 200,
-        body: JSON.stringify({
-            simulation_id: "sim1",
-            timeline_id: "tl1",
-            configuration_id: "cfg1"
-        })
-    };
-
-    // do validation
-    if (validate(configs, errors) != true) {
-        response = {
-            statusCode: 400,
-            body: JSON.stringify({
-                message: "Simulation could not be created.Something is wrong with the configurations ",
-                erors: errors,
-            })
+        body: {
+            c: config,
+            a: validateHarbor(config)
         }
+    });
+
+    let nrContainers = 0;
+    let totalCapacity = 0;
+    let movingContainers = 0;
+
+    //Calculate containers
+    config.docks.forEach(dock => {
+
+        dock.id = uuid();
+    });
+
+    config.storages.forEach(storage => {
+
+        let total = storage.x * storage.y * storage.z;
+        let filled = Math.ceil(total * storage.filled / 100);
+
+        totalCapacity += total;
+        movingContainers += filled;
+        nrContainers += filled;
+
+        delete storage.filled;
+        storage.id = uuid();
+        storage.containers_max = total;
+        storage.containers_current = filled;
+    });
+
+    config.ships.forEach(ship => {
+
+        let total = ship.x * ship.y * ship.z;
+        let load = Math.ceil(total * ship.load / 100);
+        let unload = Math.ceil(total * ship.unload / 100);
+        let filled = Math.ceil(total * ship.filled / 100);
+
+        nrContainers += filled;
+        nrContainers += load;
+
+        movingContainers += load;
+        movingContainers -= unload;
+
+        delete ship.filled;
+        delete ship.unload;
+        delete ship.load;
+
+        ship.id = uuid();
+        ship.containers_max = total;
+        ship.containers_current = filled;
+        ship.containers_load = load;
+        ship.containers_unload = unload;
+    });
+
+    if (movingContainers > totalCapacity) {
+
+        lhelper.done({
+            statusCode: 400,
+            body: {
+                message: "Too many containers. Please decrease the requested containers or increase storage capacity.",
+                movingContainers,
+                totalCapacity
+            }
+        }, true);
     }
 
-    // return
-    callback(null, response);
+    //Distribute containers
+    config.storages.forEach(storage => {
 
-    // can we put more code here? 
+        let containers = ContainerFactory.create(storage.containers_current);
+        containers.forEach(container => {
+
+            container.address.location_id = storage.id;
+        });
+        storage.containers_current = containers;
+    });
+
+    config.ships.forEach(ship => {
+
+        let containers = ContainerFactory.create(ship.containers_current);
+        containers.forEach(container => {
+
+            container.address.location_id = ship.id;
+        });
+        ship.containers_current = containers;
+        ship.containers_unload = containers.slice(0, ship.containers_unload);
+        ship.containers_load = ContainerFactory.create(ship.containers_load);
+    });
+
+    //calculate containers
+    config.simulation_id = uuid();
+
+    lhelper.done({
+        statusCode: 200,
+        body: config
+    });
+
 };
 
 // get simulation data function
@@ -194,12 +244,12 @@ module.exports.getSimulationHarborTimelines = (event, context, callback) => {
             statusCode: 200,
             body: JSON.stringify({
                 timelines: [{
-                        id: "tl1",
-                        // I do not know what mock data to put here
-                        time_created: "",
-                        time_zero: "",
-                        parent_timeline_id: "",
-                    },
+                    id: "tl1",
+                    // I do not know what mock data to put here
+                    time_created: "",
+                    time_zero: "",
+                    parent_timeline_id: "",
+                },
                     {
                         id: "tl2",
                         // I do not know what mock data to put here
@@ -262,97 +312,94 @@ module.exports.getSimulationHarborData = (event, context, callback) => {
 
     // TODO: definitely change from switch to something normal...
     switch (requestOption) {
-        case "docks":
-            {
-                const response = {
-                    statusCode: 200,
-                    body: JSON.stringify({
-                        docks: [{
-                                "id": "d1",
-                                "loaders_count": 2,
-                                "connected_storages": [{
-                                    "id": "st1",
-                                    "weight": 10
-                                }],
-                                "container_count": 10,
-                                "connected_ship_id": "sh1",
-                                "scheduled_ships": [{
-                                    "id": "sh1",
-                                    "time_arrived": 0
-                                }]
-                            },
-                            // {
-                            //     "id": "d2",
-                            //     "loaders_count": 3,
-                            //     "connected_storages": [{
-                            //         "id": "st1",
-                            //         "weight": 5
-                            //     }],
-                            //     "container_count": 45,
-                            //     "connected_ship_id": "",
-                            //     "scheduled_ships": []
-                            // }
-                        ]
-                    }),
-                };
-                callback(null, response);
-                break;
-            }
-
-        case "storages":
-            {
-                const response = {
-                    statusCode: 200,
-                    body: JSON.stringify({
-                        docks: [{
+        case "docks": {
+            const response = {
+                statusCode: 200,
+                body: JSON.stringify({
+                    docks: [{
+                        "id": "d1",
+                        "loaders_count": 2,
+                        "connected_storages": [{
                             "id": "st1",
-                            "size": {
-                                "x": 40,
-                                "y": 20,
-                                "z": 10,
-                            },
-                            "containers_max": 8000,
-                            "containers_current": 5055,
-                            "connections": [{
-                                "id": "d1",
-                                "weight": 10
-                            }],
-                            "status": "operating" /* TODO: think of different option what can happen */
+                            "weight": 10
+                        }],
+                        "container_count": 10,
+                        "connected_ship_id": "sh1",
+                        "scheduled_ships": [{
+                            "id": "sh1",
+                            "time_arrived": 0
                         }]
+                    },
+                        // {
+                        //     "id": "d2",
+                        //     "loaders_count": 3,
+                        //     "connected_storages": [{
+                        //         "id": "st1",
+                        //         "weight": 5
+                        //     }],
+                        //     "container_count": 45,
+                        //     "connected_ship_id": "",
+                        //     "scheduled_ships": []
+                        // }
+                    ]
+                }),
+            };
+            callback(null, response);
+            break;
+        }
 
-                    }),
-                };
-                callback(null, response);
-                break;
-            }
+        case "storages": {
+            const response = {
+                statusCode: 200,
+                body: JSON.stringify({
+                    docks: [{
+                        "id": "st1",
+                        "size": {
+                            "x": 40,
+                            "y": 20,
+                            "z": 10,
+                        },
+                        "containers_max": 8000,
+                        "containers_current": 5055,
+                        "connections": [{
+                            "id": "d1",
+                            "weight": 10
+                        }],
+                        "status": "operating" /* TODO: think of different option what can happen */
+                    }]
 
-        case "ships":
-            {
-                const response = {
-                    statusCode: 200,
-                    body: JSON.stringify({
-                        ships: [{
-                            "id": "",
-                            "size": {
-                                "x": 10,
-                                "y": 15,
-                                "z": 4,
-                            },
-                            "containers_max": 600,
-                            "containers_current": 67,
-                            "containers_unload": 5,
-                            "containers_load": 3,
-                            "destination": {
-                                "id": "d1",
-                                "estimated_arrival_time": 0
-                            },
-                            "status": "" /* TODO: think of different option what can happen */
-                        }]
-                    }),
-                };
-                callback(null, response);
-                break;
-            }
+                }),
+            };
+            callback(null, response);
+            break;
+        }
+
+        case "ships": {
+            const response = {
+                statusCode: 200,
+                body: JSON.stringify({
+                    ships: [{
+                        "id": "",
+                        "size": {
+                            "x": 10,
+                            "y": 15,
+                            "z": 4,
+                        },
+                        "containers_max": 600,
+                        "containers_current": 67,
+                        "containers_unload": 5,
+                        "containers_load": 3,
+                        "destination": {
+                            "id": "d1",
+                            "estimated_arrival_time": 0
+                        },
+                        "status": "" /* TODO: think of different option what can happen */
+                    }]
+                }),
+            };
+            callback(null, response);
+            break;
+        }
         default:
             callback(new Error("Something went wrong... Our apes are fixing it for you"));
     }

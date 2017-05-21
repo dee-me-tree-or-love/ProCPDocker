@@ -1,6 +1,5 @@
 const uuid = require('uuid/v4');
 const random = require('random-js')();
-const async = require('async');
 
 class ContainerFactory{
 	

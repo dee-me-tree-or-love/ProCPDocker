@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "basic-lambda-helper": "^1.1.1",
+    "harbor-validator": "file:../../Shared/HarborValidator",
     "uuid": "^3.0.1"
   }
 }
