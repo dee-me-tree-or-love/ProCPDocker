@@ -9,7 +9,18 @@ const HarborBuilder = require('harbor-validator');
 module.exports.newSimulation = (event, context, callback) => {
 
     let lhelper = new LambaHelper(event, context, callback);
-    lhelper.parseBody();
+    try{
+        event.body = JSON.parse(event.body);
+    }catch (e){
+
+        lhelper.done({
+            statusCode: 400,
+            body:{
+                message: "Malformed JSON. Please check for syntax errors"
+            }
+        });
+        return;
+    }
     let config = event.body;
 
     let errors = HarborBuilder.verifyConfiguration(config);
