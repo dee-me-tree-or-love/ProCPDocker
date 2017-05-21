@@ -266,21 +266,21 @@ module.exports.verifyConfiguration = (configs) => {
     for (let i = 0; i < configs.ships.length; i++) {
         let rulesCheckResult = RuleChecker.verifyShipRules(configs.ships[i]);
         if (rulesCheckResult.isokay == false) {
-            errors.push(rulesCheckResult.errors);
+            errors = errors.concat(rulesCheckResult.errors);
         }
     }
     console.log(errors);
     for (let i = 0; i < configs.docks.length; i++) {
         let rulesCheckResult = RuleChecker.verifyDockRules(configs.docks[i]);
         if (rulesCheckResult.isokay == false) {
-            errors.push(rulesCheckResult.errors);
+            errors = errors.concat(rulesCheckResult.errors);
         }
     }
     console.log(errors);
     for (let i = 0; i < configs.storages.length; i++) {
         let rulesCheckResult = RuleChecker.verifyStorageRules(configs.storages[i]);
         if (rulesCheckResult.isokay == false) {
-            errors.push(rulesCheckResult.errors);
+            errors = errors.concat(rulesCheckResult.errors);
         }
     }
     console.log(errors);
