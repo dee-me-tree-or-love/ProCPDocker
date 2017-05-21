@@ -3,30 +3,52 @@ var chai = require('chai');
 var should = chai.should();
 
 import 'babel-polyfill';
-import * as HarborBuilder from "../lib/harbor_builder";
+const HarborBuilder = require('../Shared/HarborBuilder')
+const HarborValidator = require('../Shared/HarborValidator');
 
-describe('Harbor Builder', function() {
+describe('Harbor Building and Verification', function() {
     describe('constructHarbor(configs, laypaths)', function() {
-        it('should return 1 edge between a storage and a dock', function() {
-            let configs = {
-                docks: [{
-                    id: "d1" // other properties can be omitted
-                }],
-                storages: [{
-                    id: "st1"
-                }],
-            }
+        describe('should return edges between a storage and a dock', function() {
+            it('the edge should be 1 if there is 1 dock and 1 storage', function() {
+                let configs = {
+                    docks: [{
+                        id: "d1" // other properties can be omitted
+                    }],
+                    storages: [{
+                        id: "st1"
+                    }],
+                }
 
-            let harbor = HarborBuilder.constructHarbor(configs);
-            assert.equal(harbor.edges.length, 1);
+                let harbor = HarborBuilder.constructHarbor(configs);
+                assert.equal(harbor.edges.length, 1);
+            });
         });
+        describe('should dublicate the connections and edges in the actual storages', function() {
+            it('given there is only 1 edge created, it should be equal to the connection of the dock and the connection of the ship', function() {
+                let configs = {
+                    docks: [{
+                        id: "d1" // other properties can be omitted
+                    }],
+                    storages: [{
+                        id: "st1"
+                    }],
+                }
+
+                let harbor = HarborBuilder.constructHarbor(configs);
+                // edges and storages connections
+                assert.deepEqual(harbor.edges, configs.storages[0].connections);
+                // storages connections and the dock connections
+                assert.deepEqual(configs.docks[0].connections, configs.storages[0].connections);
+            });
+        })
+
     });
 
     // validator
     describe('verifyConfigStructure(configs)', function() {
         describe('pasing empty objects', function() {
             it('on receiving an empty object should return 3 errors', function() {
-                let result = HarborBuilder.verifyConfigStructure({});
+                let result = HarborValidator.StructureChecker.verifyConfigStructure({});
                 // console.dir(result);
                 chai.expect(result.isokay).to.be.false;
                 assert.equal(result.errors.length, 3);
@@ -41,8 +63,8 @@ describe('Harbor Builder', function() {
                         eta: 0
                     }]
                 };
-
-                let result = HarborBuilder.verifyConfigStructure(configs);
+                // console.log(HarborValidator);
+                let result = HarborValidator.StructureChecker.verifyConfigStructure(configs);
                 //console.dir(configs['ships']);
                 // console.dir(result);
                 assert.equal(result.errors.length, 9);
@@ -69,7 +91,7 @@ describe('Harbor Builder', function() {
                     }]
                 };
 
-                let result = HarborBuilder.verifyConfigStructure(configs);
+                let result = HarborValidator.StructureChecker.verifyConfigStructure(configs);
                 //console.dir(configs['ships']);
                 // console.dir(result);
                 assert.equal(result.errors.length, 3);
@@ -79,7 +101,7 @@ describe('Harbor Builder', function() {
     describe('verifyShipRules(ship)', function() {
         describe('check if the business rules imposed on the ship object are okay', function() {
             it('given negative time of arrival should return 1 error', function() {
-                let result = HarborBuilder.verifyShipRules({
+                let result = HarborValidator.RuleChecker.verifyShipRules({
                     eta: -1,
                     x: 1,
                     y: 2,
@@ -88,9 +110,49 @@ describe('Harbor Builder', function() {
                     unload: 2,
                     load: 1
                 });
-                // console.dir(result);
+                // console.log(result);
                 assert.equal(result.errors.length, 1);
             })
         });
+    });
+
+    // complete validation:
+
+    describe('Complete validation of the configurations', function() {
+        describe('Given a correct and valid configuration should return a result with no errors', function() {
+            it('Giving it an example config that is know to be valid -> expecting 0 errors', function() {
+
+                let configs = {
+                    "docks": [{
+                        "id": "1",
+                        "number_loaders": 2
+                    }],
+                    "storages": [{
+                        "x": 2,
+                        "y": 2,
+                        "z": 2,
+                        "id": "s1",
+                        "filled": 40 /* % of total containers in storage*/
+                    }],
+                    "ships": [{
+                        "id": "ship1",
+                        "eta": 6,
+                        "x": 1,
+                        "y": 3,
+                        "z": 3,
+                        "filled": 50,
+                        /* % of total containers onboard*/
+                        "unload": 20,
+                        /* % of total containers to unload */
+                        "load": 40 /* % of total containers to load */
+                    }]
+                }
+
+
+                let errors = HarborValidator.verifyConfiguration(configs);
+                assert.equal(errors.length, 0);
+            })
+        })
     })
+
 });

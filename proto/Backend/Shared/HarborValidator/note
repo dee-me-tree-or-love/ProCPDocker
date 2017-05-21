@@ -1,0 +1,84 @@
+// used for the validation
+var schema = require('validate');
+
+
+
+// exporting the validate function
+
+module.exports.validateConfiguration = (configs) => {
+    // let configStructure = schema({
+    //     ships: {
+    //         type: 'array',
+    //         required: true,
+    //         message: 'Ships are not specified'
+    //     },
+    //     docks: {
+    //         type: 'array',
+    //         required: true,
+    //         message: 'Docks are not specified'
+    //     },
+    //     storages: {
+    //         type: 'array',
+    //         rqeuried: true,
+    //         message: "Storages are not specified",
+    //     }
+    // })
+    let shipSchema = schema();
+
+    shipSchema.path("id").type('string').required().message("ID is required for the ship");
+    shipSchema.path("eta").type('number').required().message("ETA is required");
+    shipSchema.path("x").type('number').required().message("X is required");
+    shipSchema.path("y").type('number').required().message("Y is required");
+    shipSchema.path("z").type('number').required().message("Z is requried");
+    shipSchema.path("filled").type('number').required().message("Filled is required");
+    shipSchema.path("unload").type('number').required().message("Unload is required");
+    shipSchema.path("load").type('number').required().message("Load is required");
+
+
+    let configStructure = schema();
+    configStructure.path('ships').type('array').required()
+        // for each ship
+        .each((sh) => {
+            let errors = shipSchema.validate(sh);
+            return errors;
+        }, "what")
+        .message("Ships are required as an array");
+    configStructure.path('docks').type('array').required()
+        .message("Docks are required as an array");
+    configStructure.path('storages').type('array').required()
+        .message("Storages are required as an array");
+
+    let errors = configStructure.validate(configs);
+    return errors;
+}
+
+// for the testing purposes:
+let errors = this.validateConfiguration({ ships: [{ id: "" }, { x: "" }], docks: {} });
+// var schema = require('validate');
+// var user = schema({
+//     ships: {
+//         type: 'array',
+//         required: true,
+//         message: 'Ships are required.'
+//     },
+//     email: {
+//         type: 'string',
+//         required: true,
+//         message: 'Email must be valid.'
+//     },
+//     address: {
+//         street: {
+//             type: 'string',
+//             required: true,
+//             message: 'Street is required.'
+//         },
+//         city: {
+//             type: 'string',
+//             required: true,
+//             message: 'City is required.'
+//         }
+//     }
+// });
+
+// var errors = user.validate({});
+console.log(errors);

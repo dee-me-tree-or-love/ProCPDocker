@@ -24,8 +24,10 @@ Let's denote the percentage the ship is *filled* to as *X*
 Let *Y* be the percents of the capacity corresponding to the number of the containers to be *load*ed  
 Let *Z* be the percentage of the containers that will be *unloaded* from the ship  
 @  
-Then **0 <= *X* + *Y* - *Z* <= 100**  
+Then **0 <= *X* + *Y* - *Z* <= 100** 
+3) Ships amount filled should be larger than the amount it requires to unload 
 ##### Docks  
-1) Docks have a super method to allocate containers to buffer: they store them in a horizontal stack and can be unlimited in size.
+1) Docks have a superb way to allocate containers to buffer: they store them in a horizontal stack and can be unlimited in size.
+2) The number of loaders that can be working on the dock are at least 0 and at most 4
 <!--Let's leave this rule as a should for now?-->
 <!--2) Number of loaders correspond to the dock's processing potential -> The time that any task the dock is responsible of doing will be *T' = T / NrLoaders*-->
