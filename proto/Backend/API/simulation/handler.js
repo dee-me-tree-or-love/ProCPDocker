@@ -2,25 +2,24 @@
 const LambaHelper = require('basic-lambda-helper');
 const ContainerFactory = require('./Container').ContainerFactory;
 const uuid = require('uuid');
-const validateHarbor = require('harbor-validator').verifyConfiguration();
-validateHarbor({});
+const HarborBuilder = require('harbor-validator');
 // submit new simulation
 //
 // https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#new-simulation
-console.log(Math.ceil(4*40/100));
 module.exports.newSimulation = (event, context, callback) => {
 
     let lhelper = new LambaHelper(event, context, callback);
     lhelper.parseBody();
-
     let config = event.body;
-    lhelper.done({
-        statusCode: 200,
-        body: {
-            c: config,
-            a: validateHarbor(config)
-        }
-    });
+
+    let errors = HarborBuilder.verifyConfiguration(config);
+    if(errors.length > 0){
+        lhelper.done({
+            statusCode: 400,
+            body: errors
+        });
+        return;
+    }
 
     let nrContainers = 0;
     let totalCapacity = 0;
