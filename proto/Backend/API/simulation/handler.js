@@ -2,20 +2,21 @@
 const LambaHelper = require('basic-lambda-helper');
 const ContainerFactory = require('./Container').ContainerFactory;
 const uuid = require('uuid');
-const HarborBuilder = require('harbor-validator');
+const HarborValidator = require('harbor-validator');
+const HarborBuilder = require('harbor-builder');
 // submit new simulation
 //
 // https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#new-simulation
 module.exports.newSimulation = (event, context, callback) => {
 
     let lhelper = new LambaHelper(event, context, callback);
-    try{
+    try {
         event.body = JSON.parse(event.body);
-    }catch (e){
+    } catch (e) {
 
         lhelper.done({
             statusCode: 400,
-            body:{
+            body: {
                 message: "Malformed JSON. Please check for syntax errors"
             }
         });
@@ -23,14 +24,19 @@ module.exports.newSimulation = (event, context, callback) => {
     }
     let config = event.body;
 
-    let errors = HarborBuilder.verifyConfiguration(config);
-    if(errors.length > 0){
+    let errors = HarborValidator.verifyConfiguration(config);
+    if (errors.length > 0) {
         lhelper.done({
             statusCode: 400,
             body: errors
         });
         return;
     }
+
+    // construct connections between the harbor instances: 
+    // !!_IMPORTANT_!! 
+    // the code line modifies the configs by adding the connections!
+    HarborBuilder.constructHarbor(configs);
 
     let nrContainers = 0;
     let totalCapacity = 0;
@@ -254,12 +260,12 @@ module.exports.getSimulationHarborTimelines = (event, context, callback) => {
             statusCode: 200,
             body: JSON.stringify({
                 timelines: [{
-                    id: "tl1",
-                    // I do not know what mock data to put here
-                    time_created: "",
-                    time_zero: "",
-                    parent_timeline_id: "",
-                },
+                        id: "tl1",
+                        // I do not know what mock data to put here
+                        time_created: "",
+                        time_zero: "",
+                        parent_timeline_id: "",
+                    },
                     {
                         id: "tl2",
                         // I do not know what mock data to put here
@@ -322,94 +328,97 @@ module.exports.getSimulationHarborData = (event, context, callback) => {
 
     // TODO: definitely change from switch to something normal...
     switch (requestOption) {
-        case "docks": {
-            const response = {
-                statusCode: 200,
-                body: JSON.stringify({
-                    docks: [{
-                        "id": "d1",
-                        "loaders_count": 2,
-                        "connected_storages": [{
+        case "docks":
+            {
+                const response = {
+                    statusCode: 200,
+                    body: JSON.stringify({
+                        docks: [{
+                                "id": "d1",
+                                "loaders_count": 2,
+                                "connected_storages": [{
+                                    "id": "st1",
+                                    "weight": 10
+                                }],
+                                "container_count": 10,
+                                "connected_ship_id": "sh1",
+                                "scheduled_ships": [{
+                                    "id": "sh1",
+                                    "time_arrived": 0
+                                }]
+                            },
+                            // {
+                            //     "id": "d2",
+                            //     "loaders_count": 3,
+                            //     "connected_storages": [{
+                            //         "id": "st1",
+                            //         "weight": 5
+                            //     }],
+                            //     "container_count": 45,
+                            //     "connected_ship_id": "",
+                            //     "scheduled_ships": []
+                            // }
+                        ]
+                    }),
+                };
+                callback(null, response);
+                break;
+            }
+
+        case "storages":
+            {
+                const response = {
+                    statusCode: 200,
+                    body: JSON.stringify({
+                        docks: [{
                             "id": "st1",
-                            "weight": 10
-                        }],
-                        "container_count": 10,
-                        "connected_ship_id": "sh1",
-                        "scheduled_ships": [{
-                            "id": "sh1",
-                            "time_arrived": 0
+                            "size": {
+                                "x": 40,
+                                "y": 20,
+                                "z": 10,
+                            },
+                            "containers_max": 8000,
+                            "containers_current": 5055,
+                            "connections": [{
+                                "id": "d1",
+                                "weight": 10
+                            }],
+                            "status": "operating" /* TODO: think of different option what can happen */
                         }]
-                    },
-                        // {
-                        //     "id": "d2",
-                        //     "loaders_count": 3,
-                        //     "connected_storages": [{
-                        //         "id": "st1",
-                        //         "weight": 5
-                        //     }],
-                        //     "container_count": 45,
-                        //     "connected_ship_id": "",
-                        //     "scheduled_ships": []
-                        // }
-                    ]
-                }),
-            };
-            callback(null, response);
-            break;
-        }
 
-        case "storages": {
-            const response = {
-                statusCode: 200,
-                body: JSON.stringify({
-                    docks: [{
-                        "id": "st1",
-                        "size": {
-                            "x": 40,
-                            "y": 20,
-                            "z": 10,
-                        },
-                        "containers_max": 8000,
-                        "containers_current": 5055,
-                        "connections": [{
-                            "id": "d1",
-                            "weight": 10
-                        }],
-                        "status": "operating" /* TODO: think of different option what can happen */
-                    }]
+                    }),
+                };
+                callback(null, response);
+                break;
+            }
 
-                }),
-            };
-            callback(null, response);
-            break;
-        }
-
-        case "ships": {
-            const response = {
-                statusCode: 200,
-                body: JSON.stringify({
-                    ships: [{
-                        "id": "",
-                        "size": {
-                            "x": 10,
-                            "y": 15,
-                            "z": 4,
-                        },
-                        "containers_max": 600,
-                        "containers_current": 67,
-                        "containers_unload": 5,
-                        "containers_load": 3,
-                        "destination": {
-                            "id": "d1",
-                            "estimated_arrival_time": 0
-                        },
-                        "status": "" /* TODO: think of different option what can happen */
-                    }]
-                }),
-            };
-            callback(null, response);
-            break;
-        }
+        case "ships":
+            {
+                const response = {
+                    statusCode: 200,
+                    body: JSON.stringify({
+                        ships: [{
+                            "id": "",
+                            "size": {
+                                "x": 10,
+                                "y": 15,
+                                "z": 4,
+                            },
+                            "containers_max": 600,
+                            "containers_current": 67,
+                            "containers_unload": 5,
+                            "containers_load": 3,
+                            "destination": {
+                                "id": "d1",
+                                "estimated_arrival_time": 0
+                            },
+                            "status": "" /* TODO: think of different option what can happen */
+                        }]
+                    }),
+                };
+                callback(null, response);
+                break;
+            }
         default:
             callback(new Error("Something went wrong... Our apes are fixing it for you"));
     }

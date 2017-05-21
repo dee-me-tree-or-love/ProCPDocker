@@ -1,16 +1,17 @@
 {
-  "name": "simulation",
-  "version": "1.0.0",
-  "description": "",
-  "main": "handler.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "basic-lambda-helper": "^1.1.1",
-    "harbor-validator": "file:../../Shared/HarborValidator",
-    "uuid": "^3.0.1"
-  }
+    "name": "simulation",
+    "version": "1.0.0",
+    "description": "",
+    "main": "handler.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "basic-lambda-helper": "^1.1.1",
+        "harbor-validator": "file:../../Shared/HarborValidator",
+        "harbor-builder": "file:../../Shared/HarborBuilder",
+        "uuid": "^3.0.1"
+    }
 }
