@@ -1,5 +1,7 @@
 'use strict';
 const LambaHelper = require('basic-lambda-helper');
+const ContainerFactory = require('./Container').ContainerFactory;
+const uuid = require('uuid');
 // submit new simulation
 //
 // https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#new-simulation
@@ -7,6 +9,25 @@ module.exports.newSimulation = (event, context, callback) => {
 
     let lhelper = new LambaHelper(event, context, callback);
     lhelper.parseBody();
+
+    //validation
+    lhelper.checkInputBody(['docks','storages','ships'])
+        .catch(error => {
+
+            lhelper.done({
+                statusCode: 200,
+                body: error
+            });
+        })
+        .then(() => {
+
+            lhelper.done({
+                statusCode: 200,
+                body: {
+                    "test":23
+                }
+            });
+        });
 
     let configs = JSON.parse(event.body);
     let errors = [];
