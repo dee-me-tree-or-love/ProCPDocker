@@ -97,6 +97,7 @@
                          alert("no more tasks to reverse");
                     }
                },
+
                stepForwardSimulation(){
                     this.pauseSimulation();
                     if(tasks.length > 0){
