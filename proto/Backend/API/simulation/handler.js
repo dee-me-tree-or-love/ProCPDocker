@@ -71,6 +71,13 @@ a)
   "simulation_id": "2362f43b-280f-48ad-b581-dc903ee0f7f3",
   "all": 13
 }
+b) 
+{
+  "message": "Internal server error"
+}
+
+from the series of 10 requests with the same data I have recieved the following trial results: 
+a) a) b) b) a) a) a) a) a) b) 
 
 
 */
