@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="border:1px solid black;" id="app">
+  <div class="container" id="app">
        <CanvasComponent @tasks="setTasks"></CanvasComponent>
        <TaskContainerComponent v-bind:tasks="tasks"></TaskContainerComponent>
   </div>
@@ -29,7 +29,6 @@ export default {
 #app {
      font-family: 'Avenir', Helvetica, Arial, sans-serif;
      color: #2c3e50;
-     margin-top: 60px;
 }
 
 #task-column{

@@ -3,6 +3,11 @@
           <button v-on:click="getTasks">get more tasks</button>
           <button v-on:click="performTask">do task</button>
           <button v-on:click="reverseTask">reverse task</button>
+          <button v-on:click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+          <button v-on:click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>
+          <button v-on:click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
+          <button v-on:click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
+          <button v-on:click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
 
           <div id="playground">
                <canvas id="canvas-playground"></canvas>
@@ -15,6 +20,10 @@
 <script>
      import Task from './models/Task.js';
 
+     var that;
+     var timer;
+     var play = true;
+     var interval = 1000;
      var tasks = [];
      var completedtasks = [];
      var counter = 0
@@ -27,7 +36,7 @@
                }
           },
           methods: {
-               getTasks: function () {
+               getTasks() {
                     axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/tasks/sim1/tl1')
                       .then(function(response){
                         console.log(response.data);
@@ -57,7 +66,47 @@
                     }else {
                          alert("no more tasks to reverse");
                     }
+               },
+               playSimulation(){
+
+                    that = this;
+
+                    if(play){
+                         play = false;
+                         timer = setInterval(function (){
+                              if(tasks.length > 0){
+                                   completedtasks.push(tasks.shift());
+                                   document.getElementById('slider').value++;
+                              }else {
+                                   that.getTasks();
+                              }
+                         },interval);
+                    }
+
+               },
+               pauseSimulation(){
+                    clearInterval(timer);
+                    play = true;
+               },
+               stepBackSimulation(){
+                    this.pauseSimulation();
+                    if(completedtasks.length > 0){
+                         tasks.unshift(completedtasks.pop());
+                         document.getElementById('slider').value--;
+                    }else {
+                         alert("no more tasks to reverse");
+                    }
+               },
+               stepForwardSimulation(){
+                    this.pauseSimulation();
+                    if(tasks.length > 0){
+                         completedtasks.push(tasks.shift());
+                         document.getElementById('slider').value++;
+                    }else {
+                         alert("no more tasks to perform");
+                    }
                }
+
           }
 
      }
