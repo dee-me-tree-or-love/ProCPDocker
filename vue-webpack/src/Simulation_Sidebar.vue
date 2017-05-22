@@ -6,16 +6,8 @@
 <script src="classes.js"></script>
 <script>
 
-     function Task(id,type,extra,description, status,time_to_complete,events){
-          this.id = id;
-          this.type = type;
-          this.extra = extra;
-          this.description = description;
-          this.status = status;
-          this.time_to_complete = time_to_complete;
-          this.events = events;
-     }
 
+     import Task from './classes.js';
      import Taskbar from './Taskbar.vue';
 
      export default {
