@@ -6,6 +6,7 @@ import CanvasComponent from './canvas_component.vue';
 Vue.component('TaskContainerComponent',TaskContainerComponent);
 Vue.component('CanvasComponent',CanvasComponent);
 
+
 new Vue({
   el: '#app',
   render: h => h(App)

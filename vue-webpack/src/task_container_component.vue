@@ -14,7 +14,7 @@
           props:['tasks'],
           data() {
                return {
-                    
+
                }
           },
           components: {
