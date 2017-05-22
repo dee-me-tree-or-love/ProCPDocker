@@ -1,9 +1,14 @@
 'use strict';
 const LambaHelper = require('basic-lambda-helper');
 const ContainerFactory = require('./Container').ContainerFactory;
-const uuid = require('uuid');
 const HarborValidator = require('harbor-validator');
 const HarborBuilder = require('harbor-builder');
+const SQS = require('aws-sdk').SQS;
+
+const uuid = require('uuid');
+const random = require('random-js')();
+
+const SQS_URL = "https://sqs.eu-central-1.amazonaws.com/277346611766/entities";
 // submit new simulation
 //
 // https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#new-simulation
@@ -36,9 +41,9 @@ module.exports.newSimulation = (event, context, callback) => {
     // construct connections between the harbor instances: 
     // !!_IMPORTANT_!! 
     // the code line modifies the configs by adding the connections!
-    HarborBuilder.constructHarbor(configs);
+    //HarborBuilder.constructHarbor(config);
 
-    let nrContainers = 0;
+    let totalContainersForSim = 0;
     let totalCapacity = 0;
     let movingContainers = 0;
 
@@ -48,6 +53,7 @@ module.exports.newSimulation = (event, context, callback) => {
         dock.id = uuid();
     });
 
+    // Calculate container capacity for storages
     config.storages.forEach(storage => {
 
         let total = storage.x * storage.y * storage.z;
@@ -55,14 +61,16 @@ module.exports.newSimulation = (event, context, callback) => {
 
         totalCapacity += total;
         movingContainers += filled;
-        nrContainers += filled;
+        totalContainersForSim += filled;
 
         delete storage.filled;
         storage.id = uuid();
         storage.containers_max = total;
-        storage.containers_current = filled;
+        storage.containers_to_fill = filled;
+        storage.containers_current = 0;
     });
 
+    // Calculate containers for ships
     config.ships.forEach(ship => {
 
         let total = ship.x * ship.y * ship.z;
@@ -70,11 +78,10 @@ module.exports.newSimulation = (event, context, callback) => {
         let unload = Math.ceil(total * ship.unload / 100);
         let filled = Math.ceil(total * ship.filled / 100);
 
-        nrContainers += filled;
-        nrContainers += load;
+        totalContainersForSim += filled;
+        totalContainersForSim += load;
 
-        movingContainers += load;
-        movingContainers -= unload;
+        movingContainers += unload;
 
         delete ship.filled;
         delete ship.unload;
@@ -87,6 +94,7 @@ module.exports.newSimulation = (event, context, callback) => {
         ship.containers_unload = unload;
     });
 
+    // Capacity validation
     if (movingContainers > totalCapacity) {
 
         lhelper.done({
@@ -99,8 +107,9 @@ module.exports.newSimulation = (event, context, callback) => {
         }, true);
     }
 
+    let all_containers = [];
     //Distribute containers
-
+    let containers_to_storage = [];
     config.ships.forEach(ship => {
 
         let containers = ContainerFactory.create(ship.containers_current);
@@ -112,6 +121,49 @@ module.exports.newSimulation = (event, context, callback) => {
         ship.containers_unload = containers.slice(0, ship.containers_unload);
         ship.containers_load = ContainerFactory.create(ship.containers_load);
 
+        all_containers = all_containers.concat(ship.containers_current);
+        all_containers = all_containers.concat(ship.containers_load);
+
+        let freeStorages = config.storages.slice();
+        ship.containers_load.forEach(container => {
+
+            let isPlaced = false;
+            do{
+
+                // Check if there are available storages
+                if(freeStorages.length === 0){
+
+                    lhelper.done({
+                        statusCode: 400,
+                        body:{
+                            message: "There are no free storages left for the containers to load to ships. " +
+                            "Increase storage capacity. " +
+                            "All containers \"TO LOAD\" should already be on the port and part of the filled storages"
+                        }
+                    });
+                    return;
+                }
+
+                // Pick random storage
+                let storage_index = random.integer(0, freeStorages.length - 1);
+                let storage = freeStorages[storage_index];
+
+                // Check if there is space for one more container
+                if(storage.containers_to_fill > storage.containers_current){
+
+                    container.address.location_id = storage.id;
+                    containers_to_storage.push(container);
+
+                    storage.containers_current++;
+                    isPlaced = true;
+                }else{
+
+                    //Remove the filled storage from the possibilities
+                    freeStorages.splice(storage_index, 1);
+                }
+            }while (!isPlaced);
+        });
+
         //TODO:
         // loop trough the containers_load
         // pick a random storage
@@ -121,18 +173,95 @@ module.exports.newSimulation = (event, context, callback) => {
 
     });
 
+    //Distribute containers "TO LOAD" from ships to storages
+    let per_storage = {};
+    containers_to_storage.forEach(container => {
 
+        let address = container.address.location_id;
+        if(typeof per_storage[address] === 'undefined'){
+
+            per_storage[address] = [];
+        }
+        per_storage[address].push(container);
+    });
+
+    //Fill up storages to capacity
     config.storages.forEach(storage => {
 
-        //TODO:
-        // fill up to capacity
-        let containers = ContainerFactory.create(storage.containers_current);
-        containers.forEach(container => {
+        // Add containers to load from ships
+        storage.containers_current = per_storage[storage.id];
 
-            container.address.location_id = storage.id;
-        });
-        storage.containers_current = containers;
+        // Fill to desired capacity
+        let to_fill = storage.containers_to_fill - storage.containers_current.length;
+        if(to_fill > 0){
+
+            let containers = ContainerFactory.create(to_fill);
+            storage.containers_current = storage.containers_current.concat(containers);
+            all_containers = all_containers.concat(containers);
+        }
+
+        delete storage.containers_to_fill;
     });
+
+    let saveEntities = (entities) => {
+        return new Promise((resolve, reject) => {
+
+            let Entries = [];
+            entities.forEach(entity => {
+                Entries.push({
+                    Id: entity.id,
+                    MessageBody: JSON.stringify(entities[i])
+                });
+            });
+            let sqs = new SQS();
+            sqs.sendMessageBatch({
+                Entries,
+                QueueUrl: SQS_URL
+            }, function(err, data) {
+                if (err){
+
+                    reject(err);
+                }
+                else {
+
+                    resolve(data);
+                }
+            });
+        });
+    };
+
+    all_containers.forEach(container => {
+        container.type = 'container';
+    });
+
+    // saveEntities(all_containers)
+    //     .then(d => {
+    //         lhelper.done({
+    //             statusCode: 200,
+    //             body: {
+    //                 d,
+    //                 all_containers
+    //             }
+    //         });
+    //     })
+    //     .catch(e => {
+    //         lhelper.done({
+    //             statusCode: 400,
+    //             body: {
+    //                 e,
+    //                 all_containers
+    //             }
+    //         });
+    //     });
+
+    // containers X
+    // ships
+    // docks
+    // storages
+    // time line
+    // simulation
+
+
     //TODO:
     // Put all entity instances in a queue to insert in the DB
 
@@ -147,6 +276,7 @@ module.exports.newSimulation = (event, context, callback) => {
 
     //calculate containers
     config.simulation_id = uuid();
+    config.all = all_containers.length;
 
     lhelper.done({
         statusCode: 200,
@@ -192,7 +322,7 @@ module.exports.getSimulation = (event, context, callback) => {
     } else {
         callback(new Error('Couldn\'t fetch simulation.'));
     }
-}
+};
 
 // get configuration of the simulation
 //
@@ -251,7 +381,7 @@ module.exports.getSimulationConfig = (event, context, callback) => {
     } else {
         callback(new Error('Couldn\'t find simulation.'));
     }
-}
+};
 
 // get the timelines of the simulation
 //
@@ -317,7 +447,7 @@ module.exports.getSimulationHarborTimelines = (event, context, callback) => {
     } else {
         callback(new Error('Couldn\'t find simulation.'));
     }
-}
+};
 
 // get the harbor data about storages, docks and ships
 //

@@ -20,6 +20,7 @@ functions:
 
   newSimulation:
     handler: API/simulation/handler.newSimulation
+    role: arn:aws:iam::277346611766:role/sqs_full_access
     events:
      - http:
          path: simulation/new-simulation
