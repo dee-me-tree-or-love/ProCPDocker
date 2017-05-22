@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import App from './App.vue';
-import SimulationSidebar from './Simulation_Sidebar.vue';
+import TaskContainerComponent from './task_container_component.vue';
 
-Vue.component('Simulation-Sidebar',SimulationSidebar);
+Vue.component('TaskContainerComponent',TaskContainerComponent);
 
 new Vue({
   el: '#app',

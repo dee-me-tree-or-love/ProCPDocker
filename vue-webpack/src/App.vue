@@ -12,7 +12,7 @@
             <input type="range" min="0" max="100" value="0" step="1" oninput="sliderChanged()" id="slider"></input>
             <p></p>
        </div>
-       <Simulation-Sidebar></Simulation-Sidebar>
+       <TaskContainerComponent></TaskContainerComponent>
   </div>
 </template>
 
