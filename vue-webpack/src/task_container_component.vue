@@ -7,7 +7,7 @@
 <script>
 
 
-     import Task from './classes.js';
+     import Task from './models/Task.js';
      import TaskComponent from './task_component.vue';
 
      export default {
