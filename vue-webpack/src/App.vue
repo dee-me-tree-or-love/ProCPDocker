@@ -1,20 +1,28 @@
 <template>
-  <div class="container" style="height:100%;border:1px solid black;" id="app">
-       <CanvasComponent></CanvasComponent>
-       <TaskContainerComponent></TaskContainerComponent>
+  <div class="container" style="border:1px solid black;" id="app">
+       <CanvasComponent @tasks="setTasks"></CanvasComponent>
+       <TaskContainerComponent v-bind:tasks="tasks"></TaskContainerComponent>
   </div>
 </template>
 
 <script>
 
+import Task from './models/Task.js';
+
 export default {
-  name: 'app',
-  data () {
-    return {
-         Tasks:[],
-         Ships:[]
+    name: 'app',
+    data () {
+         return {
+              tasks:[],
+              ships:[]
+         }
+    },
+    methods:{
+         setTasks(value){
+             this.tasks = value;
+        },
     }
-  }
+
 }
 </script>
 <style lang="scss">
