@@ -1,0 +1,2 @@
+this module should build connections and provide UUIDs to all the entities on the harbor
+the connections (edges) will be denoted by the UIDs and weights instead of the full reference
