@@ -1,3 +1,85 @@
+/*
+By testing with the same config data, the function sometimes works and sometimes does not - I do not know what is the reason for its behavior
+so the data I pass: 
+
+{
+    "docks": [
+        {
+            "id": "1",
+            "number_loaders": 2
+        }
+    ],
+    "storages": [
+        {
+            "x": 5,
+            "y": 2,
+            "z": 1,
+            "id": "s1",
+            "filled": 10
+        },
+        {
+            "x": 5,
+            "y": 2,
+            "z": 1,
+            "id": "s1",
+            "filled": 80
+        }
+    ],
+    "ships": [
+        {
+            "id": "ship1",
+            "eta": 6,
+            "x": 1,
+            "y": 2,
+            "z": 2,
+            "filled": 80,
+            "unload": 60,
+            "load": 40
+        }
+    ]
+}
+
+the result I get is either of the two: 
+a) 
+{
+  "docks": [
+    {
+      "id": "7c3f704a-28ff-4005-a703-72135cf39bea",
+    ...
+        }
+      ]
+    }
+  ],
+  "storages": [
+    {
+      "x": 5,
+    ...
+      ]
+    }
+  ],
+  "ships": [
+    {
+      "id": "3bdc2335-1ef3-46e4-9cdf-5ad22c05f35d",
+      "eta": 6,
+      "x": 1,
+      "y": 2,
+     ...
+        }
+      ]
+    }
+  ],
+  "simulation_id": "2362f43b-280f-48ad-b581-dc903ee0f7f3",
+  "all": 13
+}
+
+
+*/
+
+
+
+
+
+
 'use strict';
 const LambaHelper = require('basic-lambda-helper');
 const ContainerFactory = require('./Container').ContainerFactory;
