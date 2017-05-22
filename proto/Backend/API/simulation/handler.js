@@ -100,15 +100,6 @@ module.exports.newSimulation = (event, context, callback) => {
     }
 
     //Distribute containers
-    config.storages.forEach(storage => {
-
-        let containers = ContainerFactory.create(storage.containers_current);
-        containers.forEach(container => {
-
-            container.address.location_id = storage.id;
-        });
-        storage.containers_current = containers;
-    });
 
     config.ships.forEach(ship => {
 
@@ -120,7 +111,39 @@ module.exports.newSimulation = (event, context, callback) => {
         ship.containers_current = containers;
         ship.containers_unload = containers.slice(0, ship.containers_unload);
         ship.containers_load = ContainerFactory.create(ship.containers_load);
+
+        //TODO:
+        // loop trough the containers_load
+        // pick a random storage
+        // check if we can fit a container
+        // put the container
+        // if we don't have space in all the storages, throw an error
+
     });
+
+
+    config.storages.forEach(storage => {
+
+        //TODO:
+        // fill up to capacity
+        let containers = ContainerFactory.create(storage.containers_current);
+        containers.forEach(container => {
+
+            container.address.location_id = storage.id;
+        });
+        storage.containers_current = containers;
+    });
+    //TODO:
+    // Put all entity instances in a queue to insert in the DB
+
+    //TODO:
+    // Find where to dock, according to where the nearest storage is with the most containers
+    // Sum containers in storage to get and multiply by the weighted edge to the dock and then find the average
+    // Dock the ship to the dock with the smallest average distance to the storage and the ETA
+    // Generate tasks according to the distance from dock to storage
+    //      Write algorithm to correctly place the containers on the ship
+    //      Maybe consider the containers which are already on the ship and rearrange them, maybe
+    // Put all events in a FIFO queue and insert in DB in order
 
     //calculate containers
     config.simulation_id = uuid();
