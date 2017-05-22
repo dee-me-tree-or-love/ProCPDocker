@@ -41,17 +41,19 @@ module.exports.newSimulation = (event, context, callback) => {
     // construct connections between the harbor instances: 
     // !!_IMPORTANT_!! 
     // the code line modifies the configs by adding the connections!
-    //HarborBuilder.constructHarbor(config);
+    // returns the new structure with uuids and connections as entities, and connections as global edges
+    config = HarborBuilder.constructHarbor(config).entities;
 
     let totalContainersForSim = 0;
     let totalCapacity = 0;
     let movingContainers = 0;
 
-    //Calculate containers
-    config.docks.forEach(dock => {
+    // UUIDs are assigned in .constructHarbor(config)
+    // //Calculate containers
+    // config.docks.forEach(dock => {
 
-        dock.id = uuid();
-    });
+    //     dock.id = uuid();
+    // });
 
     // Calculate container capacity for storages
     config.storages.forEach(storage => {
@@ -64,7 +66,7 @@ module.exports.newSimulation = (event, context, callback) => {
         totalContainersForSim += filled;
 
         delete storage.filled;
-        storage.id = uuid();
+        // storage.id = uuid();
         storage.containers_max = total;
         storage.containers_to_fill = filled;
         storage.containers_current = 0;
@@ -87,7 +89,7 @@ module.exports.newSimulation = (event, context, callback) => {
         delete ship.unload;
         delete ship.load;
 
-        ship.id = uuid();
+        // ship.id = uuid();
         ship.containers_max = total;
         ship.containers_current = filled;
         ship.containers_load = load;
@@ -128,17 +130,17 @@ module.exports.newSimulation = (event, context, callback) => {
         ship.containers_load.forEach(container => {
 
             let isPlaced = false;
-            do{
+            do {
 
                 // Check if there are available storages
-                if(freeStorages.length === 0){
+                if (freeStorages.length === 0) {
 
                     lhelper.done({
                         statusCode: 400,
-                        body:{
+                        body: {
                             message: "There are no free storages left for the containers to load to ships. " +
-                            "Increase storage capacity. " +
-                            "All containers \"TO LOAD\" should already be on the port and part of the filled storages"
+                                "Increase storage capacity. " +
+                                "All containers \"TO LOAD\" should already be on the port and part of the filled storages"
                         }
                     });
                     return;
@@ -149,19 +151,19 @@ module.exports.newSimulation = (event, context, callback) => {
                 let storage = freeStorages[storage_index];
 
                 // Check if there is space for one more container
-                if(storage.containers_to_fill > storage.containers_current){
+                if (storage.containers_to_fill > storage.containers_current) {
 
                     container.address.location_id = storage.id;
                     containers_to_storage.push(container);
 
                     storage.containers_current++;
                     isPlaced = true;
-                }else{
+                } else {
 
                     //Remove the filled storage from the possibilities
                     freeStorages.splice(storage_index, 1);
                 }
-            }while (!isPlaced);
+            } while (!isPlaced);
         });
 
         //TODO:
@@ -178,7 +180,7 @@ module.exports.newSimulation = (event, context, callback) => {
     containers_to_storage.forEach(container => {
 
         let address = container.address.location_id;
-        if(typeof per_storage[address] === 'undefined'){
+        if (typeof per_storage[address] === 'undefined') {
 
             per_storage[address] = [];
         }
@@ -193,7 +195,7 @@ module.exports.newSimulation = (event, context, callback) => {
 
         // Fill to desired capacity
         let to_fill = storage.containers_to_fill - storage.containers_current.length;
-        if(to_fill > 0){
+        if (to_fill > 0) {
 
             let containers = ContainerFactory.create(to_fill);
             storage.containers_current = storage.containers_current.concat(containers);
@@ -218,11 +220,10 @@ module.exports.newSimulation = (event, context, callback) => {
                 Entries,
                 QueueUrl: SQS_URL
             }, function(err, data) {
-                if (err){
+                if (err) {
 
                     reject(err);
-                }
-                else {
+                } else {
 
                     resolve(data);
                 }

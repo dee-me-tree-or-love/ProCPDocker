@@ -1,6 +1,7 @@
 var assert = require('assert');
 var chai = require('chai');
-var should = chai.should();
+var should = chai.should;
+var expect = chai.expect;
 
 import 'babel-polyfill';
 const HarborBuilder = require('../Shared/HarborBuilder')
@@ -11,6 +12,9 @@ describe('Harbor Building and Verification', function() {
         describe('should return edges between a storage and a dock', function() {
             it('the edge should be 1 if there is 1 dock and 1 storage', function() {
                 let configs = {
+                    ships: [{
+                        id: "",
+                    }],
                     docks: [{
                         id: "d1" // other properties can be omitted
                     }],
@@ -22,10 +26,42 @@ describe('Harbor Building and Verification', function() {
                 let harbor = HarborBuilder.constructHarbor(configs);
                 assert.equal(harbor.edges.length, 1);
             });
+            it('the configuration should now contain the docks and storages with the specified connections by UUIDs', function() {
+                let configs = {
+                    ships: [{
+                        id: "",
+                    }],
+                    docks: [{
+                        id: "d1" // other properties can be omitted
+                    }],
+                    storages: [{
+                        id: "st1"
+                    }],
+                }
+
+                let harbor = HarborBuilder.constructHarbor(configs).entities;
+                let allgood = true;
+
+                for (let i = 0; i < harbor.docks.length; i++) {
+                    // 0 0 -> 0
+                    // 0 1 -> 0
+                    // 1 0 -> 0
+                    // 1 1 -> 1 -- since allgood is true from the beginning it will remain true as long as the connections are in the docks
+                    allgood = ('connections' in harbor.docks[i]) && allgood;
+                }
+                expect(allgood).to.be.true;
+                for (let i = 0; i < harbor.storages.length; i++) {
+                    allgood = ('connections' in harbor.storages[i]) && allgood;
+                }
+                expect(allgood).to.be.true;
+            })
         });
         describe('should dublicate the connections and edges in the actual storages', function() {
             it('given there is only 1 edge created, it should be equal to the connection of the dock and the connection of the ship', function() {
                 let configs = {
+                    ships: [{
+                        id: "",
+                    }],
                     docks: [{
                         id: "d1" // other properties can be omitted
                     }],

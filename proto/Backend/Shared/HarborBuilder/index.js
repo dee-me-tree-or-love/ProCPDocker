@@ -1,3 +1,12 @@
+'use strict';
+
+
+// for the uid generation
+// creates UNIQUE Random identification numbers, guaranteed!
+const uuid = require('uuid');
+
+
+
 // utility function for math: 
 /**
  * Generates the random integer in range [min,max]
@@ -21,6 +30,22 @@ const getRandomInt = (min, max) => {
  * @returns {Object} The harbor object with edges, updated docks and storages
  */
 module.exports.constructHarbor = (configs, laypaths) => {
+
+    // provide the UIDs to the entities:
+    // console.dir(configs);
+
+    for (let i = 0; i < configs.ships.length; i++) {
+        configs.ships[i].id = uuid();
+    }
+    for (let i = 0; i < configs.docks.length; i++) {
+        configs.docks[i].id = uuid();
+    }
+    for (let i = 0; i < configs.storages.length; i++) {
+        configs.storages[i].id = uuid();
+    }
+
+    // once done, should be fine
+    // console.dir(configs);
 
     // if user has provided no callback function in the parameter
     if (!(typeof laypaths == "function")) {
@@ -47,7 +72,7 @@ module.exports.constructHarbor = (configs, laypaths) => {
 
                     // create new edge
                     let edge = {
-                        vertices: [storages[i], docks[j]],
+                        vertices: { storage: storages[i].id, dock: docks[j].id },
                         weight: getRandomInt(5, 20), // using the function declared above
                     }
 
@@ -65,10 +90,6 @@ module.exports.constructHarbor = (configs, laypaths) => {
     }
 
     let connections = laypaths(configs.docks, configs.storages);
-
-    return {
-        docks: configs.docks,
-        storages: configs.storages,
-        edges: connections,
-    }
+    // should return updated harbor configuration
+    return { entities: configs, edges: connections }
 };
