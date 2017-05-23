@@ -73,6 +73,10 @@ class ShipManipulator {
 
 class ShipScheduler {
 
+    static makeProcessInterval(ship, eta, etd) {
+        return { ship: ship, eta: eta, etd: etd };
+    }
+
     constructor(configs) {
         this.configs = configs;
         this.storageHashTable = this.makeHashTableWithUUIDs(this.configs.storages);
@@ -94,22 +98,33 @@ class ShipScheduler {
         return hashTable;
     }
 
-
+    initializeProcessIntervalsOnDocks() {
+        for (let key in this.dockHashTable) {
+            dockHashTable[key].processintervals = [];
+        }
+    }
 
     calculateBurstTimes() {
 
+        // per ship
         for (let i = 0; i < this.configs.ships.length; i++) {
             let ship = this.configs.ships[i];
             let bursttimes = {};
+
+            // per storage
             // console.log(ship.loads);
             // a slightly weird way to get it to work, right? 
             if ((Object.keys(ship.loads).length) > 0) {
-                // for every storage in the loads of the ship
-                for (let storage in ship.loads) {
+                let dockpriority = [];
 
-                    // console.log(this.connectionMatrix[storage]);
-                    // iterate over the docks connected to this storage:
-                    for (let dock in this.connectionMatrix[storage]) {
+                // per dock
+                // console.log(this.connectionMatrix[storage]);
+                // iterate over the docks connected to this storage:
+                for (let dock in this.dockHashTable) {
+                    let max_burst_size = -1;
+                    // for every storage in the loads of the ship
+                    for (let storage in ship.loads) {
+
 
                         // display what you have here
                         // console.log(this.connectionMatrix[storage][dock]);
@@ -125,13 +140,29 @@ class ShipScheduler {
                         bursttimes[dock][storage].count = ship.loads[storage].count;
                         bursttimes[dock][storage].containers = ship.loads[storage].containers;
                         bursttimes[dock][storage].burstsize = ship.loads[storage].count * this.connectionMatrix[storage][dock].weight;
+
+                        if (bursttimes[dock][storage].burstsize > max_burst_size) {
+                            max_burst_size = bursttimes[dock][storage].burstsize;
+                        }
                     }
+
+                    // determine the maximum burst time
+                    bursttimes[dock].maxburstsize = max_burst_size;
+                    dockpriority.push({ dock_id: dock, burstsize: max_burst_size });
                 }
+
+                // order the docking options in the order of the burstsize
+                // I know it's bad, but well... works for now I guess
+                dockpriority.sort((a, b) => {
+                        return a.burstsize - b.burstsize;
+                    })
+                    // console.log("sorted::");
+                    // console.log(dockpriority);
+                ship.dockpriority = dockpriority;
                 ship.burstsizes = bursttimes;
             }
         }
-
-        return this.shipHashTable;
+        // return this.shipHashTable;
     }
 
     produceTiming() {
@@ -149,31 +180,49 @@ class ShipScheduler {
         }
 
         // calculate the burst times given the loads per each ship
-        /* the way the response looks:
-            // looks somewhat like this: 
-            // { 
-            //      'fd605e6f-c0a4-4cdb-a6f8-b778f73804f9': {       -- dock id
-            //          '476962af-9b98-443c-bd31-7aa8ea9629c6': {   -- storage id
-            //                  count: 1,                           -- how many containers are to be loaded
-            //                  containers: [Object],               -- the containers
-            //                  burstsize: 10                       -- how long would it take (distance * size)
-            //          },
-            //          'aaf67573-bed2-4cfd-a4f8-455e1a3a7482': { 
-            //                  count: 3, 
-            //                  containers: [Object], 
-            //                  burstsize: 57 
-            //          } 
-            //      }, 
-            // }
-        */
-        let resp = this.calculateBurstTimes();
+        // the response is not needed actually
+        this.calculateBurstTimes();
+
         // console.log(resp);
-        console.log(this.connectionMatrix);
+        // console.log(this.connectionMatrix);
+
+        // log what the dock options are there
+        this.logDockingOptions();
+
+        // Choosing the best option: Pseudocode
+        // 
+        // try to dock to the best options - if not possible select others
+        // for this we need to check for the dock's processintervals
+        // and check for the overlaps and 
+        //
+        //                      if there are none -> place directly starting from ETA
+        //                                  NOT LIKE THIS: if the ETD is overlapping -> try moving the next process after this one
+        //
+        //                      if there is an overlap, 
+        //                          try the next best option 
+        //                      until sucess or all of them appear occupied
+        //
+        //                      if didn't place
+        //                          sort the docking options by the earliest free spot after the ETA
+        //                          schedule the ship for this spot
+        //                          move everything scheduled after further 
+        //                                  (which is unlikely to happen in the beginnning, 
+        //                                  since the ships are processed in the order of the increasing ETAs)
+
+    }
+
+    logDockingOptions() {
         for (let key in this.shipHashTable) {
-            console.log(this.shipHashTable[key])
+            // console.log(this.shipHashTable[key])
+            console.log("\n<<<<<+\nship: " + key)
+            console.log("eta: " + this.shipHashTable[key].eta);
             for (let option in this.shipHashTable[key].burstsizes) {
+                console.log("\noption to dock to: " + option)
                 console.dir(this.shipHashTable[key].burstsizes[option])
             }
+            console.log("\n== priority ==\n");
+            console.log(this.shipHashTable[key].dockpriority);
+            console.log("\n+>>>>>>\n")
         }
     }
 }
@@ -181,6 +230,6 @@ class ShipScheduler {
 let data = require("./expecteddata.js");
 // console.dir(data);
 
-let SS = new ShipScheduler(data.resp2);
+let SS = new ShipScheduler(data.resp3);
 
 let resp = SS.produceTiming();
