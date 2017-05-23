@@ -17,3 +17,4 @@ export default class Ship {
          context.fillRect(this.position_x,this.position_y,this.width,this.height);
   }
 }
+}

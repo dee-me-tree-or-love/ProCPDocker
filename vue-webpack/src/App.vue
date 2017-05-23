@@ -1,37 +1,52 @@
 <template>
-  <div class="container" style="height:100%;border:1px solid black;" id="app">
-       <div class="col-md-9" style="height:100%;border:1px solid black;" id="main-simulation">
-            <button onclick="getTasks()">get more tasks</button>
-            <button onclick="performTask()">do task</button>
-            <button onclick="reverseTask()">reverse task</button>
-
-            <div id="playground">
-                 <canvas id="canvas-playground"></canvas>
-            </div>
-
-            <input type="range" min="0" max="100" value="0" step="1" oninput="sliderChanged()" id="slider"></input>
-            <p></p>
-       </div>
-       <TaskContainerComponent></TaskContainerComponent>
+  <div class="container" id="app">
+       <CanvasComponent @tasks="setTasks"></CanvasComponent>
+       <TaskContainerComponent v-bind:tasks="tasks"></TaskContainerComponent>
+       <button v-on:click="getSimulation" >get mock simulation</button>
   </div>
 </template>
 
 <script>
 
-export default {
-  name: 'app',
-  data () {
-    return {
+import Task from './models/Task.js';
+import Ship from './models/Ship.js';
+import Dock from './models/Dock.js';
+import Storage from './models/Storage.js';
+import Size from './models/Size.js';
 
+export default {
+    name: 'app',
+    data () {
+         return {
+              tasks:[],
+              ships:[]
+         }
+    },
+    methods:{
+         setTasks(value){
+             this.tasks = value;
+        },
+        getSimulation(){
+             axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/simulation/sim1')
+               .then(function(response){
+                 console.log(response.data);
+
+                 //for(var i = 0;i < response.data.ships.length;i++){
+                     // ships.push(new Ship(id,size,containers_max,containers_current,containers_unload,containers_load,destination,status))
+                     // counter++;
+                // }
+                  //response.data.tasks[i].id
+
+               });
+        }
     }
-  }
+
 }
 </script>
 <style lang="scss">
 #app {
      font-family: 'Avenir', Helvetica, Arial, sans-serif;
      color: #2c3e50;
-     margin-top: 60px;
 }
 
 #task-column{
