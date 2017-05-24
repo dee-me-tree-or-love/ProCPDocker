@@ -119,28 +119,29 @@ module.exports.constructHarbor = (configs, laypaths) => {
     return { entities: configs, edges: connections }
 };
 
-// uncomment for a quick test
-// let resp = this.constructHarbor({
-//     ships: [{
-//         id: "",
-//     }],
-//     docks: [{
-//         id: "d1" // other properties can be omitted
-//     }, {
-//         id: "d3" // other properties can be omitted
-//     }, {
-//         id: "d2" // other properties can be omitted
-//     }],
-//     storages: [{
-//         id: "st1"
-//     }, {
-//         id: "st2"
-//     }],
-// })
+// uncomment
+// for a quick test
+let resp = this.constructHarbor({
+    ships: [{
+        id: "",
+    }],
+    docks: [{
+        id: "d1" // other properties can be omitted
+    }, {
+        id: "d3" // other properties can be omitted
+    }, {
+        id: "d2" // other properties can be omitted
+    }],
+    storages: [{
+        id: "st1"
+    }, {
+        id: "st2"
+    }],
+})
 
 
-// console.log(resp.entities);
+console.log(resp.entities);
 
-// console.log(resp.edges);
+console.log(resp.edges);
 
-// console.log(resp.entities.connections);
+console.log(resp.entities.connections);

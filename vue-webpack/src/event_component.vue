@@ -4,7 +4,6 @@
   </div>
 </template>
 
-<script src="classes.js"></script>
 <script>
   export default {
     props: ['event']

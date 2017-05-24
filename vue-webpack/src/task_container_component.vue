@@ -3,7 +3,7 @@
          <TaskComponent v-for="t in tasks" v-bind:task="t" v-bind:key="t.id"></TaskComponent>
     </div>
 </template>
-<script src="classes.js"></script>
+
 <script>
 
 
