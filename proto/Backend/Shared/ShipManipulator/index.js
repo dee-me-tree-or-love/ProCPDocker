@@ -1,3 +1,9 @@
+/*
+    before deploying anywhere, comment out all the console.log and .dir shits
+*/
+
+
+
 // for sorting and finding where to load from
 class ShipManipulator {
     static countLoads(ship) {
@@ -73,23 +79,24 @@ class ShipManipulator {
 
 class ShipScheduler {
 
-    static makeProcessInterval(ship, eta, etd) {
-        return { ship: ship, eta: eta, etd: etd };
-    }
-
     constructor(configs) {
         this.configs = configs;
         this.storageHashTable = this.makeHashTableWithUUIDs(this.configs.storages);
         this.shipHashTable = this.makeHashTableWithUUIDs(this.configs.ships);
         this.dockHashTable = this.makeHashTableWithUUIDs(this.configs.docks);
         this.connectionMatrix = this.configs.connections;
-
-        // console.log(this);
+        this.DEPARTUREMARGIN = 2;
+        this.initializeProcessIntervalsOnDocks();
+        console.log(this.configs.docks);
         // console.log("created the ship scheduler !!!! ")
     }
 
     // that is an amazing algorithm for creating has tables, I know, very error secure, suuuuure... 
     // it sucks in a way, but let's assume the uuids are 100% unique and there can be no problemos ever!
+    /**
+     * Produces the hash tables with UUIDs of the entities as keys
+     * @param {*} entities 
+     */
     makeHashTableWithUUIDs(entities) {
         let hashTable = {}
         for (let i = 0; i < entities.length; i++) {
@@ -98,12 +105,18 @@ class ShipScheduler {
         return hashTable;
     }
 
+    /**
+     * Initializes the empty arrays of intervals at the docks
+     */
     initializeProcessIntervalsOnDocks() {
         for (let key in this.dockHashTable) {
-            dockHashTable[key].processintervals = [];
+            this.dockHashTable[key].processintervals = [];
         }
     }
 
+    /**
+     * Calculates how much would it take to move the containers from the storage to dock for each ship take in every docking case
+     */
     calculateBurstTimes() {
 
         // per ship
@@ -165,6 +178,128 @@ class ShipScheduler {
         // return this.shipHashTable;
     }
 
+
+    /**
+     * Find the latest time of departure of the dock
+     * @param {*} dock 
+     */
+    findLatestETD(dock) {
+        if (dock.processintervals[dock.processintervals.length - 1]) {
+            return dock.processintervals[dock.processintervals.length - 1].etd
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Find the best docking option for the given ship
+     * @param {*} ship 
+     */
+    determineDocking(ship) {
+        console.log("\ndocking the ship: " + ship.id + " ; eta: " + ship.eta);
+        // determine if one of the options for the ship can host the ship with the given eta:
+        for (let i = 0; i < ship.dockpriority.length; i++) {
+            // check if the ship can be docked
+            console.log("what if here? " + ship.dockpriority[i].dock_id + " ; busrtsize: " + ship.dockpriority[i].burstsize);
+            if (!this.processIntevalMakesOverlaps(
+                    ship.dockpriority[i].dock_id, // the dock id
+                    ship.eta, // the estimated time of arrival
+                    (ship.eta + ship.dockpriority[i].burstsize) // the estimated time of departure
+                )) {
+                console.log("should dock to dock:" + ship.dockpriority[i].dock_id);
+
+                // dock the ship! 
+                this.dockShipTo(
+                    ship.dockpriority[i].dock_id,
+                    this.prapareProcessInterval(
+                        ship,
+                        ship.eta,
+                        (ship.eta + ship.dockpriority[i].burstsize),
+                        "ship is docked")
+                );
+                // finish
+                return;
+            }
+            // check next
+        }
+        // out of the loop
+        // nowhere to dock at the given period -> start option 2
+        console.log("nowhere to dock, huh...");
+
+        // find the dock with the best [ latest(ETD) + burstsize + margin ] combo and place the ship there
+        let bestOptionDockId = ship.dockpriority[0].dock_id;
+        // ho ho ho, javascript allows to use INFINITY! how sweeeet! (wonder how efficient though...)
+        let bestETD = Infinity; // some arbitrary huge number
+        let bestETA = 0;
+        for (let i = 0; i < ship.dockpriority.length; i++) {
+
+            let key = ship.dockpriority[i].dock_id;
+            let latestETD = this.findLatestETD(this.dockHashTable[key]);
+
+            let potentialETD = latestETD + ship.dockpriority[i].burstsize + this.DEPARTUREMARGIN;
+
+            if (
+                (potentialETD) < bestETD
+            ) {
+                bestETA = latestETD;
+                bestETD = potentialETD;
+                bestOptionDockId = key;
+            }
+        }
+
+        console.log("well, looks like the best options now is dock: " + bestOptionDockId + " ; etd: " + bestETD);
+        this.dockShipTo(bestOptionDockId, this.prapareProcessInterval(ship, bestETA, bestETD, "ship is docked"));
+
+    }
+
+
+    /**
+     * Checks if the dock has the overlap for the given start
+     * @param {string} dock the id of the dock
+     * @param {*} eta estimated time of arrival
+     * @param {*} etd estimated time of departure
+     * @returns {object} the response showing if the overlap exists
+     */
+    processIntevalMakesOverlaps(dock_id, eta, etd) {
+        console.log(this.dockHashTable[dock_id].processintervals);
+        for (let i = 0; i < this.dockHashTable[dock_id].processintervals.length; i++) {
+            // console.log(
+            //     "ETA: " + (this.dockHashTable[dock_id].processintervals[i].eta)
+            // )
+            // console.log(
+            //     "ETD: " + (this.dockHashTable[dock_id].processintervals[i].etd)
+            // )
+            if (this.dockHashTable[dock_id].processintervals[i].eta <= eta &&
+                this.dockHashTable[dock_id].processintervals[i].etd + this.DEPARTUREMARGIN >= eta) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Create and return an object that correpsonds to the interval that is saved in the docks process intervals
+     * @param {*} ship 
+     * @param {*} eta 
+     * @param {*} etd 
+     * @param {*} desc 
+     */
+    prapareProcessInterval(ship, eta, etd, desc) {
+        return { ship: ship, eta: eta, etd: etd, description: desc };
+    }
+
+    /**
+     * Make an entry in the dock's process intervals for the given dock with the given process interval (pint)
+     * @param {*} dock_id 
+     * @param {*} pint 
+     */
+    dockShipTo(dock_id, pint) {
+        this.dockHashTable[dock_id].processintervals.push(pint);
+    }
+
+    /**
+     * make all the scheduling stuff - it should be the only public entry point 
+     */
     produceTiming() {
         // sort ships by ETA
         this.configs.ships = ShipManipulator.sortShipsByETA(this.configs.ships);
@@ -179,7 +314,8 @@ class ShipScheduler {
             // console.dir(ship);
         }
 
-        // calculate the burst times given the loads per each ship
+        // calculates the burst times given the loads per each ship
+        // and provides the docking options in the priority sorted way
         // the response is not needed actually
         this.calculateBurstTimes();
 
@@ -191,6 +327,9 @@ class ShipScheduler {
 
         // Choosing the best option: Pseudocode
         // 
+        // Important: since the ships are processed in order there can be no chance that a 
+        // ship wil be overlapping by the 2nd endpoint
+        //
         // try to dock to the best options - if not possible select others
         // for this we need to check for the dock's processintervals
         // and check for the overlaps and 
@@ -209,8 +348,38 @@ class ShipScheduler {
         //                                  (which is unlikely to happen in the beginnning, 
         //                                  since the ships are processed in the order of the increasing ETAs)
 
+        for (let key in this.dockHashTable) {
+            console.log(this.dockHashTable[key].processintervals);
+        }
+
+        // console.log("\n+++++++ IMPORNANT ");
+        // console.log("configs.docks ");
+        // console.log(this.configs.ships);
+        // console.log("VS \nshipHashTable");
+        // console.log(this.shipHashTable)
+        // console.log("++++++++ COMPARISON\n");
+
+        // so, the ships that are stored in this.configs.ships ARE ORDERED
+        // but the ones in the hash table are not! so we need to iterate over the ships in configs.ships
+
+        for (let i = 0; i < this.configs.ships.length; i++) {
+            this.determineDocking(this.configs.ships[i]);
+        }
+
+        for (let key in this.dockHashTable) {
+            let dock = this.dockHashTable[key]
+            console.log("\n dock id: " + key);
+            console.log("dock process intervals:");
+            for (let i in dock.processintervals) {
+                console.dir(dock.processintervals[i]);
+            }
+
+        }
     }
 
+    /**
+     * just a stupid function to make a nice log in the terminal
+     */
     logDockingOptions() {
         for (let key in this.shipHashTable) {
             // console.log(this.shipHashTable[key])
@@ -230,6 +399,6 @@ class ShipScheduler {
 let data = require("./expecteddata.js");
 // console.dir(data);
 
-let SS = new ShipScheduler(data.resp3);
+let SS = new ShipScheduler(data.resp5);
 
 let resp = SS.produceTiming();
