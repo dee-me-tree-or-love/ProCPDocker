@@ -2,7 +2,7 @@
   <div class="container" id="app">
        <CanvasComponent @tasks="setTasks"></CanvasComponent>
        <!-- TODO: add other components and fix currentTask problem -->
-       <!-- <EventContainerComponent :events="currentTask.events"></EventContainerComponent> -->
+       <!-- <EventContainerComponent :events="currentTask"></EventContainerComponent> -->
        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
        <button @click="getSimulation" >get mock simulation</button>
   </div>

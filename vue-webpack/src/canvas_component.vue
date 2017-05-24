@@ -27,14 +27,14 @@
      var tasks = [];
      var completedtasks = [];
      var counter = 0;
-     var currentTask = null;
+     var currentTask;
 
      export default {
           data() {
                return {
                     tasks,
                     completedtasks,
-                    currentTask,
+                    currentTask
                }
           },
           methods: {
@@ -43,9 +43,13 @@
                       .then(function(response){
                         console.log(response.data);
 
-                        for(var i = 0;i < response.data.tasks.length;i++){
-                             tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,"events object"))
-                             counter++;
+                        if(response.status == 200){
+                          for(var i = 0;i < response.data.tasks.length;i++){
+                               tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,"events object"))
+                               counter++;
+                          }
+                        } else {
+                          //TODO: handle bad responses
                         }
                          //response.data.tasks[i].id
 
@@ -56,9 +60,14 @@
                performTask(){
                     if(tasks.length > 0){
                         var temp = tasks.shift();
+
+                        //TODO: what's up with that???
                         currentTask = temp;
+                        console.log(currentTask.events);
+
                         completedtasks.push(temp);
                         document.getElementById('slider').value++;
+                        this.$emit('currentTask', currentTask);
                     }else {
                          alert("no more tasks to perform");
                     }
