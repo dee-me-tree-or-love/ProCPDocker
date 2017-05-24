@@ -1,13 +1,13 @@
 <template>
      <div class="col-md-9" style="height:100%;border:1px solid black;" id="main-simulation">
-          <button v-on:click="getTasks">get more tasks</button>
-          <button v-on:click="performTask">do task</button>
-          <button v-on:click="reverseTask">reverse task</button>
-          <button v-on:click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
-          <button v-on:click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>
-          <button v-on:click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
-          <button v-on:click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
-          <button v-on:click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
+          <button @click="getTasks">get more tasks</button>
+          <button @click="performTask">do task</button>
+          <button @click="reverseTask">reverse task</button>
+          <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+          <button @click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>
+          <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
+          <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
+          <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
 
           <div id="playground">
                <canvas id="canvas-playground"></canvas>
@@ -26,13 +26,15 @@
      var interval = 1000;
      var tasks = [];
      var completedtasks = [];
-     var counter = 0
+     var counter = 0;
+     var currentTask = null;
 
      export default {
           data() {
                return {
                     tasks,
                     completedtasks,
+                    currentTask,
                }
           },
           methods: {
@@ -53,8 +55,10 @@
                },
                performTask(){
                     if(tasks.length > 0){
-                         completedtasks.push(tasks.shift());
-                         document.getElementById('slider').value++;
+                        var temp = tasks.shift();
+                        currentTask = temp;
+                        completedtasks.push(temp);
+                        document.getElementById('slider').value++;
                     }else {
                          alert("no more tasks to perform");
                     }
