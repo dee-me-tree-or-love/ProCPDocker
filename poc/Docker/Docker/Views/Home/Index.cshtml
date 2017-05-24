@@ -11,7 +11,6 @@
     //Get current tasks from loader
 
     //test data
-    int dummyX = 2;
     Random rn = new Random();
     Docker.Models.Ship ship;
     ship = new Docker.Models.Ship();
@@ -21,24 +20,12 @@
     ship.Containers = new List<Docker.Models.Container>();
     ship.Name = "MAR32";
 
-    for (int i = 0; i < ship.X || i < ship.Z; i++)
+    for (int i = 0; i < ship.X || i < ship.Z || i < ship.Y; i++)
     {
         ship.Containers.Add(new Docker.Models.Container()
         {
             ContainerLocation = ship,
             X = i,
-            Y = 0,
-            Z = i,
-            ID = rn.Next(0, int.MaxValue)
-        });
-    }
-
-    for (int i = 0; i < ship.Y || i < ship.Z; i++)
-    {
-        ship.Containers.Add(new Docker.Models.Container()
-        {
-            ContainerLocation = ship,
-            X = 0,
             Y = i,
             Z = i,
             ID = rn.Next(0, int.MaxValue)
@@ -54,11 +41,31 @@
 <div class="col-md-9">
     <table class="table">
         <tr>
-            @*TODO: also pass int as a param to indicate depth of the slice*@
-            <td>@await Component.InvokeAsync("SideSlice", ship)</td>
-            <td>@await Component.InvokeAsync("FrontSlice", ship)</td>
-            <td>Dock Side</td>
-            <td>Dock Front</td>
+            <td>
+                <h1>Ship side:</h1>
+                <div class="col-md-12">
+                    <p>Depth: <span class="glyphicon glyphicon-plus"></span> 0 <span class="glyphicon glyphicon-minus"></span>
+                    </p>
+                </div>
+                <div class="col-md-12">
+                    @await Component.InvokeAsync("SideSlice", new { cc = ship, x = 0 })
+                </div>
+            </td>
+            <td>
+                <h1>Ship front:</h1>
+                <div class="col-md-12 text-cente">
+                    <p>Depth: <span class="glyphicon glyphicon-plus"></span> 0 <span class="glyphicon glyphicon-minus"></span></p>
+                </div>
+                <div class="col-md-12">
+                    @await Component.InvokeAsync("FrontSlice", new { cc = ship, y = 0 })
+                </div>
+            </td>
+            <td>
+                Dock Side
+            </td>
+            <td>
+                Dock Front
+            </td>
         </tr>
         <tr>
             <td colspan="4" class="text-center">Ship + Dock picture</td>
@@ -188,15 +195,20 @@
                 </tr>
                 }else{
 
-                @for (int i = 0; i < tasks.Count; i++)
+                for(int i = 0; i < tasks.Count; i++)
                 {
                     Docker.Models.Task task = tasks[i];
+<<<<<<< HEAD:Docker/Docker/Views/Home/Index.cshtml
+                    
+                    <tr class="@(@task.RequiredTime.TotalMinutes <= 0 ? "bg-success" : "")">
+=======
 
                     <tr class="@(@task.Status == Docker.Models.TaskStatus.FINISHED ? "bg-success" : @task.Status == Docker.Models.TaskStatus.INPROGRESS ? "bg-warning" : "")">
+>>>>>>> a608ea5fb7fd3f5e3f8b7a54e69d28ae39af88be:poc/Docker/Docker/Views/Home/Index.cshtml
                         <td>@task.Payload.ID</td>
                         <td>
                             @task.Payload.ContainerLocation.Name
-                            <br />@task.Payload.X : @task.Payload.Y : @task.Payload.Z
+                           <br />@task.Payload.X : @task.Payload.Y : @task.Payload.Z
                         </td>
                         <td>@task.Destination.Name</td>
                         <td>@task.RequiredTime.TotalMinutes minutes</td>

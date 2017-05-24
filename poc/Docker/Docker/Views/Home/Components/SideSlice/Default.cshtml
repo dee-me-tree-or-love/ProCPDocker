@@ -6,12 +6,12 @@
 }
 
 
-<div class="col-md-3">
+<div class="col-md-12">
     <table class="table-bordered">
         @for (int i = Z - 1; i >= 0; i--)
         {
             <tr>
-                @for(int j = 0; j < Y; j++)
+                @for (int j = 0; j < Y; j++)
                 {
                     if (@Model[j, i] != null)
                     {

@@ -1,17 +1,15 @@
 <template>
      <div class="col-md-9" style="height:100%;border:1px solid black;" id="main-simulation">
-          <button v-on:click="getTasks">get more tasks</button>
-          <button v-on:click="performTask">do task</button>
-          <button v-on:click="reverseTask">reverse task</button>
-          <button v-on:click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
-          <button v-on:click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>
-          <button v-on:click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
-          <button v-on:click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
-          <button v-on:click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
+          <button @click="getTasks">get more tasks</button>
+          <button @click="performTask">do task</button>
+          <button @click="reverseTask">reverse task</button>
+          <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+          <button @click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>
+          <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
+          <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
+          <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
 
-          <div id="playground">
-               <canvas id="canvas-playground"></canvas>
-          </div>
+          <CanvasDrawingComponent></CanvasDrawingComponent>
 
           <input type="range" min="0" max="100" value="0" step="1" oninput="sliderChanged()" id="slider"></input>
           <p></p>
@@ -19,6 +17,7 @@
 </template>
 <script>
      import Task from './models/Task.js';
+     import CanvasDrawingComponent from './canvas_drawing_component.vue';
 
      var that;
      var timer;
@@ -26,13 +25,17 @@
      var interval = 1000;
      var tasks = [];
      var completedtasks = [];
-     var counter = 0
+     var counter = 0;
+     var currentTask;
+     var events = [];
 
      export default {
           data() {
                return {
                     tasks,
                     completedtasks,
+                    currentTask,
+                    events,
                }
           },
           methods: {
@@ -41,24 +44,42 @@
                       .then(function(response){
                         console.log(response.data);
 
-                        for(var i = 0;i < response.data.tasks.length;i++){
-                             tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,"events object"))
-                             counter++;
+                        if(response.status == 200){
+                          for(var i = 0;i < response.data.tasks.length;i++){
+                               for(var j = 0;j < response.data.tasks[i].events.length;j++){
+                                    //TODO set the events it is coming up with an error for some reason
+                                   //events.push(new Event("id","type","message","time_stamp")) //events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp))
+                               }
+                               tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
+                               counter++;
+                          }
+                        } else {
+                          //TODO: handle bad responses
                         }
                          //response.data.tasks[i].id
 
                       });
                       this.$emit('tasks',tasks);
 
+
                },
+               ///not used anymore during play simulation only for testing Dotask button
                performTask(){
                     if(tasks.length > 0){
-                         completedtasks.push(tasks.shift());
-                         document.getElementById('slider').value++;
+                        var temp = tasks.shift();
+
+                        //TODO: what's up with that???
+                        currentTask = temp;
+                        console.log(currentTask.events);
+
+                        completedtasks.push(temp);
+                        document.getElementById('slider').value++;
+                        //this.$emit('currentTask', currentTask);
                     }else {
                          alert("no more tasks to perform");
                     }
                },
+               ///not used anymore during play simulation only for testing reverse task button
                reverseTask(){
                     if(completedtasks.length > 0){
                          tasks.unshift(completedtasks.pop());
@@ -74,13 +95,20 @@
                     if(play){
                          play = false;
                          timer = setInterval(function (){
+                              var temp = tasks.shift();
+
+                              currentTask = temp;
+                              //console.log(currentTask.events);
+
                               if(tasks.length > 0){
-                                   completedtasks.push(tasks.shift());
+                                   completedtasks.push(temp);
                                    document.getElementById('slider').value++;
                               }else {
                                    that.getTasks();
                               }
                          },interval);
+
+                         //this.$emit('currentTask', currentTask);
                     }
 
                },
@@ -108,6 +136,9 @@
                     }
                }
 
+          },
+          components:{
+               'CanvasDrawingComponent': CanvasDrawingComponent
           }
 
      }
