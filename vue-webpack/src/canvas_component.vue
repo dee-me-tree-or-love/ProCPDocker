@@ -27,13 +27,15 @@
      var completedtasks = [];
      var counter = 0;
      var currentTask;
+     var events = [];
 
      export default {
           data() {
                return {
                     tasks,
                     completedtasks,
-                    currentTask
+                    currentTask,
+                    events,
                }
           },
           methods: {
@@ -44,7 +46,11 @@
 
                         if(response.status == 200){
                           for(var i = 0;i < response.data.tasks.length;i++){
-                               tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,"events object"))
+                               for(var j = 0;j < response.data.tasks[i].events.length;j++){
+                                    //TODO set the events it is coming up with an error for some reason
+                                   //events.push(new Event("id","type","message","time_stamp")) //events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp))
+                               }
+                               tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
                                counter++;
                           }
                         } else {
@@ -55,7 +61,9 @@
                       });
                       this.$emit('tasks',tasks);
 
+
                },
+               ///not used anymore during play simulation only for testing Dotask button
                performTask(){
                     if(tasks.length > 0){
                         var temp = tasks.shift();
@@ -66,11 +74,12 @@
 
                         completedtasks.push(temp);
                         document.getElementById('slider').value++;
-                        this.$emit('currentTask', currentTask);
+                        //this.$emit('currentTask', currentTask);
                     }else {
                          alert("no more tasks to perform");
                     }
                },
+               ///not used anymore during play simulation only for testing reverse task button
                reverseTask(){
                     if(completedtasks.length > 0){
                          tasks.unshift(completedtasks.pop());
@@ -86,13 +95,20 @@
                     if(play){
                          play = false;
                          timer = setInterval(function (){
+                              var temp = tasks.shift();
+
+                              currentTask = temp;
+                              //console.log(currentTask.events);
+
                               if(tasks.length > 0){
-                                   completedtasks.push(tasks.shift());
+                                   completedtasks.push(temp);
                                    document.getElementById('slider').value++;
                               }else {
                                    that.getTasks();
                               }
                          },interval);
+
+                         //this.$emit('currentTask', currentTask);
                     }
 
                },

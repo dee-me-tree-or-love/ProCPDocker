@@ -2,7 +2,8 @@
   <div class="container" id="app">
        <CanvasComponent @tasks="setTasks"></CanvasComponent>
        <!-- TODO: add other components and fix currentTask problem -->
-       <!-- <EventContainerComponent :events="currentTask"></EventContainerComponent> -->
+
+       <EventContainerComponent :events="events"></EventContainerComponent> -->
        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
        <button @click="getSimulation" >get mock simulation</button>
   </div>
@@ -22,12 +23,18 @@ export default {
     data () {
          return {
               tasks:[],
-              ships:[]
+              ships:[],
+              events:[],
+              //events
          }
     },
     methods:{
          setTasks(value){
              this.tasks = value;
+             if(this.tasks.length > 0){
+                  this.events = tasks[0].events;
+             }
+
         },
         getSimulation(){
              axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/simulation/sim1')
