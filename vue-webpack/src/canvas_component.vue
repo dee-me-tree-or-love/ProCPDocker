@@ -9,9 +9,7 @@
           <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
           <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
 
-          <div id="playground">
-               <canvas id="canvas-playground"></canvas>
-          </div>
+          <CanvasDrawingComponent></CanvasDrawingComponent>
 
           <input type="range" min="0" max="100" value="0" step="1" oninput="sliderChanged()" id="slider"></input>
           <p></p>
@@ -19,6 +17,7 @@
 </template>
 <script>
      import Task from './models/Task.js';
+     import CanvasDrawingComponent from './canvas_drawing_component.vue';
 
      var that;
      var timer;
@@ -121,6 +120,9 @@
                     }
                }
 
+          },
+          components:{
+               'CanvasDrawingComponent': CanvasDrawingComponent
           }
 
      }
