@@ -3,7 +3,7 @@ const random = require('random-js')();
 
 class ContainerFactory{
 	
-	static create(number){
+	static create(number, id){
 		
 		if(isNaN(number)){
 			
@@ -20,7 +20,7 @@ class ContainerFactory{
 				id: uuid(),
 				descritpion:"",
 				address:{
-					location_id:"",      /* TODO: change later? */
+					location_id: id ? id : '',
 					x:0,
 					y:0,
 					z:0

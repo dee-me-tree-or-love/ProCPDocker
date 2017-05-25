@@ -82,11 +82,6 @@ a) a) b) b) a) a) a) a) a) b)
 
 */
 
-
-
-
-
-
 'use strict';
 const LambaHelper = require('basic-lambda-helper');
 const ContainerFactory = require('./Container').ContainerFactory;
@@ -155,7 +150,6 @@ module.exports.newSimulation = (event, context, callback) => {
         totalContainersForSim += filled;
 
         delete storage.filled;
-        // storage.id = uuid();
         storage.containers_max = total;
         storage.containers_to_fill = filled;
         storage.containers_current = 0;
@@ -178,7 +172,6 @@ module.exports.newSimulation = (event, context, callback) => {
         delete ship.unload;
         delete ship.load;
 
-        // ship.id = uuid();
         ship.containers_max = total;
         ship.containers_current = filled;
         ship.containers_load = load;
@@ -254,14 +247,6 @@ module.exports.newSimulation = (event, context, callback) => {
                 }
             } while (!isPlaced);
         });
-
-        //TODO:
-        // loop trough the containers_load
-        // pick a random storage
-        // check if we can fit a container
-        // put the container
-        // if we don't have space in all the storages, throw an error
-
     });
 
     //Distribute containers "TO LOAD" from ships to storages
@@ -282,11 +267,15 @@ module.exports.newSimulation = (event, context, callback) => {
         // Add containers to load from ships
         storage.containers_current = per_storage[storage.id];
 
+        if(typeof storage.containers_current === 'undefined'){
+
+            storage.containers_current = [];
+        }
         // Fill to desired capacity
         let to_fill = storage.containers_to_fill - storage.containers_current.length;
         if (to_fill > 0) {
 
-            let containers = ContainerFactory.create(to_fill);
+            let containers = ContainerFactory.create(to_fill, storage.id);
             storage.containers_current = storage.containers_current.concat(containers);
             all_containers = all_containers.concat(containers);
         }
