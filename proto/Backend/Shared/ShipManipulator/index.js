@@ -26,6 +26,7 @@ class ShipManipulator {
         return loads;
     };
 
+
     // Runtime analysis: O(n) :D 
     static sortShipsByETA(ships) {
         // counting sort way: 
@@ -81,11 +82,32 @@ class ShipScheduler {
 
     constructor(configs) {
         this.configs = configs;
+
+        // sort connections:
+        this.sortConnections(this.configs.docks);
+        // console.log("sorted docks");
+        // for (let i in this.configs.docks) {
+        //     console.log(this.configs.docks[i].connections);
+        // }
+
+        this.sortConnections(this.configs.storages);
+        // console.log("sorted storages");
+        // for (let i in this.configs.storages) {
+        //     console.log(this.configs.storages[i].connections);
+
+        // }
+
+
         this.storageHashTable = this.makeHashTableWithUUIDs(this.configs.storages);
         this.shipHashTable = this.makeHashTableWithUUIDs(this.configs.ships);
         this.dockHashTable = this.makeHashTableWithUUIDs(this.configs.docks);
         this.connectionMatrix = this.configs.connections;
-        this.DEPARTUREMARGIN = 2;
+
+        this.DEPARTUREMARGIN = 2; // extra time for each ETD - just to make sure that the schedule is not toooooo clustered
+
+        // to get how much capacity is left 
+        this.initializeStorageAvailableCapacity();
+
         this.initializeProcessIntervalsOnDocks();
         console.log(this.configs.docks);
         // console.log("created the ship scheduler !!!! ")
@@ -114,6 +136,154 @@ class ShipScheduler {
         }
     }
 
+
+    /**
+     * Initializes the storages with the available capacity property
+     */
+    initializeStorageAvailableCapacity() {
+        for (let key in this.storageHashTable) {
+            let storage = this.storageHashTable[key];
+            storage.availableCapacity = storage.containers_max - storage.containers_current.length;
+            console.log("initialized the availble capacity for the storage: " + key + " : " + storage.availableCapacity);
+        }
+    }
+
+
+    /**
+     * Sorts the connections of an entities: Dock | Storage by the edge weight
+     * @param {*} entities 
+     */
+    sortConnections(entities) {
+        for (let i = 0; i < entities.length; i++) {
+            entities[i].connections.sort((a, b) => {
+                return a.weight - b.weight;
+            })
+        }
+        return entities;
+    }
+
+
+
+
+
+    determineDockPriority(ship, bursttimes) {
+
+        let dockpriority = [];
+
+
+
+        /* this is about the stuff for the LOADING part of the endeavor
+        --------------------------------------------------------------*/
+        // per dock
+        // console.log(this.connectionMatrix[storage]);
+        // iterate over the docks connected to this storage:
+        for (let dock in this.dockHashTable) {
+            let max_burst_size = -1;
+            // for every storage in the loads of the ship
+            for (let storage in ship.loads) {
+
+
+                // display what you have here
+                // console.log(this.connectionMatrix[storage][dock]);
+                // initialize the new chunk
+                if (!bursttimes[dock]) {
+                    bursttimes[dock] = {};
+                }
+
+                if (!bursttimes[dock][storage]) {
+                    bursttimes[dock][storage] = {};
+                }
+
+                bursttimes[dock][storage].count = ship.loads[storage].count;
+                bursttimes[dock][storage].loadcontainers = ship.loads[storage].containers;
+                bursttimes[dock][storage].burstsize = {};
+
+                bursttimes[dock][storage].burstsize.loading =
+                    (ship.loads[storage].count * this.connectionMatrix[storage][dock].weight) +
+                    Math.ceil(ship.loads[storage].count / this.dockHashTable[dock].number_loaders);
+
+                // console.log("time to load the containers: " + ship.loads[storage].count / this.dockHashTable[dock].number_loaders);
+
+                if (bursttimes[dock][storage].burstsize.loading > max_burst_size) {
+                    max_burst_size = bursttimes[dock][storage].burstsize.loading;
+                }
+            }
+
+
+
+            /* this is about the stuff for the UNLOADING part of the endeavor
+            --------------------------------------------------------------*/
+            // figure out where to unload with the best efficiency
+            // the connections between the docks and sotrages are sorted in increasing order on consturcting
+
+            // get how many containers one needs to unload
+            let numberOfUnloads = ship.containers_unload.length;
+
+            // per each dock priority there are N unload destinations
+            let unloadDestinations = [];
+
+            console.log("Getting unload destinations for ship: " + ship.id + " at dock: " + dock);
+
+            let makeUnloadDestinations = (dockHashTable, storageHashTable, dock, ship, unloadDestinations, optionIndex, unloadStartIndex, numberOfUnloads) => {
+
+                let storageId = dockHashTable[dock].connections[optionIndex].storage;
+                let storageOption = storageHashTable[storageId];
+
+                console.log("can accept: " + storageOption.availableCapacity);
+
+                let difference = storageOption.availableCapacity - numberOfUnloads;
+
+                if (difference >= 0) {
+                    // if the number of new containers that will be allocated to the storage does not exceed the capacity
+                    // update the available capacity to the correct value: the left capacity
+                    // and stop the run
+                    storageOption.availableCapacity = difference;
+                    // make sure the containers are recorded well to be unloaded to this destination
+                    unloadDestinations.push({
+                        storageId: storageId,
+                        containers: ship.containers_unload.slice(), // making the shallow copy, but not sure if should...
+                    });
+                    console.log("returns");
+                    return;
+
+                } else {
+                    console.log("couldn't fit all");
+                    let endIndex = unloadStartIndex + storageOption.availableCapacity;
+                    unloadDestinations.push({
+                        storageId: storageId,
+                        containers: ship.containers_unload.slice(unloadStartIndex, endIndex), // making the shallow copy, but not sure if should...
+                    });
+                    storageOption.availableCapacity = 0;
+                    difference = (-1) * difference;
+                    makeUnloadDestinations(dockHashTable, storageHashTable, dock, ship, unloadDestinations, optionIndex + 1, endIndex, difference)
+                }
+            }
+
+            // bursttimes[dock].unloading = ship.containers_unload.length;
+            this.initializeStorageAvailableCapacity();
+            let dockHTCopy = Object.assign({}, this.dockHashTable);
+            let storageHTCopy = Object.assign({}, this.storageHashTable);
+            // console.log(storageHTCopy);
+            makeUnloadDestinations(dockHTCopy, storageHTCopy, dock, ship, unloadDestinations, 0, 0, numberOfUnloads);
+            console.log("\n\nREALLY SCARY OPERTATION ")
+            console.dir(unloadDestinations);
+            console.log("REALLY SCARY OPERTATION \n\n")
+
+
+
+            // determine the maximum burst time
+            bursttimes[dock].maxburstsize = max_burst_size;
+            dockpriority.push({ dock_id: dock, burstsize: max_burst_size });
+        }
+        return dockpriority;
+    }
+
+
+
+
+
+
+
     /**
      * Calculates how much would it take to move the containers from the storage to dock for each ship take in every docking case
      */
@@ -128,41 +298,8 @@ class ShipScheduler {
             // console.log(ship.loads);
             // a slightly weird way to get it to work, right? 
             if ((Object.keys(ship.loads).length) > 0) {
-                let dockpriority = [];
 
-                // per dock
-                // console.log(this.connectionMatrix[storage]);
-                // iterate over the docks connected to this storage:
-                for (let dock in this.dockHashTable) {
-                    let max_burst_size = -1;
-                    // for every storage in the loads of the ship
-                    for (let storage in ship.loads) {
-
-
-                        // display what you have here
-                        // console.log(this.connectionMatrix[storage][dock]);
-                        // initialize the new chunk
-                        if (!bursttimes[dock]) {
-                            bursttimes[dock] = {};
-                        }
-
-                        if (!bursttimes[dock][storage]) {
-                            bursttimes[dock][storage] = {};
-                        }
-
-                        bursttimes[dock][storage].count = ship.loads[storage].count;
-                        bursttimes[dock][storage].containers = ship.loads[storage].containers;
-                        bursttimes[dock][storage].burstsize = ship.loads[storage].count * this.connectionMatrix[storage][dock].weight;
-
-                        if (bursttimes[dock][storage].burstsize > max_burst_size) {
-                            max_burst_size = bursttimes[dock][storage].burstsize;
-                        }
-                    }
-
-                    // determine the maximum burst time
-                    bursttimes[dock].maxburstsize = max_burst_size;
-                    dockpriority.push({ dock_id: dock, burstsize: max_burst_size });
-                }
+                let dockpriority = this.determineDockPriority(ship, bursttimes);
 
                 // order the docking options in the order of the burstsize
                 // I know it's bad, but well... works for now I guess
@@ -196,6 +333,9 @@ class ShipScheduler {
      * @param {*} ship 
      */
     determineDocking(ship) {
+
+        // need to keep in mind the unloading of the ship also!
+
         console.log("\ndocking the ship: " + ship.id + " ; eta: " + ship.eta);
         // determine if one of the options for the ship can host the ship with the given eta:
         for (let i = 0; i < ship.dockpriority.length; i++) {
@@ -204,7 +344,7 @@ class ShipScheduler {
             if (!this.processIntevalMakesOverlaps(
                     ship.dockpriority[i].dock_id, // the dock id
                     ship.eta, // the estimated time of arrival
-                    (ship.eta + ship.dockpriority[i].burstsize) // the estimated time of departure
+                    (ship.eta + ship.dockpriority[i].burstsize) // the estimated time of departure only with load
                 )) {
                 console.log("should dock to dock:" + ship.dockpriority[i].dock_id);
 
@@ -284,7 +424,7 @@ class ShipScheduler {
      * @param {*} etd 
      * @param {*} desc 
      */
-    prapareProcessInterval(ship, eta, etd, desc) {
+    prapareProcessInterval(ship, eta, etd, containers, desc) {
         return { ship: ship, eta: eta, etd: etd, description: desc };
     }
 
@@ -366,15 +506,29 @@ class ShipScheduler {
             this.determineDocking(this.configs.ships[i]);
         }
 
+        let dockSchedule = [];
+
         for (let key in this.dockHashTable) {
-            let dock = this.dockHashTable[key]
+            let dock = this.dockHashTable[key];
+
+            // logging stuff can be removed
             console.log("\n dock id: " + key);
             console.log("dock process intervals:");
+
             for (let i in dock.processintervals) {
+
+                // logging stuff can be removed
                 console.dir(dock.processintervals[i]);
+
+                dockSchedule.push({
+                    dock_id: key,
+                    interval: dock.processintervals[i]
+                });
             }
 
         }
+
+        return dockSchedule;
     }
 
     /**
@@ -402,3 +556,8 @@ let data = require("./expecteddata.js");
 let SS = new ShipScheduler(data.resp5);
 
 let resp = SS.produceTiming();
+console.log("\n ******** REPSONSE ********")
+console.dir(resp);
+
+console.log("\n ******** SHIPS ********")
+console.dir(SS.configs.ships[0])
