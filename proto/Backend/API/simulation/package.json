@@ -12,6 +12,7 @@
     "basic-lambda-helper": "^1.1.1",
     "harbor-builder": "file:../../Shared/HarborBuilder",
     "harbor-validator": "file:../../Shared/HarborValidator",
+    "db-helper": "file:../../Shared/DBHelper",
     "random-js": "^1.0.8",
     "uuid": "^3.0.1"
   }

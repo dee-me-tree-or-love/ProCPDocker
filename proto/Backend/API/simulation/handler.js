@@ -1,105 +1,22 @@
-/*
-By testing with the same config data, the function sometimes works and sometimes does not - I do not know what is the reason for its behavior
-so the data I pass: 
-
-{
-    "docks": [
-        {
-            "id": "1",
-            "number_loaders": 2
-        }
-    ],
-    "storages": [
-        {
-            "x": 5,
-            "y": 2,
-            "z": 1,
-            "id": "s1",
-            "filled": 10
-        },
-        {
-            "x": 5,
-            "y": 2,
-            "z": 1,
-            "id": "s1",
-            "filled": 80
-        }
-    ],
-    "ships": [
-        {
-            "id": "ship1",
-            "eta": 6,
-            "x": 1,
-            "y": 2,
-            "z": 2,
-            "filled": 80,
-            "unload": 60,
-            "load": 40
-        }
-    ]
-}
-
-the result I get is either of the two: 
-a) 
-{
-  "docks": [
-    {
-      "id": "7c3f704a-28ff-4005-a703-72135cf39bea",
-    ...
-        }
-      ]
-    }
-  ],
-  "storages": [
-    {
-      "x": 5,
-    ...
-      ]
-    }
-  ],
-  "ships": [
-    {
-      "id": "3bdc2335-1ef3-46e4-9cdf-5ad22c05f35d",
-      "eta": 6,
-      "x": 1,
-      "y": 2,
-     ...
-        }
-      ]
-    }
-  ],
-  "simulation_id": "2362f43b-280f-48ad-b581-dc903ee0f7f3",
-  "all": 13
-}
-b) 
-{
-  "message": "Internal server error"
-}
-
-from the series of 10 requests with the same data I have recieved the following trial results: 
-a) a) b) b) a) a) a) a) a) b) 
-
-
-*/
-
 'use strict';
 const LambaHelper = require('basic-lambda-helper');
 const ContainerFactory = require('./Container').ContainerFactory;
 const HarborValidator = require('harbor-validator');
 const HarborBuilder = require('harbor-builder');
-const SQS = require('aws-sdk').SQS;
+const DBHelper = require('db-helper');
+const S3 = require('aws-sdk').S3;
 
 const uuid = require('uuid');
 const random = require('random-js')();
 
-const SQS_URL = "https://sqs.eu-central-1.amazonaws.com/277346611766/entities";
 // submit new simulation
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#new-simulation
+// 
+// https:// github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#new-simulation
 module.exports.newSimulation = (event, context, callback) => {
 
     let lhelper = new LambaHelper(event, context, callback);
     try {
+
         event.body = JSON.parse(event.body);
     } catch (e) {
 
@@ -115,6 +32,7 @@ module.exports.newSimulation = (event, context, callback) => {
 
     let errors = HarborValidator.verifyConfiguration(config);
     if (errors.length > 0) {
+
         lhelper.done({
             statusCode: 400,
             body: errors
@@ -122,22 +40,13 @@ module.exports.newSimulation = (event, context, callback) => {
         return;
     }
 
-    // construct connections between the harbor instances: 
-    // !!_IMPORTANT_!! 
-    // the code line modifies the configs by adding the connections!
-    // returns the new structure with uuids and connections as entities, and connections as global edges
+    const original_conf = JSON.stringify(config);
+    // Construct Harbor
     config = HarborBuilder.constructHarbor(config).entities;
 
     let totalContainersForSim = 0;
     let totalCapacity = 0;
     let movingContainers = 0;
-
-    // UUIDs are assigned in .constructHarbor(config)
-    // //Calculate containers
-    // config.docks.forEach(dock => {
-
-    //     dock.id = uuid();
-    // });
 
     // Calculate container capacity for storages
     config.storages.forEach(storage => {
@@ -191,18 +100,13 @@ module.exports.newSimulation = (event, context, callback) => {
         }, true);
     }
 
-    let all_containers = [];
-    //Distribute containers
-    let containers_to_storage = [];
+    // Distribute containers
+	let all_containers = [];
+	let containers_to_storage = [];
     config.ships.forEach(ship => {
 
-        let containers = ContainerFactory.create(ship.containers_current);
-        containers.forEach(container => {
-
-            container.address.location_id = ship.id;
-        });
-        ship.containers_current = containers;
-        ship.containers_unload = containers.slice(0, ship.containers_unload);
+        ship.containers_current = ContainerFactory.create(ship.containers_current, ship.id);
+        ship.containers_unload = ship.containers_current.slice(0, ship.containers_unload);
         ship.containers_load = ContainerFactory.create(ship.containers_load);
 
         all_containers = all_containers.concat(ship.containers_current);
@@ -242,14 +146,14 @@ module.exports.newSimulation = (event, context, callback) => {
                     isPlaced = true;
                 } else {
 
-                    //Remove the filled storage from the possibilities
+                    // Remove the filled storage from the possibilities
                     freeStorages.splice(storage_index, 1);
                 }
             } while (!isPlaced);
         });
     });
 
-    //Distribute containers "TO LOAD" from ships to storages
+    // Distribute containers "TO LOAD" from ships to storages
     let per_storage = {};
     containers_to_storage.forEach(container => {
 
@@ -261,7 +165,7 @@ module.exports.newSimulation = (event, context, callback) => {
         per_storage[address].push(container);
     });
 
-    //Fill up storages to capacity
+    // Fill up storages to capacity
     config.storages.forEach(storage => {
 
         // Add containers to load from ships
@@ -283,90 +187,223 @@ module.exports.newSimulation = (event, context, callback) => {
         delete storage.containers_to_fill;
     });
 
-    let saveEntities = (entities) => {
-        return new Promise((resolve, reject) => {
+    // Persist entities in DB
+    const connection = DBHelper.getConnection();
 
-            let Entries = [];
-            entities.forEach(entity => {
-                Entries.push({
-                    Id: entity.id,
-                    MessageBody: JSON.stringify(entities[i])
-                });
-            });
-            let sqs = new SQS();
-            sqs.sendMessageBatch({
-                Entries,
-                QueueUrl: SQS_URL
-            }, function(err, data) {
-                if (err) {
+    config.simulation = {
+    	id: uuid()
+	};
+    config.timelines = [];
+    config.timelines.push({
+		id: uuid(),
+		name: "default_timeline",
+		time_zero: new Date().getTime(),
+		simulation_id: config.simulation.id
+	});
+    let timeline_id = config.timelines[0].id;
 
-                    reject(err);
-                } else {
+    connection.connect();
+    const runQuery = (query, params, message) => {
 
-                    resolve(data);
-                }
-            });
+		return new Promise((resolve, reject) => {
+
+			console.log(`${message}: PENDING`);
+			connection.query(query, params, (error, results, fields) => {
+				if (error) {
+
+					console.log(`${message}: FAIL`);
+					reject(error);
+				}else{
+
+					console.log(`${message}: OK`);
+					resolve(results);
+				}
+			});
+		});
+	};
+
+    new Promise((resolve, reject) => {
+        // Begin transaction
+		connection.beginTransaction(function(err) {
+			if (err) {
+
+			    reject(err);
+			}else{
+
+			    resolve();
+			}
+		});
+    })
+		// Create simulation
+        .then(() => {
+
+			return runQuery('INSERT INTO Simulations SET ? ',config.simulation,'Creating Simulation');
+        })
+		// Create timeline
+		.then(() => {
+
+    		return runQuery('INSERT INTO Timelines SET ?', config.timelines,'Creating Timeline');
+		})
+		// Create storages
+		.then(() => {
+
+			let storages = [];
+			const addStorage = (id,x,y,z,type) => {
+				storages.push([id, x, y, z, type, timeline_id]);
+			};
+    		config.storages.forEach(storage => {
+    			addStorage(storage.id,storage.x,storage.y,storage.z,'storage');
+			});
+    		config.ships.forEach(ship => {
+    			addStorage(ship.id,ship.x,ship.y,ship.z,'ship');
+			});
+    		config.docks.forEach(dock => {
+    			addStorage(dock.id,0,0,0,'dock');
+			});
+    		return runQuery('INSERT INTO ContainerHold (id, x, y, z, type, timeline_id) VALUES ?', [storages], 'Creating Storages');
+		})
+		// Create docks
+		.then(() => {
+
+			console.log(`Creating Docks: PENDING`);
+			let docks = [];
+			config.docks.forEach(dock => {
+
+				docks.push([
+					dock.id,
+					dock.number_loaders
+				]);
+			});
+			return runQuery('INSERT INTO Docks (id, nr_loaders) VALUES ?', [docks],'Creating Docks');
+		})
+		// Create containers
+		.then(() => {
+
+    		for(let i = 0; i < all_containers.length; i++){
+
+    			all_containers[i] = [
+    				all_containers[i].id,
+					all_containers[i].address.location_id,
+					all_containers[i].cargo_type,
+					all_containers[i].weight,
+					all_containers[i].description,
+					all_containers[i].address.x,
+					all_containers[i].address.y,
+					all_containers[i].address.z,
+				];
+			}
+			return runQuery('INSERT INTO Containers (id, container_hold, cargo_type, weight, description, x, y, z) VALUES ?', [all_containers], 'Create containers');
+		})
+		// Create ships
+		.then(() => {
+
+			let ships = [];
+			config.ships.forEach(ship => {
+				ships.push([
+					ship.id,
+					ship.eta ? ship.eta : 0,
+					ship.etd ? ship.etd : 0
+				]);
+			});
+			return runQuery('INSERT INTO Ships (container_hold, eta, etd) VALUES ?', [ships], 'Creating Ships');
+		})
+		// Link ship containers
+		.then(() => {
+
+			let ship_containers = [];
+			config.ships.forEach(ship => {
+				ship.containers_current.forEach(container => {
+
+					ship_containers.push([container.id, 'onboard', container.address.location_id]);
+				});
+				ship.containers_load.forEach(container => {
+
+					ship_containers.push([container.id, 'to_load', ship.id]);
+				});
+				ship.containers_unload.forEach(container => {
+
+					ship_containers.push([container.id, 'to_unload', container.address.location_id]);
+				});
+			});
+			return runQuery('INSERT INTO ShipContainer (container_id, type, ship_id) VALUES ?', [ship_containers], 'Link ship containers');
+		})
+		// Connect docks and storages
+		.then(() => {
+
+			let connections = [];
+			config.docks.forEach(dock => {
+
+				dock.connections.forEach(con => {
+
+					connections.push([
+						con.storage,
+						con.dock,
+						con.weight
+					]);
+				});
+			});
+			return runQuery('INSERT INTO StorageDock (storage_id, dock_id, weight) VALUES ?', [connections],' Connect docks and storages');
+		})
+		// Commit
+		.then(() => {
+			return new Promise((resolve, reject) => {
+
+				connection.commit((err) => {
+					if (err) {
+
+						reject(err);
+					}else{
+
+						resolve();
+					}
+				});
+			});
+		})
+		// Save configuration to S3
+		.then(() => {
+			return new Promise((resolve, reject) => {
+
+				let params = {
+					Bucket: 'docker-simulations',
+					Key: `${config.simulation.id}.json`,
+					Body: original_conf
+				};
+				let s3 = new S3();
+				s3.putObject(params, function(err, data) {
+					if (err) {
+
+						reject(err);
+					}
+					else {
+
+						lhelper.done({
+							statusCode: 200,
+							body: {
+								simulation_id: config.simulation.id,
+								timeline_id,
+								download_url: `https:// s3.eu-central-1.amazonaws.com/docker-simulations/${config.simulation.id}.json`
+							}
+						});
+					}
+				});
+			});
+		})
+		// Handle errors
+		.catch(error => {
+
+			connection.rollback(function(){
+                connection.end();
+				lhelper.done({
+					statusCode: 400,
+					body: error
+				});
+			});
         });
-    };
-
-    all_containers.forEach(container => {
-        container.type = 'container';
-    });
-
-    // saveEntities(all_containers)
-    //     .then(d => {
-    //         lhelper.done({
-    //             statusCode: 200,
-    //             body: {
-    //                 d,
-    //                 all_containers
-    //             }
-    //         });
-    //     })
-    //     .catch(e => {
-    //         lhelper.done({
-    //             statusCode: 400,
-    //             body: {
-    //                 e,
-    //                 all_containers
-    //             }
-    //         });
-    //     });
-
-    // containers X
-    // ships
-    // docks
-    // storages
-    // time line
-    // simulation
-
-
-    //TODO:
-    // Put all entity instances in a queue to insert in the DB
-
-    //TODO:
-    // Find where to dock, according to where the nearest storage is with the most containers
-    // Sum containers in storage to get and multiply by the weighted edge to the dock and then find the average
-    // Dock the ship to the dock with the smallest average distance to the storage and the ETA
-    // Generate tasks according to the distance from dock to storage
-    //      Write algorithm to correctly place the containers on the ship
-    //      Maybe consider the containers which are already on the ship and rearrange them, maybe
-    // Put all events in a FIFO queue and insert in DB in order
-
-    //calculate containers
-    config.simulation_id = uuid();
-    config.all = all_containers.length;
-
-    lhelper.done({
-        statusCode: 200,
-        body: config
-    });
-
 };
 
 // get simulation data function
-//
-// https: //github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_id
+// 
+// https: // github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_id
 
 module.exports.getSimulation = (event, context, callback) => {
 
@@ -393,7 +430,7 @@ module.exports.getSimulation = (event, context, callback) => {
                 current_time: 0,
                 current_timeline_id: "tl1",
                 scope: {
-                    requested: "Yes, you can send a request body with GET but it should not have any meaning. -- see: http://stackoverflow.com/questions/978061/http-get-with-request-body",
+                    requested: "Yes, you can send a request body with GET but it should not have any meaning. -- see: http:// stackoverflow.com/questions/978061/http-get-with-request-body",
                 },
             }),
         };
@@ -404,8 +441,8 @@ module.exports.getSimulation = (event, context, callback) => {
 };
 
 // get configuration of the simulation
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idconfiguration
+// 
+// https:// github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idconfiguration
 
 module.exports.getSimulationConfig = (event, context, callback) => {
 
@@ -463,8 +500,8 @@ module.exports.getSimulationConfig = (event, context, callback) => {
 };
 
 // get the timelines of the simulation
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idtimelines
+// 
+// https:// github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idtimelines
 
 module.exports.getSimulationHarborTimelines = (event, context, callback) => {
 
@@ -529,8 +566,8 @@ module.exports.getSimulationHarborTimelines = (event, context, callback) => {
 };
 
 // get the harbor data about storages, docks and ships
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idtimelinestimeline_id-docks--ships--storages-all
+// 
+// https:// github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idtimelinestimeline_id-docks--ships--storages-all
 
 module.exports.getSimulationHarborData = (event, context, callback) => {
     let simID = "";
