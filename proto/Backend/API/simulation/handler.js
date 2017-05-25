@@ -4,13 +4,14 @@ const ContainerFactory = require('./Container').ContainerFactory;
 const HarborValidator = require('harbor-validator');
 const HarborBuilder = require('harbor-builder');
 const DBHelper = require('db-helper');
+const S3 = require('aws-sdk').S3;
 
 const uuid = require('uuid');
 const random = require('random-js')();
 
 // submit new simulation
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#new-simulation
+// 
+// https:// github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#new-simulation
 module.exports.newSimulation = (event, context, callback) => {
 
     let lhelper = new LambaHelper(event, context, callback);
@@ -39,10 +40,8 @@ module.exports.newSimulation = (event, context, callback) => {
         return;
     }
 
-    // construct connections between the harbor instances: 
-    // !!_IMPORTANT_!! 
-    // the code line modifies the configs by adding the connections!
-    // returns the new structure with uuids and connections as entities, and connections as global edges
+    const original_conf = JSON.stringify(config);
+    // Construct Harbor
     config = HarborBuilder.constructHarbor(config).entities;
 
     let totalContainersForSim = 0;
@@ -101,7 +100,7 @@ module.exports.newSimulation = (event, context, callback) => {
         }, true);
     }
 
-    //Distribute containers
+    // Distribute containers
 	let all_containers = [];
 	let containers_to_storage = [];
     config.ships.forEach(ship => {
@@ -147,14 +146,14 @@ module.exports.newSimulation = (event, context, callback) => {
                     isPlaced = true;
                 } else {
 
-                    //Remove the filled storage from the possibilities
+                    // Remove the filled storage from the possibilities
                     freeStorages.splice(storage_index, 1);
                 }
             } while (!isPlaced);
         });
     });
 
-    //Distribute containers "TO LOAD" from ships to storages
+    // Distribute containers "TO LOAD" from ships to storages
     let per_storage = {};
     containers_to_storage.forEach(container => {
 
@@ -166,7 +165,7 @@ module.exports.newSimulation = (event, context, callback) => {
         per_storage[address].push(container);
     });
 
-    //Fill up storages to capacity
+    // Fill up storages to capacity
     config.storages.forEach(storage => {
 
         // Add containers to load from ships
@@ -188,32 +187,9 @@ module.exports.newSimulation = (event, context, callback) => {
         delete storage.containers_to_fill;
     });
 
-
-
-    // containers X
-    // ships
-    // docks
-    // storages
-    // time line
-    // simulation
-
-
-    //TODO:
-    // Put all entity instances in a queue to insert in the DB
-
-    //TODO:
-    // Find where to dock, according to where the nearest storage is with the most containers
-    // Sum containers in storage to get and multiply by the weighted edge to the dock and then find the average
-    // Dock the ship to the dock with the smallest average distance to the storage and the ETA
-    // Generate tasks according to the distance from dock to storage
-    //      Write algorithm to correctly place the containers on the ship
-    //      Maybe consider the containers which are already on the ship and rearrange them, maybe
-    // Put all events in a FIFO queue and insert in DB in order
-
     // Persist entities in DB
     const connection = DBHelper.getConnection();
 
-	// TODO: upload config to S3
     config.simulation = {
     	id: uuid()
 	};
@@ -226,9 +202,28 @@ module.exports.newSimulation = (event, context, callback) => {
 	});
     let timeline_id = config.timelines[0].id;
 
-	connection.connect();
+    connection.connect();
+    const runQuery = (query, params, message) => {
+
+		return new Promise((resolve, reject) => {
+
+			console.log(`${message}: PENDING`);
+			connection.query(query, params, (error, results, fields) => {
+				if (error) {
+
+					console.log(`${message}: FAIL`);
+					reject(error);
+				}else{
+
+					console.log(`${message}: OK`);
+					resolve(results);
+				}
+			});
+		});
+	};
+
     new Promise((resolve, reject) => {
-        //Begin transaction
+        // Begin transaction
 		connection.beginTransaction(function(err) {
 			if (err) {
 
@@ -239,44 +234,19 @@ module.exports.newSimulation = (event, context, callback) => {
 			}
 		});
     })
-		//Create simulation
+		// Create simulation
         .then(() => {
 
-			console.log(`Creating Simulation: PENDING`);
-			return new Promise((resolve, reject) => {
-				connection.query('INSERT INTO Simulations SET ? ', config.simulation, (error, results, fields) => {
-					if (error) {
-
-						reject(error);
-					}else{
-
-						console.log(`Creating Simulation: OK`);
-					    resolve();
-                    }
-				});
-            });
+			return runQuery('INSERT INTO Simulations SET ? ',config.simulation,'Creating Simulation');
         })
-		//Create timeline
+		// Create timeline
 		.then(() => {
 
-			console.log(`Creating Timeline: PENDING`);
-			return new Promise((resolve, reject) => {
-				connection.query('INSERT INTO Timelines SET ?', config.timelines, (error, results, fields) => {
-					if (error) {
-
-						reject(error);
-					}else{
-
-						console.log(`Creating Timeline: OK`);
-						resolve();
-					}
-				});
-			});
+    		return runQuery('INSERT INTO Timelines SET ?', config.timelines,'Creating Timeline');
 		})
-		//Create storages
+		// Create storages
 		.then(() => {
 
-			console.log(`Creating Storages: PENDING`);
 			let storages = [];
 			const addStorage = (id,x,y,z,type) => {
 				storages.push([id, x, y, z, type, timeline_id]);
@@ -290,20 +260,9 @@ module.exports.newSimulation = (event, context, callback) => {
     		config.docks.forEach(dock => {
     			addStorage(dock.id,0,0,0,'dock');
 			});
-			return new Promise((resolve, reject) => {
-				connection.query('INSERT INTO ContainerHold (id, x, y, z, type, timeline_id) VALUES ?', [storages],(error, results, fields) => {
-					if (error) {
-
-						reject(error);
-					}else{
-
-						console.log(`Creating Storages: OK`);
-						resolve();
-					}
-				});
-			});
+    		return runQuery('INSERT INTO ContainerHold (id, x, y, z, type, timeline_id) VALUES ?', [storages], 'Creating Storages');
 		})
-		//Create docks
+		// Create docks
 		.then(() => {
 
 			console.log(`Creating Docks: PENDING`);
@@ -315,20 +274,9 @@ module.exports.newSimulation = (event, context, callback) => {
 					dock.number_loaders
 				]);
 			});
-			return new Promise((resolve, reject) => {
-				connection.query('INSERT INTO Docks (id, nr_loaders) VALUES ?', [docks],(error, results, fields) => {
-					if (error) {
-
-						reject(error);
-					}else{
-
-						console.log(`Creating Docks: OK`);
-						resolve();
-					}
-				});
-			});
+			return runQuery('INSERT INTO Docks (id, nr_loaders) VALUES ?', [docks],'Creating Docks');
 		})
-		//Create containers
+		// Create containers
 		.then(() => {
 
     		for(let i = 0; i < all_containers.length; i++){
@@ -344,22 +292,11 @@ module.exports.newSimulation = (event, context, callback) => {
 					all_containers[i].address.z,
 				];
 			}
-			return new Promise((resolve, reject) => {
-				connection.query('INSERT INTO Containers (id, container_hold, cargo_type, weight, description, x, y, z) VALUES ?', [all_containers], (error, results, fields) => {
-					if (error) {
-
-						reject(error);
-					}else{
-
-						resolve();
-					}
-				});
-			});
+			return runQuery('INSERT INTO Containers (id, container_hold, cargo_type, weight, description, x, y, z) VALUES ?', [all_containers], 'Create containers');
 		})
-		//Create ships
+		// Create ships
 		.then(() => {
 
-			console.log(`Creating Ships: PENDING`);
 			let ships = [];
 			config.ships.forEach(ship => {
 				ships.push([
@@ -368,23 +305,11 @@ module.exports.newSimulation = (event, context, callback) => {
 					ship.etd ? ship.etd : 0
 				]);
 			});
-			return new Promise((resolve, reject) => {
-				connection.query('INSERT INTO Ships (container_hold, eta, etd) VALUES ?', [ships], (error, results, fields) => {
-					if (error) {
-
-						reject(error);
-					}else{
-
-						console.log(`Creating Storages: OK`);
-						resolve();
-					}
-				});
-			});
+			return runQuery('INSERT INTO Ships (container_hold, eta, etd) VALUES ?', [ships], 'Creating Ships');
 		})
-		//Link ship containers
+		// Link ship containers
 		.then(() => {
 
-			console.log(`Link ship containers: PENDING`);
 			let ship_containers = [];
 			config.ships.forEach(ship => {
 				ship.containers_current.forEach(container => {
@@ -400,23 +325,11 @@ module.exports.newSimulation = (event, context, callback) => {
 					ship_containers.push([container.id, 'to_unload', container.address.location_id]);
 				});
 			});
-			return new Promise((resolve, reject) => {
-				connection.query('INSERT INTO ShipContainer (container_id, type, ship_id) VALUES ?', [ship_containers], (error, results, fields) => {
-					if (error) {
-
-						reject(error);
-					}else{
-
-						console.log(`Link ship containers: OK`);
-						resolve();
-					}
-				});
-			});
+			return runQuery('INSERT INTO ShipContainer (container_id, type, ship_id) VALUES ?', [ship_containers], 'Link ship containers');
 		})
-		//Connect docks and storages
+		// Connect docks and storages
 		.then(() => {
 
-			console.log(`Connect docks and storages: PENDING`);
 			let connections = [];
 			config.docks.forEach(dock => {
 
@@ -429,20 +342,9 @@ module.exports.newSimulation = (event, context, callback) => {
 					]);
 				});
 			});
-			return new Promise((resolve, reject) => {
-				connection.query('INSERT INTO StorageDock (storage_id, dock_id, weight) VALUES ?', [connections], (error, results, fields) => {
-					if (error) {
-
-						reject(error);
-					}else{
-
-						console.log(`Connect docks and storages: OK`);
-						resolve();
-					}
-				});
-			});
+			return runQuery('INSERT INTO StorageDock (storage_id, dock_id, weight) VALUES ?', [connections],' Connect docks and storages');
 		})
-		//Commit
+		// Commit
 		.then(() => {
 			return new Promise((resolve, reject) => {
 
@@ -452,18 +354,41 @@ module.exports.newSimulation = (event, context, callback) => {
 						reject(err);
 					}else{
 
+						resolve();
+					}
+				});
+			});
+		})
+		// Save configuration to S3
+		.then(() => {
+			return new Promise((resolve, reject) => {
+
+				let params = {
+					Bucket: 'docker-simulations',
+					Key: `${config.simulation.id}.json`,
+					Body: original_conf
+				};
+				let s3 = new S3();
+				s3.putObject(params, function(err, data) {
+					if (err) {
+
+						reject(err);
+					}
+					else {
+
 						lhelper.done({
 							statusCode: 200,
 							body: {
 								simulation_id: config.simulation.id,
-								timeline_id
+								timeline_id,
+								download_url: `https:// s3.eu-central-1.amazonaws.com/docker-simulations/${config.simulation.id}.json`
 							}
 						});
 					}
 				});
 			});
 		})
-		//Handle errors
+		// Handle errors
 		.catch(error => {
 
 			connection.rollback(function(){
@@ -474,20 +399,11 @@ module.exports.newSimulation = (event, context, callback) => {
 				});
 			});
         });
-
-    //Create simulation
-
-
-    // lhelper.done({
-    //     statusCode: 200,
-    //     body: config
-    // });
-
 };
 
 // get simulation data function
-//
-// https: //github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_id
+// 
+// https: // github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_id
 
 module.exports.getSimulation = (event, context, callback) => {
 
@@ -514,7 +430,7 @@ module.exports.getSimulation = (event, context, callback) => {
                 current_time: 0,
                 current_timeline_id: "tl1",
                 scope: {
-                    requested: "Yes, you can send a request body with GET but it should not have any meaning. -- see: http://stackoverflow.com/questions/978061/http-get-with-request-body",
+                    requested: "Yes, you can send a request body with GET but it should not have any meaning. -- see: http:// stackoverflow.com/questions/978061/http-get-with-request-body",
                 },
             }),
         };
@@ -525,8 +441,8 @@ module.exports.getSimulation = (event, context, callback) => {
 };
 
 // get configuration of the simulation
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idconfiguration
+// 
+// https:// github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idconfiguration
 
 module.exports.getSimulationConfig = (event, context, callback) => {
 
@@ -584,8 +500,8 @@ module.exports.getSimulationConfig = (event, context, callback) => {
 };
 
 // get the timelines of the simulation
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idtimelines
+// 
+// https:// github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idtimelines
 
 module.exports.getSimulationHarborTimelines = (event, context, callback) => {
 
@@ -650,8 +566,8 @@ module.exports.getSimulationHarborTimelines = (event, context, callback) => {
 };
 
 // get the harbor data about storages, docks and ships
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idtimelinestimeline_id-docks--ships--storages-all
+// 
+// https:// github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_idtimelinestimeline_id-docks--ships--storages-all
 
 module.exports.getSimulationHarborData = (event, context, callback) => {
     let simID = "";
