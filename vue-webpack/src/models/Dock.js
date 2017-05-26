@@ -6,5 +6,17 @@ export default class Dock {
     this.container_count = container_count;
     this.connected_ship_id = connected_ship_id;
     this.scheduled_ships = scheduled_ships;
-  }
+
+
+  this.drawDock = function(context){
+       context.fillStyle = '#cccccc';
+       context.fillRect(80,40,172,20);
+       context.beginPath();
+       context.moveTo(171,40);
+       context.lineTo(80,40);
+       context.lineTo(80,60);
+       context.lineTo(171,60);
+       context.stroke();
+ }
+ }
 }

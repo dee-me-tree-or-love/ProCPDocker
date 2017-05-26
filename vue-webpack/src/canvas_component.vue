@@ -1,13 +1,15 @@
 <template>
      <div class="col-md-9" style="height:100%;border:1px solid black;" id="main-simulation">
-          <button @click="getTasks">get more tasks</button>
+          <!--<button @click="getTasks">get more tasks</button>
           <button @click="performTask">do task</button>
-          <button @click="reverseTask">reverse task</button>
-          <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
-          <button @click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>
-          <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
-          <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
-          <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
+          <button @click="reverseTask">reverse task</button>-->
+          <div>
+               <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+               <button @click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>
+               <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
+               <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
+               <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
+          </div>
 
           <CanvasDrawingComponent></CanvasDrawingComponent>
 

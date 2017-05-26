@@ -3,7 +3,7 @@
        <CanvasComponent @tasks="setTasks"></CanvasComponent>
        <!-- TODO: add other components and fix currentTask problem -->
 
-       <EventContainerComponent :events="events"></EventContainerComponent> -->
+       <EventContainerComponent :events="events"></EventContainerComponent>
        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
        <button @click="getSimulation" >get mock simulation</button>
   </div>
@@ -25,7 +25,6 @@ export default {
               tasks:[],
               ships:[],
               events:[],
-              //events
          }
     },
     methods:{
@@ -52,11 +51,18 @@ export default {
     }
 
 }
+
 </script>
 <style lang="scss">
 #app {
      font-family: 'Avenir', Helvetica, Arial, sans-serif;
      color: #2c3e50;
+}
+
+.container{
+     border: 1px solid black;
+     height: 100%;
+     max-height: 100%
 }
 
 #task-column{

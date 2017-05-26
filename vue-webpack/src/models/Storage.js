@@ -7,11 +7,13 @@ export default class Storage {
     this.connections = connections;
     this.status = status;
 
-    this.height = 50;
-    this.width = 50;
-    this.position_x = 300;
-    this.position_y = 300;
-    this.drawShip = function(context){
+    this.height = 40;
+    this.width = 60;
+    this.position_x = 205;
+    this.position_y = 10;
+
+    this.drawStorage = function(context){
+         context.fillStyle = '#000000';
          context.fillRect(this.position_x,this.position_y,this.width,this.height);
   }
 }
