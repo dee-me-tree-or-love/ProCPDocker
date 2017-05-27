@@ -15,15 +15,15 @@ export default class Storage {
     this.drawStorage = function(context){
          context.fillStyle = '#000000';
          context.fillRect(this.position_x,this.position_y,this.width,this.height);
-  }
+    }
 
-   this.checkClick = function(x,y){
+    this.checkClick = function(x,y){
         if(((x >= this.position_x)&&(x <= this.position_x+this.width))&&((y >= this.position_y)&&(y <= this.position_y+this.height))){
              return true;
         }else{
              return false;
         }
 
-   }
-}
+    }
+  }
 }

@@ -2,7 +2,6 @@
   <div class="container" id="app">
        <CanvasComponent @tasks="setTasks" :ships="ships" :docks="docks" :storages="storages"></CanvasComponent>
        <!-- TODO: add other components and fix currentTask problem -->
-
        <EventContainerComponent :events="events"></EventContainerComponent>
        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
        <button @click="getSimulation" >get mock simulation</button>
@@ -34,6 +33,7 @@ export default {
              this.tasks = value;
              if(this.tasks.length > 0){
                   this.events = tasks[0].events;
+                  console.log(this.events);
              }
 
         },

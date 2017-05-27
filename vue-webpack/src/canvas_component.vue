@@ -19,6 +19,7 @@
 </template>
 <script>
      import Task from './models/Task.js';
+     import Event from './models/Event.js';
      import CanvasDrawingComponent from './canvas_drawing_component.vue';
 
      var that;
@@ -45,16 +46,16 @@
                getTasks() {
                     axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/tasks/sim1/tl1')
                       .then(function(response){
-                        console.log(response.data);
+                        //console.log(response.data);
 
                         if(response.status == 200){
                           for(var i = 0;i < response.data.tasks.length;i++){
-                               for(var j = 0;j < response.data.tasks[i].events.length;j++){
-                                    //TODO set the events it is coming up with an error for some reason
-                                   //events.push(new Event("id","type","message","time_stamp")) //events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp))
-                               }
-                               tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
-                               counter++;
+                              for(var j = 0;j < response.data.tasks[i].events.length;j++){
+                                events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp));
+                              }
+                              tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
+                              events = [];
+                              counter++;
                           }
                         } else {
                           //TODO: handle bad responses
@@ -110,7 +111,6 @@
                                    that.getTasks();
                               }
                          },interval);
-
                          //this.$emit('currentTask', currentTask);
                     }
 
