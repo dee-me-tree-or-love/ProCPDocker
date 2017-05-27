@@ -4,7 +4,9 @@
        <!-- TODO: add other components and fix currentTask problem -->
        <EventContainerComponent :events="events"></EventContainerComponent>
        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
-       <button @click="getSimulation" >get mock simulation</button>
+       <!-- <StorageComponent :storage="currentstorage"></StorageComponent> -->
+       <!-- <DockComponent :dock="currentdock"></DockComponent> -->
+       <!-- <button @click="getSimulation" >get mock simulation</button> -->
   </div>
 </template>
 
@@ -30,11 +32,11 @@ export default {
               currentstorage:new Storage("id","size","containers_max","containers_current","connections","status"),
          }
     },
+
     computed:{
           events : function(){
                if(this.tasks.length > 0){
-                    alert(this.tasks[0].events[0])
-                    return this.tasks[0].events;
+                 return this.tasks[0].events;
                }
           },
     },
