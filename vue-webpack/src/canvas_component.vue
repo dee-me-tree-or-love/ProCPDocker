@@ -32,10 +32,9 @@
      var events = [];
 
      export default {
-          props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage'],
+          props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage','completedtasks'],
           data() {
                return {
-                    completedtasks,
                     currentTask,
                     events,
                }
@@ -73,7 +72,7 @@
                         currentTask = temp;
                         console.log(currentTask.events);
 
-                        completedtasks.push(temp);
+                        that.completedtasks.push(temp);
                         document.getElementById('slider').value++;
                         //this.$emit('currentTask', currentTask);
                     }else {
@@ -82,8 +81,8 @@
                },
                ///not used anymore during play simulation only for testing reverse task button
                reverseTask(){
-                    if(completedtasks.length > 0){
-                         that.tasks.unshift(completedtasks.pop());
+                    if(that.completedtasks.length > 0){
+                         that.tasks.unshift(that.completedtasks.pop());
                          document.getElementById('slider').value--;
                     }else {
                          alert("no more tasks to reverse");
@@ -102,7 +101,7 @@
                               //console.log(currentTask.events);
 
                               if(that.tasks.length > 0){
-                                   completedtasks.push(temp);
+                                   that.completedtasks.push(temp);
                                    document.getElementById('slider').value++;
                               }else {
                                    that.getTasks();
@@ -118,8 +117,8 @@
                },
                stepBackSimulation(){
                     this.pauseSimulation();
-                    if(completedtasks.length > 0){
-                         that.tasks.unshift(completedtasks.pop());
+                    if(that.completedtasks.length > 0){
+                         that.tasks.unshift(that.completedtasks.pop());
                          document.getElementById('slider').value--;
                     }else {
                          alert("no more tasks to reverse");
@@ -129,7 +128,7 @@
                stepForwardSimulation(){
                     this.pauseSimulation();
                     if(that.tasks.length > 0){
-                         completedtasks.push(that.tasks.shift());
+                         that.completedtasks.push(that.tasks.shift());
                          document.getElementById('slider').value++;
                     }else {
                          alert("no more tasks to perform");
