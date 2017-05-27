@@ -4,7 +4,6 @@
 
 const uuid = require('uuid');
 
-
 // for sorting and finding where to load from
 class ShipManipulator {
     static countLoads(ship) {
@@ -232,7 +231,8 @@ class ShipScheduler {
                         ship.eta,
                         // forgot to include the margin first
                         (ship.eta + ship.dockpriority[i].burstsize + this.DEPARTUREMARGIN),
-                        "ship is docked")
+                        "ship is docked",
+                        ship.dockpriority[i].dock_id)
                 );
                 console.log("docked the ship, etd: " + (ship.eta + ship.dockpriority[i].burstsize + this.DEPARTUREMARGIN));
                 // finish
@@ -264,7 +264,7 @@ class ShipScheduler {
         }
 
         console.log("well, looks like the best options now is dock: " + bestOptionDockId + " ; etd: " + bestETD);
-        this.dockShipTo(bestOptionDockId, ShipScheduler.prepareProcessInterval(ship, bestETA, bestETD, "ship is docked"));
+        this.dockShipTo(bestOptionDockId, ShipScheduler.prepareProcessInterval(ship, bestETA, bestETD, "ship is docked", bestOptionDockId));
 
     }
 
@@ -300,8 +300,8 @@ class ShipScheduler {
      * @param {*} etd 
      * @param {*} desc 
      */
-    static prepareProcessInterval(ship, eta, etd, desc) {
-        return { id: uuid(), ship: ship, eta: eta, etd: etd, description: desc };
+    static prepareProcessInterval(ship, eta, etd, desc, dockId) {
+        return { id: uuid(), ship: ship, eta: eta, etd: etd, description: desc, dock_id: dockId };
     }
 
     /**
@@ -418,20 +418,13 @@ class ShipScheduler {
     }
 }
 
-let data = require("./expecteddata.js");
-// console.dir(data);
-
-let SS = new ShipScheduler(data.resp4);
-
-let resp = SS.produceTiming();
-
 class TaskProducer {
 
-    constructor(configs, connections) {
+    constructor(configs) {
         this.configs = configs;
         this.docks = configs.docks;
         this.storages = configs.storages;
-        this.connectionMatrix = connections;
+        this.connectionMatrix = configs.connections;
     }
 
 
@@ -729,7 +722,7 @@ class TaskProducer {
             // add new interval
             let interval = ShipScheduler.prepareProcessInterval("", latestEtd,
                 latestEtd, // has to be changed after!
-                "moving the containers stored for forwarding to the storages");
+                "moving the containers stored for forwarding to the storages", docksToWorkWith[i].id);
 
             let dockForwardingTasks = [];
             makeUnloadTransferTasks(docksToWorkWith[i], interval.id, 0,
@@ -739,6 +732,10 @@ class TaskProducer {
 
             // make the interval final with the correct time
             interval.etd = Math.max.apply(Math, dockForwardingTasks.map((o) => { return o.end_time }));
+
+            // add the freshly built interval to the array
+            docksToWorkWith[i].processintervals.push(interval);
+
             // docksToWorkWith[i].processintervals.push(interval);
             // console.log("\n NEW INTERVAL: ");
             // console.log(interval);
@@ -871,12 +868,57 @@ class TaskProducer {
     }
 }
 
-let tp = new TaskProducer(resp, resp.connections);
-let tasks = tp.produceTasks(tp.configs);
-console.log("\nUUUUUUUUUUUUUUU TASK RESPONSE UUUUUUUUUUUUUUUU\n");
-// console.log(tasks.map((o) => { return o.events }));
-console.log(tasks);
-console.log("\n total number: " + tasks.length);
-console.log("\nUUUUUUUUUUUUUUU END OF TASK RESPONSE UUUUUUUUUUUUUUUU\n");
 
-// console.log(tp.docks);
+/**
+ * @typedef {ScheduleAndTasks}
+ * @property {Array} intervals
+ * @property {Array} tasks
+ */
+
+/**
+ * The functon that takes the configuration of the simulation as it is processed
+ * The configs should be passed once all the verificators have passed and
+ * All the containers were distributed among the entities
+ * @param {Object} configs
+ * @param {Array} configs.docks - the array of the dock entities 
+ * @param {Array} configs.ships - the array of the ships with their containers
+ * @param {Array} configs.storages - the array of the storages
+ * @param {Object} configs.connections - the object that represents the connection matrix Storages -> Docks. the keys: [storage_id][dock_id]
+ * @param {Object} configs.connections.weight - the property that signifies the weight of the connection between the storage and the dock 
+ * @returns {ScheduleAndTasks} the intervals and the tasks for the simulation
+ */
+module.exports.createScheduleAndTasks = (configs) => {
+    let SS = new ShipScheduler(configs);
+    let schedulerResponse = SS.produceTiming();
+    // console.log(schedulerResponse.docks.map((o) => { return o.processintervals }))
+    // the response is the configuration that has the following way of returning docks
+    //    { docks:
+    //    [ { id: 'ed1d17d1-5c52-4d50-97b0-f6a20bfab0e1',
+    //        number_loaders: 2,
+    //        connections: [Object],
+    //        processintervals: [Object],
+    //        containers_toforward: [] },
+    //      { id: '1301c6ef-55be-40a4-873f-fa8edaf01c69',
+    //        number_loaders: 2,
+    //        connections: [Object],
+    //        processintervals: [Object],
+    //        containers_toforward: [] } ],
+    let TP = new TaskProducer(configs);
+    let tasks = TP.produceTasks(TP.configs);
+
+
+    let intervals = [];
+    for (let i in schedulerResponse.docks) {
+        intervals = intervals.concat(TP.configs.docks[i].processintervals);
+    }
+    return {
+        intervals: intervals,
+        tasks: tasks,
+    }
+}
+
+
+let data = require("./expecteddata.js");
+
+let result = this.createScheduleAndTasks(data.resp5);
+console.log(result);
