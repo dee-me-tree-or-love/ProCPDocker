@@ -2,7 +2,7 @@
 # Simulation
  <!--- DONE: add method to get storages and ships and docks of the simulation like `.../docks/all` or something-->
  <!--  added   -->
-## /new-simulation ![](https://my.funlocity.com/img/trans_greencheck.pngo)
+## /new-simulation ![](check.png)
   <!-- are you sure we should callback with ok when verified only?
       if we make the client wait for all the tasks created, 
       we might escape the case when client requests tasks that are not yet created
@@ -63,7 +63,7 @@
   }
   ```
 
-## /simulation/{simulation_id}
+## /simulation/{simulation_id} ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION 
   To get general information about a specific simulation
@@ -96,7 +96,7 @@
   }
   ```
     
-  ## /simulation/{simulation_id}/configuration
+  ## /simulation/{simulation_id}/configuration ![](check.png)
   #### METHOD: GET  
   #### DESCRIPTION 
   To see a description of the simulation configuration
@@ -134,7 +134,7 @@
   }
   ```
 <!-- TODO: Are we sure that we need it? -->
-## /simulation/{simulation_id}/timelines/{timeline_id}
+## /simulation/{simulation_id}/timelines/{timeline_id} ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION  
   Retrieve the timeline of the simulation with the given ID
