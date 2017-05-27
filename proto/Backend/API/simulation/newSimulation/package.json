@@ -14,6 +14,7 @@
     "harbor-validator": "file:../../../Shared/HarborValidator",
     "db-helper": "file:../../../Shared/DBHelper",
     "container-factory": "file:../../../Shared/Container",
+    "ship-planner":"file:../../../Shared/ShipPlanner",
     "random-js": "^1.0.8",
     "uuid": "^3.0.1"
   }

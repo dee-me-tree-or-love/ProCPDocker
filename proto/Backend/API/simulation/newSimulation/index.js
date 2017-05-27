@@ -3,6 +3,7 @@ const LambaHelper = require('basic-lambda-helper');
 const ContainerFactory = require('container-factory');
 const HarborValidator = require('harbor-validator');
 const HarborBuilder = require('harbor-builder');
+const ShipPlanner = require('ship-planner');
 const DBHelper = require('db-helper');
 const S3 = require('aws-sdk').S3;
 
@@ -45,6 +46,11 @@ module.exports.handler = (event, context, callback) => {
     console.log('Construct Harbor');
     config = HarborBuilder.constructHarbor(config).entities;
 
+    lhelper.done({
+        statusCode: 200,
+        body: config
+    });
+    context.done();
     let totalContainersForSim = 0;
     let totalCapacity = 0;
     let movingContainers = 0;
@@ -193,6 +199,8 @@ module.exports.handler = (event, context, callback) => {
 
         delete storage.containers_to_fill;
     });
+
+    config = Object.assign(config,ShipPlanner.createScheduleAndTasks(config));
 
     // Persist entities in DB
     console.log('Persist entities in DB');

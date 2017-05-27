@@ -824,7 +824,7 @@ class TaskProducer {
                     ]));
             }
             pickContainers(interval_id, tasks, containers, destination, start_time + 1, endIndex, endIndex + increment, increment, load);
-        }
+        };
 
         let makeMoveTasksPerPint = (dock, pint, destination_id, stime, load) => {
             // console.log(dock);
@@ -840,7 +840,7 @@ class TaskProducer {
             let endIndex = startIndex + dock.number_loaders;
             pickContainers(pint.id, tasks, containers, destination, start_time, startIndex, endIndex, dock.number_loaders, load);
             return tasks;
-        }
+        };
 
         let moveTasks = [];
 
@@ -915,10 +915,10 @@ module.exports.createScheduleAndTasks = (configs) => {
         intervals: intervals,
         tasks: tasks,
     }
-}
+};
 
-
-let data = require("./expecteddata.js");
-
-let result = this.createScheduleAndTasks(data.resp5);
-console.log(result);
+//
+// let data = require("./expecteddata.js");
+//
+// let result = this.createScheduleAndTasks(data.resp5);
+// console.log(result);
