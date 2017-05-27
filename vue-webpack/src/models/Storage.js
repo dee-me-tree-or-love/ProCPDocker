@@ -16,5 +16,9 @@ export default class Storage {
          context.fillStyle = '#000000';
          context.fillRect(this.position_x,this.position_y,this.width,this.height);
   }
+
+   this.checkClick(x,y){
+        return true;
+   }
 }
 }
