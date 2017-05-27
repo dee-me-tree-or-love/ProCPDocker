@@ -2,7 +2,7 @@
 # Simulation
  <!--- DONE: add method to get storages and ships and docks of the simulation like `.../docks/all` or something-->
  <!--  added   -->
-## /new-simulation  
+## /new-simulation ![](https://my.funlocity.com/img/trans_greencheck.pngo)
   <!-- are you sure we should callback with ok when verified only?
       if we make the client wait for all the tasks created, 
       we might escape the case when client requests tasks that are not yet created
