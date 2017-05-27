@@ -39,4 +39,4 @@ class ContainerFactory{
 	}
 }
 
-module.exports.ContainerFactory = ContainerFactory;
+module.exports = ContainerFactory;
