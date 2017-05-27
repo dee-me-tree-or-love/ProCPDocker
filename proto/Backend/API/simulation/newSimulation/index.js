@@ -46,11 +46,6 @@ module.exports.handler = (event, context, callback) => {
     console.log('Construct Harbor');
     config = HarborBuilder.constructHarbor(config).entities;
 
-    lhelper.done({
-        statusCode: 200,
-        body: config
-    });
-    context.done();
     let totalContainersForSim = 0;
     let totalCapacity = 0;
     let movingContainers = 0;
@@ -200,7 +195,7 @@ module.exports.handler = (event, context, callback) => {
         delete storage.containers_to_fill;
     });
 
-    config = Object.assign(config,ShipPlanner.createScheduleAndTasks(config));
+    config = Object.assign(config, ShipPlanner.createScheduleAndTasks(config));
 
     // Persist entities in DB
     console.log('Persist entities in DB');
@@ -378,7 +373,63 @@ module.exports.handler = (event, context, callback) => {
                     ]);
                 });
             });
-            return runQuery('INSERT INTO StorageDock (storage_id, dock_id, weight) VALUES ?', [connections], ' Connect docks and storages');
+            return runQuery('INSERT INTO StorageDock (storage_id, dock_id, weight) VALUES ?', [connections], 'Connect docks and storages');
+        })
+        // Insert Intervals
+        .then(() => {
+
+            let intervals = [];
+            config.intervals.forEach(interval => {
+
+                intervals.push([
+                    interval.id,
+                    interval.dock_id,
+                    interval.ship.id,
+                    interval.eta,
+                    interval.etd,
+                    interval.description,
+                    timeline_id
+                ]);
+            });
+            return runQuery('INSERT INTO Intervals (id, dock_id, ship_id, eta, etd, description, timeline_id) VALUES ?', [intervals], 'Insert Intervals');
+        })
+        // Insert Tasks
+        .then(() => {
+            let tasks = [];
+            config.tasks.forEach(task => {
+
+                tasks.push([
+                    task.id,
+                    task.extra.container_id,
+                    task.interval_id,
+                    task.type,
+                    task.description,
+                    task.status,
+                    task.start_time,
+                    task.end_time,
+                    task.extra.destination_id
+                ]);
+            });
+            return runQuery('INSERT INTO Tasks (id, container_id, interval_id, type, description, status, start_time, end_time, destination_id)' +
+                ' VALUES ?', [tasks], 'Insert Tasks');
+        })
+        // Insert Events
+        .then(() => {
+            let events = [];
+            config.tasks.forEach(task => {
+
+                task.events.forEach(event => {
+                    events.push([
+                        event.id,
+                        event.duration,
+                        task.id,
+                        event.start_time,
+                        event.message,
+                        event.type
+                    ]);
+                });
+            });
+            return runQuery('INSERT INTO Events (id, duration, task_id, start_time, message, type) VALUES ?', [events], 'Insert Events');
         })
         // Commit
         .then(() => {
@@ -419,7 +470,7 @@ module.exports.handler = (event, context, callback) => {
                                 timeline_id,
                                 download_url: `https://s3.eu-central-1.amazonaws.com/docker-simulations/${config.simulation.id}.json`
                             }
-                        },true);
+                        }, true);
                     }
                 });
             });
@@ -432,7 +483,7 @@ module.exports.handler = (event, context, callback) => {
                 lhelper.done({
                     statusCode: 400,
                     body: error
-                },true);
+                }, true);
             });
         });
 };
