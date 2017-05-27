@@ -1,6 +1,6 @@
 <template>
   <div class="container" id="app">
-       <CanvasComponent :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
+       <CanvasComponent  @componentsidebarcheck="setSidebarComponentBool" :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
        <EventContainerComponent v-if="eventsbool" :events="events"></EventContainerComponent>
        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
        <StorageComponent v-if="storagesbool" :storage="currentstorage"></StorageComponent>
@@ -30,10 +30,10 @@ export default {
               currentship:new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status"),
               currentdock:new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships"),
               currentstorage:new Storage("id","size","containers_max","containers_current","connections","status"),
-              // eventsbool: true,
-              // shipsbool: false,
-              // storagesbool: false,
-              // docksbool: false,
+              eventsbool: false,
+              shipsbool: false,
+              storagesbool: false,
+              docksbool: false,
          }
     },
 
@@ -42,9 +42,35 @@ export default {
                if(this.tasks.length > 0){
                  return this.tasks[0].events;
                }
-          }
+          },
     },
     methods:{
+         setSidebarComponentBool(value){
+              //alert(value);
+              this.shipsbool= false;
+              this.storagesbool= false;
+              this.docksbool= false;
+              this.eventsbool = false;
+
+              if(value.includes("ship")){
+                   this.shipsbool = true;
+                   var index = value.split("ship");
+                   this.currentship = this.ships[index[1]];
+                   alert(index[1]);
+              }else if (value.includes("dock")) {
+                   this.docksbool = true;
+                   var index = value.split("dock");
+                   this.currentdock = this.docks[index[1]];
+                   alert(index[1]);
+              }else if (value.includes("storage")) {
+                   this.storagesbool = true;
+                   var index = value.split("storage");
+                   this.currentstorage = this.storages[index[1]];
+                   alert(index[1]);
+              }else if (value.includes("event")) {
+                   this.eventsbool = true;
+              }
+         },
         getSimulation(){
              axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/simulation/sim1/?scope=ships')
                .then(function(response){

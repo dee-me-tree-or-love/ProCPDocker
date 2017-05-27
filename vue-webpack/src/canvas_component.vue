@@ -11,7 +11,7 @@
                <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
           </div>
 
-          <CanvasDrawingComponent  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
+          <CanvasDrawingComponent @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
 
           <input type="range" min="0" max="100" value="0" step="1" oninput="sliderChanged()" id="slider"></input>
           <p></p>
@@ -40,6 +40,9 @@
                }
           },
           methods: {
+               setComponentBool(value){
+                    this.$emit('componentsidebarcheck', value);
+               },
                getTasks() {
                     axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/tasks/sim1/tl1')
                       .then(function(response){

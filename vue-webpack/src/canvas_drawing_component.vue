@@ -45,39 +45,40 @@ export default{
           return{
                c : c,
                ctx : ctx,
-              //  shipsbool: this.shipsbool,
-              //  docksbool: this.docksbool,
-              //  storagesbool: this.storagesbool,
-              //  eventsbool: this.eventsbool,
           }
      },
      methods:{
           check(event){
-            this.eventsbool = false;
-            this.docksbool = false;
-            this.storagebool = false;
-            this.shipsbool = false;
+            //this.eventsbool = false;
+            //this.docksbool = false;
+            //this.storagesbool = false;
+            //this.shipsbool = false;
 
             for(var i = 0;i < this.ships.length;i++){
                   if(this.ships[i].checkClick(event.offsetX,event.offsetY)){
-                       this.shipsbool = true;
-                       this.currentship = this.ships[i];
+                       //this.shipsbool = true;
+                       //this.currentship = this.ships[i];
+                       //alert(this.shipsbool);
+                       this.$emit('componentsidebarcheck', 'ship'+i);
                   }
              }
              for(var i = 0;i < this.storages.length;i++){
                   if(this.storages[i].checkClick(event.offsetX,event.offsetY)){
-                       this.storagesbool = true;
-                       this.currentstorage = this.storages[i];
+                       //this.storagesbool = true;
+                       //this.currentstorage = this.storages[i];
+                       this.$emit('componentsidebarcheck', 'storage'+i);
                   }
              }
              for(var i = 0;i < this.docks.length;i++){
                   if(this.docks[i].checkClick(event.offsetX,event.offsetY)){
-                       this.docksbool = true;
-                       this.currentdock = this.docks[i];
+                       //this.docksbool = true;
+                       //this.currentdock = this.docks[i];
+                       this.$emit('componentsidebarcheck', 'dock'+i);
                   }
              }
              if(!this.docksbool && !this.shipsbool && !this.storagesbool){
-                this.eventsbool = true;
+                         //this.eventsbool = true;
+                         this.$emit('componentsidebarcheck', 'event');
              }
          },
      }
