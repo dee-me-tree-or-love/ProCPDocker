@@ -437,11 +437,11 @@ class TaskProducer {
 
 
 
-    static createTask(inter, container, dest_id, type, descr, stime, events) {
+    static createTask(inter, container, dest_id, descr, stime, events) {
         let task = {
             id: uuid(),
             interval_id: inter,
-            type: type,
+            type: "container",
             extra: {
                 container_id: container.id,
                 destination_id: dest_id
@@ -462,7 +462,7 @@ class TaskProducer {
         let task = {
             id: uuid(),
             interval_id: inter,
-            type: "schedule task",
+            type: "schedule",
             extra: {
                 ship: ship_id,
                 destination_id: dock_id
@@ -690,7 +690,7 @@ class TaskProducer {
                         eventStartTime);
                     // aggregate it all into the task
                     tasks.push(TaskProducer.createTask(interval_id, dock.containers_toforward[i],
-                        dock.id, "transfer container",
+                        dock.id,
                         "relocate the container from the dock to the storage", taskStartTime, events));
 
 
@@ -725,7 +725,7 @@ class TaskProducer {
                         eventStartTime);
                     // aggregate it all into the task
                     tasks.push(TaskProducer.createTask(interval_id, dock.containers_toforward[i],
-                        dock.id, "transfer container",
+                        dock.id,
                         "relocate the container from the dock to the storage", taskStartTime, events));
                 }
                 // tasks = tasks.concat(tranferFromDockTasks);
@@ -803,7 +803,7 @@ class TaskProducer {
                 events.push(TaskProducer.createEvent("move", "move the container from transportation to the dock", eventStartTime));
                 eventStartTime++;
                 // console.log("task start time: " + taskStartTime)
-                tasks.push(TaskProducer.createTask(intId, containerpayloads[storageId].containers[k], dock.id, "transfer container",
+                tasks.push(TaskProducer.createTask(intId, containerpayloads[storageId].containers[k], dock.id,
                     "relocate the container from the storage to the dock", taskStartTime, events));
             }
         }
@@ -838,7 +838,6 @@ class TaskProducer {
                     interval_id,
                     containers[i],
                     destination,
-                    "pick container",
                     desc,
                     start_time, [
                         TaskProducer.createEvent("move", "move the container between ship and dock", start_time),
