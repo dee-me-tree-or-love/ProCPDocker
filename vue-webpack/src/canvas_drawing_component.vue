@@ -1,6 +1,6 @@
 <template>
      <div id="canvas-container">
-          <canvas id="canvas" onload="setContext()"></canvas>
+          <canvas id="canvas" height="500px" width="700px" onload="setContext()" v-on:click="check"></canvas>
      </div>
 </template>
 
@@ -14,6 +14,10 @@ import Storage from './models/Storage.js';
 
 var c;
 var ctx;
+var ships;
+var docks;
+var storages;
+var testship;
 
 $(function() {
 
@@ -27,18 +31,56 @@ $(function() {
      var storage = new Storage("id","size","containers_max","containers_current","connections","status");
 
      canvas.drawBackground();
-     testship.moveForward(ctx);
+     //testship.moveForward(ctx);
      testship.drawShip(ctx);
      dock.drawDock(ctx);
      storage.drawStorage(ctx);
+
 });
 
+
 export default{
+     props:['ships','docks','storages','currentship','currentdock','currentstorage', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],
      data(){
           return{
                c : c,
                ctx : ctx,
           }
+     },
+     methods:{
+          check(event){
+            //this.eventsbool = false;
+            //this.docksbool = false;
+            //this.storagesbool = false;
+            //this.shipsbool = false;
+
+            for(var i = 0;i < this.ships.length;i++){
+                  if(this.ships[i].checkClick(event.offsetX,event.offsetY)){
+                       //this.shipsbool = true;
+                       //this.currentship = this.ships[i];
+                       //alert(this.shipsbool);
+                       this.$emit('componentsidebarcheck', 'ship'+i);
+                  }
+             }
+             for(var i = 0;i < this.storages.length;i++){
+                  if(this.storages[i].checkClick(event.offsetX,event.offsetY)){
+                       //this.storagesbool = true;
+                       //this.currentstorage = this.storages[i];
+                       this.$emit('componentsidebarcheck', 'storage'+i);
+                  }
+             }
+             for(var i = 0;i < this.docks.length;i++){
+                  if(this.docks[i].checkClick(event.offsetX,event.offsetY)){
+                       //this.docksbool = true;
+                       //this.currentdock = this.docks[i];
+                       this.$emit('componentsidebarcheck', 'dock'+i);
+                  }
+             }
+             if(!this.docksbool && !this.shipsbool && !this.storagesbool){
+                         //this.eventsbool = true;
+                         this.$emit('componentsidebarcheck', 'event');
+             }
+         },
      }
 }
 

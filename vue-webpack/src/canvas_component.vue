@@ -4,14 +4,14 @@
           <button @click="performTask">do task</button>
           <button @click="reverseTask">reverse task</button>-->
           <div>
-               <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
-               <button @click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>
-               <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
+               <!--<button @click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>-->
                <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
+               <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+               <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
                <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
           </div>
 
-          <CanvasDrawingComponent></CanvasDrawingComponent>
+          <CanvasDrawingComponent @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
 
           <input type="range" min="0" max="100" value="0" step="1" oninput="sliderChanged()" id="slider"></input>
           <p></p>
@@ -19,41 +19,43 @@
 </template>
 <script>
      import Task from './models/Task.js';
+     import Event from './models/Event.js';
      import CanvasDrawingComponent from './canvas_drawing_component.vue';
 
      var that;
      var timer;
      var play = true;
      var interval = 1000;
-     var tasks = [];
      var completedtasks = [];
      var counter = 0;
      var currentTask;
      var events = [];
 
      export default {
+          props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage','completedtasks', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],
           data() {
                return {
-                    tasks,
-                    completedtasks,
                     currentTask,
                     events,
                }
           },
           methods: {
+               setComponentBool(value){
+                    this.$emit('componentsidebarcheck', value);
+               },
                getTasks() {
                     axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/tasks/sim1/tl1')
                       .then(function(response){
-                        console.log(response.data);
+                        //console.log(response.data);
 
                         if(response.status == 200){
                           for(var i = 0;i < response.data.tasks.length;i++){
-                               for(var j = 0;j < response.data.tasks[i].events.length;j++){
-                                    //TODO set the events it is coming up with an error for some reason
-                                   //events.push(new Event("id","type","message","time_stamp")) //events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp))
-                               }
-                               tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
-                               counter++;
+                              for(var j = 0;j < response.data.tasks[i].events.length;j++){
+                                events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp));
+                              }
+                              that.tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
+                              events = [];
+                              counter++;
                           }
                         } else {
                           //TODO: handle bad responses
@@ -61,20 +63,19 @@
                          //response.data.tasks[i].id
 
                       });
-                      this.$emit('tasks',tasks);
 
 
                },
                ///not used anymore during play simulation only for testing Dotask button
                performTask(){
-                    if(tasks.length > 0){
-                        var temp = tasks.shift();
+                    if(that.tasks.length > 0){
+                        var temp = that.tasks.shift();
 
                         //TODO: what's up with that???
                         currentTask = temp;
                         console.log(currentTask.events);
 
-                        completedtasks.push(temp);
+                        that.completedtasks.push(temp);
                         document.getElementById('slider').value++;
                         //this.$emit('currentTask', currentTask);
                     }else {
@@ -83,8 +84,8 @@
                },
                ///not used anymore during play simulation only for testing reverse task button
                reverseTask(){
-                    if(completedtasks.length > 0){
-                         tasks.unshift(completedtasks.pop());
+                    if(that.completedtasks.length > 0){
+                         that.tasks.unshift(that.completedtasks.pop());
                          document.getElementById('slider').value--;
                     }else {
                          alert("no more tasks to reverse");
@@ -97,19 +98,18 @@
                     if(play){
                          play = false;
                          timer = setInterval(function (){
-                              var temp = tasks.shift();
+                              var temp = that.tasks.shift();
 
                               currentTask = temp;
                               //console.log(currentTask.events);
 
-                              if(tasks.length > 0){
-                                   completedtasks.push(temp);
+                              if(that.tasks.length > 0){
+                                   that.completedtasks.push(temp);
                                    document.getElementById('slider').value++;
                               }else {
                                    that.getTasks();
                               }
                          },interval);
-
                          //this.$emit('currentTask', currentTask);
                     }
 
@@ -120,8 +120,8 @@
                },
                stepBackSimulation(){
                     this.pauseSimulation();
-                    if(completedtasks.length > 0){
-                         tasks.unshift(completedtasks.pop());
+                    if(that.completedtasks.length > 0){
+                         that.tasks.unshift(that.completedtasks.pop());
                          document.getElementById('slider').value--;
                     }else {
                          alert("no more tasks to reverse");
@@ -130,8 +130,8 @@
 
                stepForwardSimulation(){
                     this.pauseSimulation();
-                    if(tasks.length > 0){
-                         completedtasks.push(tasks.shift());
+                    if(that.tasks.length > 0){
+                         that.completedtasks.push(that.tasks.shift());
                          document.getElementById('slider').value++;
                     }else {
                          alert("no more tasks to perform");
