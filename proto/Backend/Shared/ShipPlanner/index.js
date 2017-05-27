@@ -188,9 +188,17 @@ class ShipScheduler {
                     // console.log(dockpriority);
                 ship.dockpriority = dockpriority;
                 ship.burstsizes = bursttimes;
+
+            } else {
+                let dockpriority = [];
+                for (let dock in this.dockHashTable) {
+                    dockpriority.push({ dock_id: dock, burstsize: Math.ceil(ship.containers_unload.length / this.dockHashTable[dock].number_loaders) });
+                }
+                ship.dockpriority = dockpriority;
             }
         }
-        // return this.shipHashTable;
+
+
     }
 
 
@@ -537,6 +545,18 @@ class TaskProducer {
                     this.produceContainerMovingTasks(docks[i], docks[i].processintervals[j],
                         docks[i].processintervals[j].ship.id, phase2StartTime, true)
                 );
+
+                let movingTasks = unloadTasks.concat(loadTasks);
+
+                // determine when the ship should leave
+                let leave_time = Math.max.apply(Math, movingTasks.map((o) => { return o.end_time }));
+                let leaveTask = (TaskProducer.createScheduleTask(docks[i].processintervals[j].id,
+                    docks[i].processintervals[j].ship.id,
+                    docks[i].id,
+                    "Ship is leaving the dock",
+                    leave_time, [TaskProducer.createEvent("undock", "Ship is leaving the dock", leave_time)]));
+
+
                 // console.log("load tasks:");
                 // for (let i in loadTasks) {
                 //     console.log(loadTasks[i]);
@@ -544,6 +564,7 @@ class TaskProducer {
                 // console.log("<<<<<<<<<<<\n");
 
                 let phase1and2tasks = phase1tasks.concat(loadTasks);
+                phase1and2tasks.push(leaveTask);
                 allTasks = allTasks.concat(phase1and2tasks);
                 // produced the phase 1 and 2 tasks
             }
@@ -855,15 +876,6 @@ class TaskProducer {
         }
 
         moveTasks = moveTasks.concat(makeMoveTasksPerPint(dock, processinterval, destination_id, start_time, load));
-
-        if (load) {
-            start_time = Math.max.apply(Math, moveTasks.map((o) => { return o.end_time }));
-            moveTasks.push(TaskProducer.createScheduleTask(processinterval.id,
-                processinterval.ship.id,
-                dock.id,
-                "Ship is leaving the dock",
-                start_time, [TaskProducer.createEvent("undock", "Ship is leaving the dock", start_time)]));
-        }
         return moveTasks;
     }
 }
@@ -917,8 +929,8 @@ module.exports.createScheduleAndTasks = (configs) => {
     }
 };
 
-//
+
 // let data = require("./expecteddata.js");
-//
-// let result = this.createScheduleAndTasks(data.resp5);
+
+// let result = this.createScheduleAndTasks(data.resp7);
 // console.log(result);
