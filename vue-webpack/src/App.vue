@@ -6,6 +6,7 @@
        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
        <!-- <StorageComponent :storage="currentstorage"></StorageComponent> -->
        <!-- <DockComponent :dock="currentdock"></DockComponent> -->
+       <!-- <ShipComponent :ship="currentship"></ShipComponent> -->
        <!-- <button @click="getSimulation" >get mock simulation</button> -->
   </div>
 </template>
