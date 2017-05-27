@@ -35,5 +35,14 @@ export default class Ship {
    this.moveForward = function(context){
         this.position_x += 30;
    }
+
+   this.checkClick = function(x,y){
+        if(((x >= this.position_x)&&(x <= this.position_x+this.width))&&((y >= this.position_y)&&(y <= this.position_y+this.height))){
+             return true;
+        }else{
+             return false;
+        }
+
+   }
 }
 }

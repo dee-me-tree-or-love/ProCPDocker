@@ -1,6 +1,6 @@
 <template>
      <div id="canvas-container">
-          <canvas id="canvas" onload="setContext()"></canvas>
+          <canvas id="canvas" height="500px" width="700px" onload="setContext()" onclick="checkCoordinates()" v-on:click="check"></canvas>
      </div>
 </template>
 
@@ -14,6 +14,10 @@ import Storage from './models/Storage.js';
 
 var c;
 var ctx;
+var ships;
+var docks;
+var storages;
+var testship;
 
 $(function() {
 
@@ -31,14 +35,41 @@ $(function() {
      testship.drawShip(ctx);
      dock.drawDock(ctx);
      storage.drawStorage(ctx);
+
 });
 
+
 export default{
+     props:['ships','docks','storages'],
      data(){
           return{
                c : c,
                ctx : ctx,
+               currentship,
+               currentdock,
+               currentstorage,
           }
+     },
+     methods:{
+          check(event){
+
+               alert(event.offsetX);
+               for(var i = 0;i < this.ships.length;i++){
+                    if(this.ships[i].checkClick(event.offsetX,event.offsetY)){
+                         alert(this.ships[i].id);
+                    }
+               }
+               for(var i = 0;i < this.storages.length;i++){
+                    if(this.storages[i].checkClick(event.offsetX,event.offsetY)){
+                         alert(this.storages[i].id);
+                    }
+               }
+               for(var i = 0;i < this.docks.length;i++){
+                    if(this.docks[i].checkClick(event.offsetX,event.offsetY)){
+                         alert(this.docks[i].id);
+                    }
+               }
+          },
      }
 }
 

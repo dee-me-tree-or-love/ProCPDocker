@@ -18,5 +18,14 @@ export default class Dock {
        context.lineTo(171,60);
        context.stroke();
  }
+
+ this.checkClick = function(x,y){
+      if(((x >= this.position_x)&&(x <= this.position_x+this.width))&&((y >= this.position_y)&&(y <= this.position_y+this.height))){
+           return true;
+      }else{
+           return false;
+      }
+
+ }
  }
 }

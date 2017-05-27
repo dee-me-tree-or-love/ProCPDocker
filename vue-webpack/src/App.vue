@@ -1,6 +1,6 @@
 <template>
   <div class="container" id="app">
-       <CanvasComponent @tasks="setTasks"></CanvasComponent>
+       <CanvasComponent @tasks="setTasks" :ships="ships" :docks="docks" :storages="storages"></CanvasComponent>
        <!-- TODO: add other components and fix currentTask problem -->
 
        <EventContainerComponent :events="events"></EventContainerComponent>
@@ -23,7 +23,9 @@ export default {
     data () {
          return {
               tasks:[],
-              ships:[],
+              ships:[new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status")],
+              docks:[new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships")],
+              storages:[new Storage("id","size","containers_max","containers_current","connections","status")],
               events:[],
          }
     },
