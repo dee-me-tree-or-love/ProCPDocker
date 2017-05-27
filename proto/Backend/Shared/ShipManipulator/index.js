@@ -82,14 +82,14 @@ class ShipScheduler {
 
     constructor(configs) {
         this.configs = configs;
-        this.storageHashTable = this.makeHashTableWithUUIDs(this.configs.storages);
-        this.shipHashTable = this.makeHashTableWithUUIDs(this.configs.ships);
-        this.dockHashTable = this.makeHashTableWithUUIDs(this.configs.docks);
+        this.storageHashTable = ShipScheduler.makeHashTableWithUUIDs(this.configs.storages);
+        this.shipHashTable = ShipScheduler.makeHashTableWithUUIDs(this.configs.ships);
+        this.dockHashTable = ShipScheduler.makeHashTableWithUUIDs(this.configs.docks);
         this.connectionMatrix = this.configs.connections;
         this.DEPARTUREMARGIN = 2;
         this.initializeProcessIntervalsOnDocks();
         this.initializeDockTemporaryStorage();
-        console.log(this.configs.connections);
+        // console.log(this.configs.connections);
     }
 
     // that is an amazing algorithm for creating has tables, I know, very error secure, suuuuure... 
@@ -98,7 +98,7 @@ class ShipScheduler {
      * Produces the hash tables with UUIDs of the entities as keys
      * @param {*} entities 
      */
-    makeHashTableWithUUIDs(entities) {
+    static makeHashTableWithUUIDs(entities) {
         let hashTable = {}
         for (let i = 0; i < entities.length; i++) {
             hashTable[entities[i].id] = entities[i];
@@ -216,7 +216,7 @@ class ShipScheduler {
         // determine if one of the options for the ship can host the ship with the given eta:
         for (let i = 0; i < ship.dockpriority.length; i++) {
             // check if the ship can be docked
-            console.log("what if here? " + ship.dockpriority[i].dock_id + " ; busrtsize: " + ship.dockpriority[i].burstsize);
+            // console.log("what if here? " + ship.dockpriority[i].dock_id + " ; busrtsize: " + ship.dockpriority[i].burstsize);
             if (!this.processIntevalMakesOverlaps(
                     ship.dockpriority[i].dock_id, // the dock id
                     ship.eta, // the estimated time of arrival
@@ -227,12 +227,14 @@ class ShipScheduler {
                 // dock the ship! 
                 this.dockShipTo(
                     ship.dockpriority[i].dock_id,
-                    this.prapareProcessInterval(
+                    ShipScheduler.prepareProcessInterval(
                         ship,
                         ship.eta,
-                        (ship.eta + ship.dockpriority[i].burstsize),
+                        // forgot to include the margin first
+                        (ship.eta + ship.dockpriority[i].burstsize + this.DEPARTUREMARGIN),
                         "ship is docked")
                 );
+                console.log("docked the ship, etd: " + (ship.eta + ship.dockpriority[i].burstsize + this.DEPARTUREMARGIN));
                 // finish
                 return;
             }
@@ -254,9 +256,7 @@ class ShipScheduler {
 
             let potentialETD = latestETD + ship.dockpriority[i].burstsize + this.DEPARTUREMARGIN;
 
-            if (
-                (potentialETD) < bestETD
-            ) {
+            if ((potentialETD) < bestETD) {
                 bestETA = latestETD;
                 bestETD = potentialETD;
                 bestOptionDockId = key;
@@ -264,7 +264,7 @@ class ShipScheduler {
         }
 
         console.log("well, looks like the best options now is dock: " + bestOptionDockId + " ; etd: " + bestETD);
-        this.dockShipTo(bestOptionDockId, this.prapareProcessInterval(ship, bestETA, bestETD, "ship is docked"));
+        this.dockShipTo(bestOptionDockId, ShipScheduler.prepareProcessInterval(ship, bestETA, bestETD, "ship is docked"));
 
     }
 
@@ -277,7 +277,7 @@ class ShipScheduler {
      * @returns {object} the response showing if the overlap exists
      */
     processIntevalMakesOverlaps(dock_id, eta, etd) {
-        console.log(this.dockHashTable[dock_id].processintervals);
+        // console.log(this.dockHashTable[dock_id].processintervals);
         for (let i = 0; i < this.dockHashTable[dock_id].processintervals.length; i++) {
             // console.log(
             //     "ETA: " + (this.dockHashTable[dock_id].processintervals[i].eta)
@@ -300,7 +300,7 @@ class ShipScheduler {
      * @param {*} etd 
      * @param {*} desc 
      */
-    prapareProcessInterval(ship, eta, etd, desc) {
+    static prepareProcessInterval(ship, eta, etd, desc) {
         return { id: uuid(), ship: ship, eta: eta, etd: etd, description: desc };
     }
 
@@ -342,7 +342,7 @@ class ShipScheduler {
         // console.log(this.connectionMatrix);
 
         // log what the dock options are there
-        this.logDockingOptions();
+        // this.logDockingOptions();
 
         // Choosing the best option: Pseudocode
         // 
@@ -368,7 +368,7 @@ class ShipScheduler {
         //                                  since the ships are processed in the order of the increasing ETAs)
 
         for (let key in this.dockHashTable) {
-            console.log(this.dockHashTable[key].processintervals);
+            // console.log(this.dockHashTable[key].processintervals);
         }
 
         // console.log("\n+++++++ IMPORNANT ");
@@ -385,15 +385,15 @@ class ShipScheduler {
             this.determineDocking(this.configs.ships[i]);
         }
 
-        for (let key in this.dockHashTable) {
-            let dock = this.dockHashTable[key]
-            console.log("\n dock id: " + key);
-            console.log("dock process intervals:");
-            for (let i in dock.processintervals) {
-                console.dir(dock.processintervals[i]);
-            }
+        // for (let key in this.dockHashTable) {
+        //     let dock = this.dockHashTable[key]
+        //     console.log("\n dock id: " + key);
+        //     console.log("dock process intervals:");
+        //     for (let i in dock.processintervals) {
+        //         console.dir(dock.processintervals[i]);
+        //     }
 
-        }
+        // }
         return this.configs;
     }
 
@@ -421,27 +421,29 @@ class ShipScheduler {
 let data = require("./expecteddata.js");
 // console.dir(data);
 
-let SS = new ShipScheduler(data.resp5);
+let SS = new ShipScheduler(data.resp4);
 
 let resp = SS.produceTiming();
 
 class TaskProducer {
 
-    constructor(docks, connections) {
-        this.docks = docks;
+    constructor(configs, connections) {
+        this.configs = configs;
+        this.docks = configs.docks;
+        this.storages = configs.storages;
         this.connectionMatrix = connections;
     }
 
 
 
-    static createTask(inter, container, dest, type, descr, stime, events) {
-        return {
+    static createTask(inter, container, dest_id, type, descr, stime, events) {
+        let task = {
             id: uuid(),
             interval_id: inter,
             type: type,
             extra: {
-                container: container,
-                destination: dest
+                container_id: container.id,
+                destination_id: dest_id
             },
             description: descr,
             status: "waiting",
@@ -449,7 +451,33 @@ class TaskProducer {
             events: events,
             end_time: stime + events.length,
         }
+        task.events.sort((a, b) => {
+            return a.start_time - b.start_time;
+        })
+        return task;
     }
+
+    static createScheduleTask(inter, ship_id, dock_id, descr, stime, events) {
+        let task = {
+            id: uuid(),
+            interval_id: inter,
+            type: "schedule task",
+            extra: {
+                ship: ship_id,
+                destination_id: dock_id
+            },
+            description: descr,
+            status: "waiting",
+            start_time: stime,
+            events: events,
+            end_time: stime + events.length,
+        }
+        task.events.sort((a, b) => {
+            return a.start_time - b.start_time;
+        })
+        return task;
+    }
+
 
     static createEvent(type, msg, start_time) {
         return {
@@ -461,7 +489,10 @@ class TaskProducer {
         }
     }
 
-    produceTasks(docks) {
+    produceTasks(configs) {
+        let docks = configs.docks;
+        let storages = configs.storages;
+
         let getEarliesETA = (dock) => {
                 return dock.processintervals[0].eta;
             }
@@ -472,107 +503,380 @@ class TaskProducer {
 
         console.log("\n))))))))))))PRODUCING TASKS((((((((((((\n")
 
-        let moveToDockTasks = [];
-        let unloadTasks = [];
+        let allTasks = [];
+        // use promises to do so faster and more efficient -> make an aggregate result of the promises!
+
         for (let i in docks) {
-            this.produceTransferToDockTasks(docks[i]);
-            unloadTasks = unloadTasks.concat(this.produceUnloadTasks(docks[i]));
+            // per process interval
+            for (let j in docks[i].processintervals) {
+                let moveToDockTasks = [];
+                let unloadTasks = [];
+                let loadTasks = [];
+
+                // phase 1 tasks: unload the ship and get the containers from the storage to the dockyard
+                moveToDockTasks = moveToDockTasks.concat(this.produceTransferToDockTasks(docks[i], docks[i].processintervals[j]));
+                unloadTasks = unloadTasks.concat(
+                    this.produceContainerMovingTasks(docks[i], docks[i].processintervals[j],
+                        docks[i].id, docks[i].processintervals[j].eta));
+
+                // concatinating
+                let phase1tasks = moveToDockTasks.concat(unloadTasks);
+
+                // sort to find the last time of the 
+                phase1tasks.sort((a, b) => {
+                    return a.start_time - b.start_time;
+                })
+
+                let latestEndingTaskOfPhase1 = Math.max.apply(Math, phase1tasks.map((o) => { return o.end_time }))
+
+                // console.log("\n>>>>>>>>>>>\nthe latest phase1 task of");
+                // console.log("pint: " + docks[i].processintervals[j].id);
+                // console.log(latestEndingTaskOfPhase1 + " of " + docks[i].processintervals[j].etd);
+                // console.log("with remaining load: " + docks[i].processintervals[j].ship.containers_load.length);
+                // console.log("in the dock with " + docks[i].number_loaders + " loaders");
+
+
+                // use the latestEndingTaskOfPhase1 as the start time for the phase2: load and leave the port
+                let phase2StartTime = latestEndingTaskOfPhase1;
+
+
+                loadTasks = loadTasks.concat(
+                    this.produceContainerMovingTasks(docks[i], docks[i].processintervals[j],
+                        docks[i].processintervals[j].ship.id, phase2StartTime, true)
+                );
+                // console.log("load tasks:");
+                // for (let i in loadTasks) {
+                //     console.log(loadTasks[i]);
+                // }
+                // console.log("<<<<<<<<<<<\n");
+
+                let phase1and2tasks = phase1tasks.concat(loadTasks);
+                allTasks = allTasks.concat(phase1and2tasks);
+                // produced the phase 1 and 2 tasks
+            }
         }
-        unloadTasks.sort((a, b) => {
+
+
+        // phase 3: transport the containers to forward to the storages
+        // go through every dock
+        //      find the order of storages by distance
+        //      try to move the containers to the closest storage
+        // definitely use a separate method for it
+        let tasksPhase3 = this.produceTransferFromDockToStorageTasks(docks);
+
+        allTasks = allTasks.concat(tasksPhase3);
+
+        // sort the tasks again
+        allTasks.sort((a, b) => {
             return a.start_time - b.start_time;
         })
-        console.log("\nUnloading tasks")
-        console.dir(unloadTasks);
-
+        return allTasks;
     }
 
 
-    produceTransferToDockTasks(dock) {
-
-        for (let i in dock.processintervals) {
-            let containerpayloads = dock.processintervals[i].ship.loads;
-            let intId = dock.processintervals[i].id;
-            console.log("you are looking at the payloads:")
-            console.log(containerpayloads);
-            let tasks = [];
-            let intervalTime = dock.processintervals[i].eta;
-            let taskStartTime = intervalTime;
-            for (let storageId in containerpayloads) {
-
-                let eventStartTime = intervalTime;
-
-                for (let k in containerpayloads[storageId].containers) {
-
-                    // console.log("new task")
-                    taskStartTime = eventStartTime;
-
-                    // moving the containers from the storage to the dock includes picking them up from the storage and placing them in the dock implicitly
-                    let events = [];
-
-                    events.push(TaskProducer.createEvent("pick", "pick container from storage for trasnportation", eventStartTime));
-                    eventStartTime++;
-                    for (let j = 1; j < this.connectionMatrix[storageId][dock.id].weight - 1; j++) {
-
-                        // console.log("this event starts at: " + eventStartTime);
-                        events.push(TaskProducer.createEvent("transfer", "transfer container from storage to dock", eventStartTime));
-                        eventStartTime++;
-                    }
-                    events.push(TaskProducer.createEvent("put", "put from transportation to the dock", eventStartTime));
-                    eventStartTime++;
-                    // console.log("task start time: " + taskStartTime)
-                    tasks.push(TaskProducer.createTask(intId, containerpayloads[storageId].containers[k], dock.id, "transfer container",
-                        "relocate the container from the storage to the dock", taskStartTime, events));
-                }
+    produceTransferFromDockToStorageTasks(docks) {
+        // sort the connections of the docks which plan to forward containers to storages
+        let docksToWorkWith = [];
+        for (let i in docks) {
+            if (docks[i].containers_toforward.length > 0) {
+                docks[i].connections.sort((a, b) => { return a.weight - b.weight })
+                docksToWorkWith.push(docks[i]);
             }
-            console.log("tasks for the pint:")
-            console.log(dock.processintervals[i].id);
-            console.log(tasks);
         }
 
+        // sort these docks by the earliest time they are free of any process intervals
+        docksToWorkWith.sort((a, b) => {
+            return Math.max.apply(Math, a.processintervals.map((o) => { return o.etd })) -
+                Math.max.apply(Math, b.processintervals.map((o) => { return o.etd })); // a nice way to get the last ETD
+        })
+
+        // make a hastable out of the storages
+        this.storages = ShipScheduler.makeHashTableWithUUIDs(this.storages);
+        // figure out the available capactities per storage
+        let assignAvailableCapacity = (storages) => {
+            for (let key in storages) {
+                let storage = storages[key];
+                storage.availableCapacity = storage.containers_max - storage.containers_current.length;
+                // console.log("initialized the availble capacity for the storage: " + key + " : " + storage.availableCapacity);
+            }
+            return storages;
+        }
+        this.storages = assignAvailableCapacity(this.storages);
+
+        // now start planning the transfers to the storages
+        let transferTasks = [];
+        /**
+         * 
+         * @param {*} dock 
+         * @param {*} interval_id 
+         * @param {*} optionIndex 
+         * @param {*} numberOfTransfers 
+         * @param {*} tasks 
+         * @param {*} startTime 
+         * @param {*} firstContainerIndex 
+         */
+        let makeUnloadTransferTasks = (dock, interval_id, optionIndex,
+            numberOfTransfers, tasks, startTime, firstContainerIndex) => {
+            // console.log("new recursive call");
+            // console.log(tasks);
+            let storageId = dock.connections[optionIndex].storage;
+            let storageOption = this.storages[storageId];
+
+            let difference = storageOption.availableCapacity - numberOfTransfers;
+
+            // generates events linked to moving 1 container
+            /**
+             * 
+             * @param {*} dock 
+             * @param {*} container 
+             * @param {*} interval_id 
+             * @param {*} events 
+             * @param {*} tasks 
+             * @param {*} eventStartTime 
+             */
+            let generateEvents = (dock, container, distanceToStorage,
+                events, eventStartTime) => {
+                // event to pick the container from the dock
+                events.push(TaskProducer.createEvent("pick", "pick container from dock for trasnportation", eventStartTime));
+                eventStartTime++;
+                // transportation events
+                for (let k = 1; k < distanceToStorage - 1; k++) {
+                    events.push(TaskProducer.createEvent("transfer", "transfer container from dock to storage", eventStartTime));
+                    eventStartTime++;
+                }
+                // event to place the container to the storage
+                events.push(TaskProducer.createEvent("move",
+                    "move the container from transportation to the storage", eventStartTime));
+                eventStartTime++;
+                return eventStartTime;
+            }
+
+            if (difference >= 0) {
+                // if the number of new containers that will be allocated to the storage does not exceed the capacity
+                // update the available capacity to the correct value: the left capacity
+                // and stop the run
+                storageOption.availableCapacity = difference;
+                // start craeting the tasks
+                // let tranferFromDockTasks = [];
+                let eventStartTime = startTime;
+
+                for (let i = firstContainerIndex; i < numberOfTransfers; i++) {
+                    // create the tasks 
+                    // each task should start with startTime + i and should contain |distance| amount of events
+                    // should be similar to the makeTransferTasks method used earlier
+
+                    // since in the end of the nested for loop you get the last event start time ++
+                    let taskStartTime = eventStartTime;
+
+                    let events = [];
+                    // generates tasks for every container with the events included
+                    eventStartTime = generateEvents(dock, dock.containers_toforward[i],
+                        this.connectionMatrix[storageId][dock.id].weight,
+                        events,
+                        eventStartTime);
+                    // aggregate it all into the task
+                    tasks.push(TaskProducer.createTask(interval_id, dock.containers_toforward[i],
+                        dock.id, "transfer container",
+                        "relocate the container from the dock to the storage", taskStartTime, events));
+
+
+                    // console.log(tasks.map((o) => { return o.events }));
+                    // console.log(tasks);
+                    // console.log(tranferFromDockTasks);
+                }
+
+                // tasks = tasks.concat(tranferFromDockTasks)
+                return;
+            } else {
+                // since didn't fit all the containers, there are excesses, but we need to get all the ones that are fitting!
+                let endIndex = firstContainerIndex + storageOption.availableCapacity;
+                storageOption.availableCapacity = 0;
+                // start craeting the tasks
+                // let tranferFromDockTasks = [];
+                let eventStartTime = startTime;
+
+                for (let i = firstContainerIndex; i < endIndex; i++) {
+                    // create the tasks 
+                    // each task should start with startTime + i and should contain |distance| amount of events
+                    // should be similar to the makeTransferTasks method used earlier
+
+                    // since in the end of the nested for loop you get the last event start time ++
+                    let taskStartTime = eventStartTime;
+
+                    let events = [];
+                    // generates tasks for every container with the events included
+                    generateEvents(dock, dock.containers_toforward[i],
+                        this.connectionMatrix[storageId][dock.id].weight,
+                        events,
+                        eventStartTime);
+                    // aggregate it all into the task
+                    tasks.push(TaskProducer.createTask(interval_id, dock.containers_toforward[i],
+                        dock.id, "transfer container",
+                        "relocate the container from the dock to the storage", taskStartTime, events));
+                }
+                // tasks = tasks.concat(tranferFromDockTasks);
+                difference = (-1) * difference;
+                makeUnloadTransferTasks(dock, interval_id, optionIndex + 1, difference, tasks, eventStartTime, endIndex);
+            }
+        }
+
+        let allTasks = [];
+
+        // make all the tasks
+        for (let i in docksToWorkWith) {
+            // get last ETD:
+            let latestEtd = Math.max.apply(Math, docksToWorkWith[i].processintervals.map((o) => { return o.etd }));
+            // add new interval
+            let interval = ShipScheduler.prepareProcessInterval("", latestEtd,
+                latestEtd, // has to be changed after!
+                "moving the containers stored for forwarding to the storages");
+
+            let dockForwardingTasks = [];
+            makeUnloadTransferTasks(docksToWorkWith[i], interval.id, 0,
+                docksToWorkWith[i].containers_toforward.length,
+                dockForwardingTasks, latestEtd, 0);
+            // concatenate all the new tasks there
+
+            // make the interval final with the correct time
+            interval.etd = Math.max.apply(Math, dockForwardingTasks.map((o) => { return o.end_time }));
+            // docksToWorkWith[i].processintervals.push(interval);
+            // console.log("\n NEW INTERVAL: ");
+            // console.log(interval);
+            // console.log("Its tasks")
+            // console.log(dockForwardingTasks);
+            // console.log("\n");
+            allTasks = allTasks.concat(dockForwardingTasks);
+        }
+        return allTasks;
     }
 
+    produceTransferToDockTasks(dock, processinterval) {
+
+        // for (let i in dock.processintervals) {
+        // let containerpayloads = dock.processintervals[i].ship.loads;
+        // let intId = dock.processintervals[i].id;
+        let containerpayloads = processinterval.ship.loads;
+        let intId = processinterval.id;
+        // console.log("you are looking at the payloads:")
+        // console.log(containerpayloads);
+        let tasks = [];
+        let intervalTime = processinterval.eta;
+        let taskStartTime = intervalTime;
+        for (let storageId in containerpayloads) {
+
+            let eventStartTime = intervalTime;
+
+            for (let k in containerpayloads[storageId].containers) {
+
+                // console.log("new task")
+                taskStartTime = eventStartTime;
+
+                // moving the containers from the storage to the dock includes picking them up from the storage and placing them in the dock implicitly
+                let events = [];
+
+                events.push(TaskProducer.createEvent("pick", "pick container from storage for trasnportation", eventStartTime));
+                eventStartTime++;
+                for (let j = 1; j < this.connectionMatrix[storageId][dock.id].weight - 1; j++) {
+
+                    // console.log("this event starts at: " + eventStartTime);
+                    events.push(TaskProducer.createEvent("transfer", "transfer container from storage to dock", eventStartTime));
+                    eventStartTime++;
+                }
+                events.push(TaskProducer.createEvent("move", "move the container from transportation to the dock", eventStartTime));
+                eventStartTime++;
+                // console.log("task start time: " + taskStartTime)
+                tasks.push(TaskProducer.createTask(intId, containerpayloads[storageId].containers[k], dock.id, "transfer container",
+                    "relocate the container from the storage to the dock", taskStartTime, events));
+            }
+        }
+        // console.log("tasks for the pint:")
+        // console.log(processinterval.id);
+        // console.log(tasks);
+        // }
+        return tasks;
+
+    }
+
+    // since we may be sure that the containers have been moved to the dock at this point of time
+    // and in fact we don't even really care where the containers are, but the task executor should just make sure that on these tasks
+    // the containers are being placed to the ship under any circumstances
 
 
+    produceContainerMovingTasks(dock, processinterval, destination_id, start_time, load) {
 
-    produceUnloadTasks(dock) {
-        let pickContainers = (interval_id, tasks, containers, destination, start_time, startIndex, endIndex, increment) => {
+        let pickContainers = (interval_id, tasks, containers, destination, start_time, startIndex, endIndex, increment, load) => {
 
             if (startIndex >= containers.length) {
                 return;
             }
+            let desc = "unloading the container from the ship to dock"
+            if (load) {
+                desc = "loading the container from the dock to the ship"
+            }
+            // console.log("load? -> ", load);
+            // console.log("desc: " + desc);
             for (let i = startIndex; i < endIndex && i < containers.length; i++) {
                 tasks.push(TaskProducer.createTask(
                     interval_id,
                     containers[i],
                     destination,
                     "pick container",
-                    "unload ship",
+                    desc,
                     start_time, [
-                        TaskProducer.createEvent("replace", "move the container", start_time),
+                        TaskProducer.createEvent("move", "move the container between ship and dock", start_time),
                     ]));
             }
-            pickContainers(interval_id, tasks, containers, destination, start_time + 1, endIndex, endIndex + increment, increment);
+            pickContainers(interval_id, tasks, containers, destination, start_time + 1, endIndex, endIndex + increment, increment, load);
         }
 
-        let makeUnloadTasksPerPint = (dock, pint) => {
+        let makeMoveTasksPerPint = (dock, pint, destination_id, stime, load) => {
             // console.log(dock);
             let tasks = [];
             let containers = pint.ship.containers_unload;
-            let destination = dock.id;
-            let start_time = pint.eta;
+            // check if the request is to load the shit
+            if (load) {
+                containers = pint.ship.containers_load;
+            }
+            let destination = destination_id;
+            let start_time = stime;
             let startIndex = 0;
             let endIndex = startIndex + dock.number_loaders;
-            pickContainers(pint.id, tasks, containers, destination, start_time, startIndex, endIndex, dock.number_loaders);
+            pickContainers(pint.id, tasks, containers, destination, start_time, startIndex, endIndex, dock.number_loaders, load);
             return tasks;
         }
 
-        let unloadTasks = [];
-        for (let i in dock.processintervals) {
-            unloadTasks = unloadTasks.concat(makeUnloadTasksPerPint(dock, dock.processintervals[i]));
+        let moveTasks = [];
+
+        // make ship arrive task
+        if (!load) {
+            moveTasks.push(TaskProducer.createScheduleTask(processinterval.id,
+                processinterval.ship.id,
+                dock.id,
+                "Ship arrives to the dock",
+                start_time, [TaskProducer.createEvent("dock ship", "Shipa arrives to the dock", start_time)]));
+            start_time++;
         }
-        return unloadTasks;
+
+        moveTasks = moveTasks.concat(makeMoveTasksPerPint(dock, processinterval, destination_id, start_time, load));
+
+        if (load) {
+            start_time = Math.max.apply(Math, moveTasks.map((o) => { return o.end_time }));
+            moveTasks.push(TaskProducer.createScheduleTask(processinterval.id,
+                processinterval.ship.id,
+                dock.id,
+                "Ship is leaving the dock",
+                start_time, [TaskProducer.createEvent("undock", "Ship is leaving the dock", start_time)]));
+        }
+        return moveTasks;
     }
 }
 
-let tp = new TaskProducer(resp.docks, resp.connections);
-tp.produceTasks(tp.docks);
+let tp = new TaskProducer(resp, resp.connections);
+let tasks = tp.produceTasks(tp.configs);
+console.log("\nUUUUUUUUUUUUUUU TASK RESPONSE UUUUUUUUUUUUUUUU\n");
+// console.log(tasks.map((o) => { return o.events }));
+console.log(tasks);
+console.log("\n total number: " + tasks.length);
+console.log("\nUUUUUUUUUUUUUUU END OF TASK RESPONSE UUUUUUUUUUUUUUUU\n");
+
+// console.log(tp.docks);
