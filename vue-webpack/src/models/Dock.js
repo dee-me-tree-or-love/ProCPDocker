@@ -7,10 +7,15 @@ export default class Dock {
     this.connected_ship_id = connected_ship_id;
     this.scheduled_ships = scheduled_ships;
 
+    this.height = 20;
+    this.width = 92;
+    this.position_x = 80;
+    this.position_y = 40;
+
 
   this.drawDock = function(context){
        context.fillStyle = '#cccccc';
-       context.fillRect(80,40,172,20);
+       context.fillRect(this.position_x,this.position_y,this.width,this.height);
        context.beginPath();
        context.moveTo(171,40);
        context.lineTo(80,40);

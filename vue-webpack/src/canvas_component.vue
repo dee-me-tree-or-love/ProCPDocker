@@ -26,17 +26,15 @@
      var timer;
      var play = true;
      var interval = 1000;
-     var tasks = [];
      var completedtasks = [];
      var counter = 0;
      var currentTask;
      var events = [];
 
      export default {
-          props:['ships','docks','storages'],
+          props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage'],
           data() {
                return {
-                    tasks,
                     completedtasks,
                     currentTask,
                     events,
@@ -53,7 +51,7 @@
                               for(var j = 0;j < response.data.tasks[i].events.length;j++){
                                 events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp));
                               }
-                              tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
+                              that.tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
                               events = [];
                               counter++;
                           }
@@ -63,14 +61,13 @@
                          //response.data.tasks[i].id
 
                       });
-                      this.$emit('tasks',tasks);
 
 
                },
                ///not used anymore during play simulation only for testing Dotask button
                performTask(){
-                    if(tasks.length > 0){
-                        var temp = tasks.shift();
+                    if(that.tasks.length > 0){
+                        var temp = that.tasks.shift();
 
                         //TODO: what's up with that???
                         currentTask = temp;
@@ -86,7 +83,7 @@
                ///not used anymore during play simulation only for testing reverse task button
                reverseTask(){
                     if(completedtasks.length > 0){
-                         tasks.unshift(completedtasks.pop());
+                         that.tasks.unshift(completedtasks.pop());
                          document.getElementById('slider').value--;
                     }else {
                          alert("no more tasks to reverse");
@@ -99,12 +96,12 @@
                     if(play){
                          play = false;
                          timer = setInterval(function (){
-                              var temp = tasks.shift();
+                              var temp = that.tasks.shift();
 
                               currentTask = temp;
                               //console.log(currentTask.events);
 
-                              if(tasks.length > 0){
+                              if(that.tasks.length > 0){
                                    completedtasks.push(temp);
                                    document.getElementById('slider').value++;
                               }else {
@@ -122,7 +119,7 @@
                stepBackSimulation(){
                     this.pauseSimulation();
                     if(completedtasks.length > 0){
-                         tasks.unshift(completedtasks.pop());
+                         that.tasks.unshift(completedtasks.pop());
                          document.getElementById('slider').value--;
                     }else {
                          alert("no more tasks to reverse");
@@ -131,8 +128,8 @@
 
                stepForwardSimulation(){
                     this.pauseSimulation();
-                    if(tasks.length > 0){
-                         completedtasks.push(tasks.shift());
+                    if(that.tasks.length > 0){
+                         completedtasks.push(that.tasks.shift());
                          document.getElementById('slider').value++;
                     }else {
                          alert("no more tasks to perform");

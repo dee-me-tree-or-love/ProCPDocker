@@ -31,7 +31,7 @@ $(function() {
      var storage = new Storage("id","size","containers_max","containers_current","connections","status");
 
      canvas.drawBackground();
-     testship.moveForward(ctx);
+     //testship.moveForward(ctx);
      testship.drawShip(ctx);
      dock.drawDock(ctx);
      storage.drawStorage(ctx);
@@ -40,14 +40,11 @@ $(function() {
 
 
 export default{
-     props:['ships','docks','storages'],
+     props:['ships','docks','storages','currentship','currentdock','currentstorage'],
      data(){
           return{
                c : c,
                ctx : ctx,
-               currentship,
-               currentdock,
-               currentstorage,
           }
      },
      methods:{
@@ -57,18 +54,23 @@ export default{
                for(var i = 0;i < this.ships.length;i++){
                     if(this.ships[i].checkClick(event.offsetX,event.offsetY)){
                          alert(this.ships[i].id);
+                         currentship = this.ships[i];
                     }
                }
                for(var i = 0;i < this.storages.length;i++){
                     if(this.storages[i].checkClick(event.offsetX,event.offsetY)){
                          alert(this.storages[i].id);
+                         currentstorage = this.storages[i];
                     }
                }
                for(var i = 0;i < this.docks.length;i++){
                     if(this.docks[i].checkClick(event.offsetX,event.offsetY)){
                          alert(this.docks[i].id);
+                         currentdock = this.docks[i];
                     }
                }
+
+               //TODO : set the booleans for swapping out components
           },
      }
 }

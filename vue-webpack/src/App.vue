@@ -1,6 +1,6 @@
 <template>
   <div class="container" id="app">
-       <CanvasComponent @tasks="setTasks" :ships="ships" :docks="docks" :storages="storages"></CanvasComponent>
+       <CanvasComponent :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages"></CanvasComponent>
        <!-- TODO: add other components and fix currentTask problem -->
        <EventContainerComponent :events="events"></EventContainerComponent>
        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
@@ -25,20 +25,22 @@ export default {
               ships:[new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status")],
               docks:[new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships")],
               storages:[new Storage("id","size","containers_max","containers_current","connections","status")],
-              events:[],
+              currentship:new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status"),
+              currentdock:new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships"),
+              currentstorage:new Storage("id","size","containers_max","containers_current","connections","status"),
          }
     },
+    computed:{
+          events : function(){
+               if(this.tasks.length > 0){
+                    alert(this.tasks[0].events[0])
+                    return this.tasks[0].events;
+               }
+          },
+    },
     methods:{
-         setTasks(value){
-             this.tasks = value;
-             if(this.tasks.length > 0){
-                  this.events = tasks[0].events;
-                  console.log(this.events);
-             }
-
-        },
         getSimulation(){
-             axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/simulation/sim1')
+             axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/simulation/sim1/?scope=ships')
                .then(function(response){
                  console.log(response.data);
 
