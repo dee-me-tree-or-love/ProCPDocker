@@ -4,7 +4,7 @@
 //
 // https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#syncsimulation_idtimeline_idtime_stamp
 
-module.exports.syncTo = (event, context, callback) => {
+module.exports.handler = (event, context, callback) => {
 
     let params = JSON.parse(event.body);
 
