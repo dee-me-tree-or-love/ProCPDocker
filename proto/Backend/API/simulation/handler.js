@@ -189,19 +189,24 @@ module.exports.newSimulation = (event, context, callback) => {
 
     // Persist entities in DB
     const connection = DBHelper.getConnection();
-
-    config.simulation = {
-    	id: uuid()
-	};
+    const timeline_id = uuid();
+    const simulation_id = uuid();
+    const current_time = new Date().getTime().toString();
     config.timelines = [];
     config.timelines.push({
-		id: uuid(),
+		id: timeline_id,
 		name: "default_timeline",
-		time_zero: new Date().getTime(),
-		simulation_id: config.simulation.id
+		time_zero: current_time,
+		simulation_id: simulation_id
 	});
-    let timeline_id = config.timelines[0].id;
 
+    config.simulation = {
+        id: simulation_id,
+        configuration_url:`https://s3.eu-central-1.amazonaws.com/docker-simulations/${simulation_id}.json`,
+        date_created: current_time,
+        current_timeline: timeline_id,
+        current_time
+    };
     connection.connect();
     const runQuery = (query, params, message) => {
 
@@ -381,7 +386,7 @@ module.exports.newSimulation = (event, context, callback) => {
 							body: {
 								simulation_id: config.simulation.id,
 								timeline_id,
-								download_url: `https:// s3.eu-central-1.amazonaws.com/docker-simulations/${config.simulation.id}.json`
+								download_url: `https://s3.eu-central-1.amazonaws.com/docker-simulations/${config.simulation.id}.json`
 							}
 						});
 					}
