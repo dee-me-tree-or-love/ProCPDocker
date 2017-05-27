@@ -11,7 +11,7 @@
                <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
           </div>
 
-          <CanvasDrawingComponent  :ships="ships" :docks="docks" :storages="storages"></CanvasDrawingComponent>
+          <CanvasDrawingComponent  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
 
           <input type="range" min="0" max="100" value="0" step="1" oninput="sliderChanged()" id="slider"></input>
           <p></p>
@@ -32,7 +32,7 @@
      var events = [];
 
      export default {
-          props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage','completedtasks'],
+          props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage','completedtasks', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],
           data() {
                return {
                     currentTask,

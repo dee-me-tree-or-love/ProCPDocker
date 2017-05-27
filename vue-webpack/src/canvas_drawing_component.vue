@@ -1,6 +1,6 @@
 <template>
      <div id="canvas-container">
-          <canvas id="canvas" height="500px" width="700px" onload="setContext()" onclick="checkCoordinates()" v-on:click="check"></canvas>
+          <canvas id="canvas" height="500px" width="700px" onload="setContext()" v-on:click="check"></canvas>
      </div>
 </template>
 
@@ -40,38 +40,46 @@ $(function() {
 
 
 export default{
-     props:['ships','docks','storages','currentship','currentdock','currentstorage'],
+     props:['ships','docks','storages','currentship','currentdock','currentstorage', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],
      data(){
           return{
                c : c,
                ctx : ctx,
+              //  shipsbool: this.shipsbool,
+              //  docksbool: this.docksbool,
+              //  storagesbool: this.storagesbool,
+              //  eventsbool: this.eventsbool,
           }
      },
      methods:{
           check(event){
+            this.eventsbool = false;
+            this.docksbool = false;
+            this.storagebool = false;
+            this.shipsbool = false;
 
-               alert(event.offsetX);
-               for(var i = 0;i < this.ships.length;i++){
-                    if(this.ships[i].checkClick(event.offsetX,event.offsetY)){
-                         alert(this.ships[i].id);
-                         currentship = this.ships[i];
-                    }
-               }
-               for(var i = 0;i < this.storages.length;i++){
-                    if(this.storages[i].checkClick(event.offsetX,event.offsetY)){
-                         alert(this.storages[i].id);
-                         currentstorage = this.storages[i];
-                    }
-               }
-               for(var i = 0;i < this.docks.length;i++){
-                    if(this.docks[i].checkClick(event.offsetX,event.offsetY)){
-                         alert(this.docks[i].id);
-                         currentdock = this.docks[i];
-                    }
-               }
-
-               //TODO : set the booleans for swapping out components
-          },
+            for(var i = 0;i < this.ships.length;i++){
+                  if(this.ships[i].checkClick(event.offsetX,event.offsetY)){
+                       this.shipsbool = true;
+                       this.currentship = this.ships[i];
+                  }
+             }
+             for(var i = 0;i < this.storages.length;i++){
+                  if(this.storages[i].checkClick(event.offsetX,event.offsetY)){
+                       this.storagesbool = true;
+                       this.currentstorage = this.storages[i];
+                  }
+             }
+             for(var i = 0;i < this.docks.length;i++){
+                  if(this.docks[i].checkClick(event.offsetX,event.offsetY)){
+                       this.docksbool = true;
+                       this.currentdock = this.docks[i];
+                  }
+             }
+             if(!this.docksbool && !this.shipsbool && !this.storagesbool){
+                this.eventsbool = true;
+             }
+         },
      }
 }
 
