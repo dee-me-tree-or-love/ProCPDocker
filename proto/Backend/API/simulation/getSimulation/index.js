@@ -28,6 +28,7 @@ module.exports.handler = (event, context, callback) => {
 
         scope = event.queryStringParameters.scope.split(',');
     }
+    console.log(scope);
 
     const connection = DBHelper.getConnection();
     let response = {};
@@ -132,9 +133,32 @@ module.exports.handler = (event, context, callback) => {
                                     'AND s.id = ?',
                                     simID, 'Fetching storages'));
                                 break;
+                            case "container_count":
+                                console.log('Container count requested');
+                                scopeComponents.push(runQuery(
+                                    'SELECT COUNT(*) as container_count ' +
+                                    'FROM Containers c ' +
+                                    'JOIN ContainerHold ch ' +
+                                    'ON c.container_hold = ch.id ' +
+                                    'JOIN Timelines t ' +
+                                    'ON t.id = ch.timeline_id ' +
+                                    'JOIN Simulations s ' +
+                                    'ON s.id = t.simulation_id ' +
+                                    'WHERE s.id = ?',
+                                    simID, 'Fetching container count'));
+                                break;
+                            case "timelines":
+                                console.log('Timelines requested');
+                                scopeComponents.push(runQuery(
+                                    'SELECT t.* ' +
+                                    'FROM Timelines t ' +
+                                    'JOIN Simulations s	' +
+                                    'ON s.id = t.simulation_id	' +
+                                    'WHERE t.simulation_id = ?',
+                                    simID, 'Fetching timelines'));
+                                break;
                         }
                     });
-                    console.log(scopeComponents.length);
                     return Promise.all(scopeComponents);
                 }
             }
@@ -164,6 +188,10 @@ module.exports.handler = (event, context, callback) => {
                         ship.id = ship.container_hold;
                         delete ship.container_hold;
                     })
+                }else if (component.toLowerCase() === 'container_count') {
+
+                    enrichedScope[component] = all[i][0].container_count;
+                    continue;
                 }
                 enrichedScope[component] = all[i];
             }
