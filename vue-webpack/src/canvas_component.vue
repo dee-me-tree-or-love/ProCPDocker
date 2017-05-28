@@ -12,7 +12,7 @@
                <button @click="syncSimulation" class="btn btn-success btn-lg"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
           </div>
 
-          <CanvasDrawingComponent @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
+          <CanvasDrawingComponent  @context="setContext"  @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
 
           <input type="range" min="0" max="100" value="0" step="1" oninput="sliderChanged()" id="slider"></input>
           <p></p>
@@ -42,6 +42,9 @@
                }
           },
           methods: {
+               setContext(value){
+                    this.$emit('context', value);
+               },
                setComponentBool(value){
                     this.$emit('componentsidebarcheck', value);
                },

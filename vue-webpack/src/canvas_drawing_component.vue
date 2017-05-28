@@ -19,6 +19,70 @@ var docks;
 var storages;
 var testship;
 
+export default{
+     mounted() {
+          this.c = document.getElementById('canvas')
+
+          this.ctx = this.c.getContext('2d')
+
+          alert(this.ctx)
+     },
+     name: 'CanvasComponentVue',
+     props:['ships','docks','storages','currentship','currentdock','currentstorage', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],
+     data(){
+          return{
+               c : c,
+               ctx : ctx,
+          }
+     },
+     computed:{
+          returncontext : function(){
+               this.$emit('context', this.ctx)
+
+               return this.ctx
+          }
+     },
+     methods:{
+          getContext(){
+               this.$emit('context', this.ctx)
+          },
+          check(event){
+            // this.eventsbool = false;
+            var docksbool = false;
+            var storagesbool = false;
+            var shipsbool = false;
+
+            for(var i = 0;i < this.ships.length;i++){
+                  if(this.ships[i].checkClick(event.offsetX,event.offsetY)){
+                       shipsbool = true;
+                       //this.currentship = this.ships[i];
+                       //alert(this.shipsbool);
+                       //alert(this.ctx)
+                       this.$emit('componentsidebarcheck', 'ship'+i);
+                  }
+             }
+             for(var i = 0;i < this.storages.length;i++){
+                  if(this.storages[i].checkClick(event.offsetX,event.offsetY)){
+                       storagesbool = true;
+                       //this.currentstorage = this.storages[i];
+                       this.$emit('componentsidebarcheck', 'storage'+i);
+                  }
+             }
+             for(var i = 0;i < this.docks.length;i++){
+                  if(this.docks[i].checkClick(event.offsetX,event.offsetY)){
+                       docksbool = true;
+                       //this.currentdock = this.docks[i];
+                       this.$emit('componentsidebarcheck', 'dock'+i);
+                  }
+             }
+             if(!docksbool && !shipsbool && !storagesbool){
+                         //this.eventsbool = true;
+                         this.$emit('componentsidebarcheck', 'event');
+             }
+         },
+     }
+}
+
 $(function() {
 
      c = document.getElementById('canvas');
@@ -37,52 +101,6 @@ $(function() {
      storage.drawStorage(ctx);
 
 });
-
-
-export default{
-     props:['ships','docks','storages','currentship','currentdock','currentstorage', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],
-     data(){
-          return{
-               c : c,
-               ctx : ctx,
-          }
-     },
-     methods:{
-          check(event){
-            //this.eventsbool = false;
-            //this.docksbool = false;
-            //this.storagesbool = false;
-            //this.shipsbool = false;
-
-            for(var i = 0;i < this.ships.length;i++){
-                  if(this.ships[i].checkClick(event.offsetX,event.offsetY)){
-                       //this.shipsbool = true;
-                       //this.currentship = this.ships[i];
-                       //alert(this.shipsbool);
-                       this.$emit('componentsidebarcheck', 'ship'+i);
-                  }
-             }
-             for(var i = 0;i < this.storages.length;i++){
-                  if(this.storages[i].checkClick(event.offsetX,event.offsetY)){
-                       //this.storagesbool = true;
-                       //this.currentstorage = this.storages[i];
-                       this.$emit('componentsidebarcheck', 'storage'+i);
-                  }
-             }
-             for(var i = 0;i < this.docks.length;i++){
-                  if(this.docks[i].checkClick(event.offsetX,event.offsetY)){
-                       //this.docksbool = true;
-                       //this.currentdock = this.docks[i];
-                       this.$emit('componentsidebarcheck', 'dock'+i);
-                  }
-             }
-             if(!this.docksbool && !this.shipsbool && !this.storagesbool){
-                         //this.eventsbool = true;
-                         this.$emit('componentsidebarcheck', 'event');
-             }
-         },
-     }
-}
 
 </script>
 <style>

@@ -1,6 +1,6 @@
 <template>
   <div class="fluid-container" id="app">
-       <CanvasComponent  @componentsidebarcheck="setSidebarComponentBool" :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
+       <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
        <button @click="getSimulation" >get simulation</button>
        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
        <EventContainerComponent v-if="eventsbool" :events="events"></EventContainerComponent>
@@ -27,12 +27,19 @@ import Simulation from './models/Simulation.js';
 
 var that;
 
+
 export default {
     name: 'app',
+    mounted() {
+         this.eventsbool= false,
+         this.shipsbool= false,
+         this.storagesbool= false,
+         this.docksbool= true
+    },
     data () {
          return {
               currenttimeline : 'timeline1',
-              that : that,
+              ctx: '',
               tasks:[],
               completedtasks:[],
               ships:[new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status")],
@@ -41,7 +48,7 @@ export default {
               currentship:new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status"),
               currentdock:new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships"),
               currentstorage:new Storage("id","size","containers_max","containers_current","connections","status"),
-              eventsbool: true,
+              eventsbool: false,
               shipsbool: false,
               storagesbool: false,
               docksbool: false,
@@ -56,12 +63,22 @@ export default {
           },
     },
     methods:{
+         setContext(value){
+              this.ctx = value;
+              alert(this.ctx);
+              for(var i = 0;i < this.ships.length;i++){
+                   this.ships[i].setY(i);
+                   this.ships[i].drawShip(this.ctx);
+              }
+         },
          setSidebarComponentBool(value){
               //alert(value);
               this.shipsbool= false;
               this.storagesbool= false;
               this.docksbool= false;
               this.eventsbool = false;
+
+              alert(value);
 
               if(value.includes("ship")){
                    this.shipsbool = true;
@@ -93,6 +110,8 @@ export default {
                       that.getShips(response.data.id,response.data.current_timeline_id);
                       that.getDocks(response.data.id,response.data.current_timeline_id);
                       that.getStorages(response.data.id,response.data.current_timeline_id);
+
+                      that.simulationLoop();
                  }else{
 
                  }
@@ -178,6 +197,11 @@ export default {
                  });
              //}
         },
+        simulationLoop(){
+
+
+
+        }
     }
 
 }
