@@ -217,7 +217,7 @@ module.exports.handler = (event, context, callback) => {
         configuration_url: `https://s3.eu-central-1.amazonaws.com/docker-simulations/${simulation_id}.json`,
         date_created: current_time,
         current_timeline: timeline_id,
-        current_time
+        current_time: 0
     };
     connection.connect();
     const runQuery = (query, params, message) => {

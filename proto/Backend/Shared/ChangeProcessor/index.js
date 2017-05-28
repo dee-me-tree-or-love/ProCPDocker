@@ -8,24 +8,26 @@ class ChangeProcessor {
         this.connection = connection;
     }
 
-    runQuery(query, params, message){
+    runQuery(query, params, message, verbose) {
 
+        verbose = verbose | false;
         return new Promise((resolve, reject) => {
 
-            console.log(`${message}: PENDING`);
+            if (verbose) console.log(`${message}: PENDING`);
             this.connection.query(query, params, (error, results, fields) => {
                 if (error) {
 
-                    console.log(`${message}: FAIL`);
+                    if (verbose) console.log(`${message}: FAIL`);
                     reject(error);
                 } else {
 
-                    console.log(`${message}: OK`);
+                    if (verbose) console.log(`${message}: OK`);
                     resolve(results);
                 }
             });
         });
     };
+
     start() {
         return new Promise((resolve, reject) => {
 
@@ -62,6 +64,11 @@ class ChangeProcessor {
 
         return this.runQuery("SELECT 1 + 1", [], "dock");
     }
+
+    undock(interval) {
+
+        return this.runQuery("SELECT 1 + 1", [], "undock");
+    }
 }
 
 const Sync = (simulation_id, end_time) => {
@@ -72,24 +79,30 @@ const Sync = (simulation_id, end_time) => {
 
         connection.connect();
         let cp = new ChangeProcessor(connection);
+        let isForward = true;
 
         // Begin transaction
         cp.start()
             .then(() => {
 
-                console.log('Get simulation');
                 return cp.runQuery('SELECT * from Simulations WHERE id = ?', simulation_id, 'Getting Simulation info');
             })
             .then(simulation => {
 
-                if(simulation.length === 0 ){
+                if (simulation.length === 0)
+                    return {result: true, message: `No simulation with id: ${simulation_id}`};
+                else simulation = simulation[0];
 
-                    reject("No simulation found");
-                }
-                simulation = simulation[0];
-                console.log(simulation.current_timeline);
-                console.log(simulation.id);
-                return cp.runQuery(
+                if (simulation.current_time === end_time)
+                    return {result: true, message: `Simulation already at time: ${end_time}`};
+
+                isForward = (simulation.current_time - end_time) < 0;
+
+                console.log(`Forward: ${isForward}`);
+                console.log(`Simulation id: ${simulation.id}`);
+                console.log(`Timeline id: ${simulation.current_timeline}`);
+
+                let query =
                     "SELECT e.*" +
                     "FROM Events e " +
                     "JOIN Tasks t " +
@@ -99,16 +112,39 @@ const Sync = (simulation_id, end_time) => {
                     "JOIN Timelines tl " +
                     "ON tl.id = i.timeline_id " +
                     "WHERE tl.simulation_id = ? " +
-                    "AND tl.id = ?" +
-                    "ORDER BY e.start_time", [simulation_id, simulation.current_timeline], 'Fetching events');
+                    "AND tl.id = ? ";
+
+                if (!isForward) {
+                    query +=
+                        "AND e.start_time >= ? " +
+                        "AND e.start_time <= ? " +
+                        "ORDER BY e.start_time DESC";
+                } else {
+                    query +=
+                        "AND e.start_time <= ? " +
+                        "AND e.start_time >= ? " +
+                        "ORDER BY e.start_time";
+                }
+
+                return cp.runQuery(query, [simulation_id, simulation.current_timeline, end_time, simulation.current_time], 'Fetching events', true);
             })
             .then(events => {
 
-                let isForward = true; // Get from db diff
-                let counter = 0;
+                if (events.result) {
 
+                    console.log(events.message);
+                    resolve(events);
+                    connection.commit();
+                    connection.end();
+                }
+                if(events.length === 0){
+
+                    resolve();
+                }
+                let counter = 0;
                 const executeEvent = () => {
 
+                    console.log(events[counter].start_time);
                     cp[events[counter].type](events[counter], isForward)
                         .then(() => {
 
@@ -139,8 +175,9 @@ const Sync = (simulation_id, end_time) => {
 
 module.exports.Sync = Sync;
 
-this.Sync("375cfda0-4c11-4030-ba0e-7826f90648d0")
+this.Sync("0fbf5dbf-38f5-4e00-ad12-34d6e246bdd0", 10)
     .then(res => {
+        console.log('Done');
     })
     .catch(er => {
         console.log(er);
