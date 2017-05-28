@@ -112,7 +112,7 @@ functions:
 # DOCK
 
   getDock:
-    handler: API/dock/handler.getDock
+    handler: API/dock/root/index.handler
     events: 
       - http: 
           path: dock/{simulation_id}/{timeline_id}/{dock_id}
@@ -120,7 +120,7 @@ functions:
           cors: true
 
   getDockContainers:
-    handler: API/dock/handler.getDockContainers
+    handler: API/dock/containers/index.handler
     events: 
       - http: 
           path: dock/{simulation_id}/{timeline_id}/{dock_id}/containers

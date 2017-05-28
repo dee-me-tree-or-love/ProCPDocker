@@ -411,7 +411,7 @@
 <!-- Separator -->
 
 # Dock
-## /dock/{simulation_id}/{timeline_id}/{dock_id}
+## /dock/{simulation_id}/{timeline_id}/{dock_id} ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION  
   Get the description about the dock with the specified ID
@@ -439,7 +439,7 @@
   ```
   <!-- changed arrival time to time arrived -->
 
-## /dock/{simulation_id}/{timeline_id}/{dock_id}/containers
+## /dock/{simulation_id}/{timeline_id}/{dock_id}/containers ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION
   Get the list of containers located in the dock

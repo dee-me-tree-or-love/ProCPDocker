@@ -9,7 +9,7 @@ module.exports.handler = (event, context, callback) => {
 
     let simulation_id = event.pathParameters.simulation_id;
     let timeline_id = event.pathParameters.timeline_id;
-    let storage_id = event.pathParameters.storage_id;
+    let dock_id = event.pathParameters.dock_id;
 
     if(event.queryStringParameters === null) event.queryStringParameters = {};
     lodash.defaults(event.queryStringParameters,{limit: 10,pagination_token: 0});
@@ -18,7 +18,7 @@ module.exports.handler = (event, context, callback) => {
     let pagination_token = event.queryStringParameters.pagination_token;
 
     const db = new DBHelper();
-    let storage = {};
+    let dock = {};
     db.start()
         .then(() => {
 
@@ -32,9 +32,10 @@ module.exports.handler = (event, context, callback) => {
                 'WHERE simulation_id = ? ' +
                 'AND ch.id = ? ' +
                 'AND tl.id = ?' +
-                'AND c.weight > ? ' +
+                'AND c.weight >= ? ' +
+                'AND ch.type = "dock"' +
                 'ORDER by c.weight ' +
-                'LIMIT ?;', [simulation_id, storage_id, timeline_id, pagination_token, Number(limit)], 'Fetching Storages'
+                'LIMIT ?;', [simulation_id, dock_id, timeline_id, pagination_token, Number(limit)], 'Fetching Containers'
             );
         })
         .then(containers => {
