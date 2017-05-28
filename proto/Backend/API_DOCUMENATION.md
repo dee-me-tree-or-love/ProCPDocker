@@ -506,7 +506,7 @@
   ```
   <!-- was abandoned due to uselessness -->
   <!-- "status":""            /* TODO: think of different option what can happen */-->
-## /ship/{simulation_id}/{timeline_id}/{storage_id}/containers/all
+## /ship/{simulation_id}/{timeline_id}/{storage_id}/containers/all :no_entry_sign:
   - TODO: think if we need that or not and in what way...
   #### METHOD: GET
   #### DESCRIPTION
@@ -570,7 +570,7 @@
     "message":""
   }
   ```
-## /ship/{simulation_id}/{timeline_id}/{ship_id}/containers/{ onboard | load | unload }
+## /ship/{simulation_id}/{timeline_id}/{ship_id}/containers/{ onboard | load | unload } ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION
   Get the list of containers related to the ship as either : onboard, toload, tounload

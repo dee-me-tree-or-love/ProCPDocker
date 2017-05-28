@@ -146,7 +146,7 @@ functions:
           cors: true  
 
   getShipContainersOnLocation:
-    handler: API/ship/handler.getShipContainersOnLocation
+    handler: API/ship/getShipContainersAtLocation/index.handler
     events: 
       - http: 
           path: ship/{simulation_id}/{timeline_id}/{ship_id}/containers/{location}
