@@ -33,6 +33,7 @@ class ChangeProcessor {
             this.connection.beginTransaction(function (err) {
                 if (err) {
 
+                    console.log(err);
                     reject(err);
                 } else {
 
@@ -44,7 +45,22 @@ class ChangeProcessor {
 
     move(interval) {
 
-        return this.runQuery("SELECT 1 + 1", [], "you do smt");
+        return this.runQuery("SELECT 1 + 1", [], "move");
+    }
+
+    pick(interval) {
+
+        return this.runQuery("SELECT 1 + 1", [], "pick");
+    }
+
+    transfer(interval) {
+
+        return this.runQuery("SELECT 1 + 1", [], "transfer");
+    }
+
+    dock(interval) {
+
+        return this.runQuery("SELECT 1 + 1", [], "dock");
     }
 }
 
@@ -66,11 +82,15 @@ const Sync = (simulation_id, end_time) => {
             })
             .then(simulation => {
 
+                if(simulation.length === 0 ){
+
+                    reject("No simulation found");
+                }
                 simulation = simulation[0];
                 console.log(simulation.current_timeline);
                 console.log(simulation.id);
                 return cp.runQuery(
-                    "SELECT e.* " +
+                    "SELECT e.*" +
                     "FROM Events e " +
                     "JOIN Tasks t " +
                     "ON e.task_id = t.id " +
@@ -79,7 +99,6 @@ const Sync = (simulation_id, end_time) => {
                     "JOIN Timelines tl " +
                     "ON tl.id = i.timeline_id " +
                     "WHERE tl.simulation_id = ? " +
-                    "AND e.type = \"move\"" +
                     "AND tl.id = ?" +
                     "ORDER BY e.start_time", [simulation_id, simulation.current_timeline], 'Fetching events');
             })
@@ -120,7 +139,7 @@ const Sync = (simulation_id, end_time) => {
 
 module.exports.Sync = Sync;
 
-this.Sync("29850869-481e-4d04-8049-5dd634f0c638")
+this.Sync("375cfda0-4c11-4030-ba0e-7826f90648d0")
     .then(res => {
     })
     .catch(er => {

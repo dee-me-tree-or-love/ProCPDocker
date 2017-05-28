@@ -871,7 +871,7 @@ class TaskProducer {
                 processinterval.ship.id,
                 dock.id,
                 "Ship arrives to the dock",
-                start_time, [TaskProducer.createEvent("dock ship", "Shipa arrives to the dock", start_time)]));
+                start_time, [TaskProducer.createEvent("dock", "Shipa arrives to the dock", start_time)]));
             start_time++;
         }
 
