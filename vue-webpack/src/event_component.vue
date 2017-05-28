@@ -1,6 +1,11 @@
 <template>
-  <div style="width:100%;height:80px;border:1px solid black;margin-top:10px;margin-bottom:10px">
-    <p>{{ event.id }} - {{ event.message }}</p>
+  <div style="width:100%;border:1px solid black;margin-top:10px;margin-bottom:10px">
+       <ul class="list-unstyled">
+           <li>event id : {{ event.id }}</li>
+           <li>event type : {{ event.type }}</li>
+           <li>event message : {{ event.extra }}</li>
+           <li>event timestamp : {{ event.description }}</li>
+      </ul>
   </div>
 </template>
 
