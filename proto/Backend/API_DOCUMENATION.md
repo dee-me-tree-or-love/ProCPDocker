@@ -97,6 +97,7 @@
   ```
     
   ## /simulation/{simulation_id}/configuration ![](check.png)
+  Use the url from the new simulation to download the configuration
   #### METHOD: GET  
   #### DESCRIPTION 
   To see a description of the simulation configuration
@@ -134,7 +135,7 @@
   }
   ```
 <!-- TODO: Are we sure that we need it? -->
-## /simulation/{simulation_id}/timelines/{timeline_id} ![](check.png)
+## /simulation/{simulation_id}/timelines/{timeline_id}
   #### METHOD: GET
   #### DESCRIPTION  
   Retrieve the timeline of the simulation with the given ID
