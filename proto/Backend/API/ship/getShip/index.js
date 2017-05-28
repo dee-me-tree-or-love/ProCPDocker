@@ -46,7 +46,7 @@ module.exports.handler = (event, context, callback) => {
         })
         .then(response => {
             db.commit();
-
+            console.log(response);
             if (response.length == 1) {
 
                 let ship = {
