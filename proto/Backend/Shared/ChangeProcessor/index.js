@@ -8,7 +8,7 @@ class ChangeProcessor {
         this.connection = connection;
     }
 
-    processEvents(events, isForward){
+    processEvents(events, isForward) {
 
         return new Promise((resolve, reject) => {
 
@@ -35,6 +35,18 @@ class ChangeProcessor {
             };
             executeEvent()
         });
+    }
+
+    commit() {
+
+        this.connection.commit();
+        this.connection.destroy();
+    }
+
+    rollback() {
+
+        this.connection.rollback();
+        this.connection.destroy();
     }
 
     runQuery(query, params, message, verbose) {
@@ -172,7 +184,7 @@ const Sync = (simulation_id, end_time) => {
                     return {result: true, message: `No simulation with id: ${simulation_id}`};
                 else simulation = simulation[0];
 
-                if (simulation.current_time === end_time)
+                if (simulation.current_time == end_time)
                     return {result: true, message: `Simulation already at time: ${end_time}`};
 
                 isForward = (simulation.current_time - end_time) < 0;
@@ -230,26 +242,15 @@ const Sync = (simulation_id, end_time) => {
             })
             .then(() => {
 
-                connection.commit();
-                connection.end();
+                cp.commit();
                 resolve({result: true, message: 'All successful'});
             })
             .catch(error => {
 
-                connection.rollback();
-                connection.end();
+                cp.rollback();
                 reject(error);
             });
     });
 };
 
 module.exports.Sync = Sync;
-
-this.Sync("7fe9a6fe-d457-4c6e-84a4-a394178a2689", 0)
-    .then(() => {
-
-        console.log('Done');
-    })
-    .catch(er => {
-        console.log(er);
-    });
