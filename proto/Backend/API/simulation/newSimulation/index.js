@@ -407,10 +407,11 @@ module.exports.handler = (event, context, callback) => {
                     task.status,
                     task.start_time,
                     task.end_time,
-                    task.extra.destination_id
+                    task.extra.destination_id,
+                    task.extra.source_id
                 ]);
             });
-            return runQuery('INSERT INTO Tasks (id, container_id, interval_id, type, description, status, start_time, end_time, destination_id)' +
+            return runQuery('INSERT INTO Tasks (id, container_id, interval_id, type, description, status, start_time, end_time, destination_id, source_id)' +
                 ' VALUES ?', [tasks], 'Insert Tasks');
         })
         // Insert Events

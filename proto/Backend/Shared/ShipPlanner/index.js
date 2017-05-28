@@ -930,7 +930,7 @@ module.exports.createScheduleAndTasks = (configs) => {
 };
 
 
-let data = require("./expecteddata.js");
-
-let result = this.createScheduleAndTasks(data.resp7);
-console.log(result.tasks);
+// let data = require("./expecteddata.js");
+//
+// let result = this.createScheduleAndTasks(data.resp7);
+// console.log(result.tasks);
