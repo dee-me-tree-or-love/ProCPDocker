@@ -444,6 +444,7 @@ class TaskProducer {
             type: "container",
             extra: {
                 container_id: container.id,
+                source_id: container.address.location_id,
                 destination_id: dest_id
             },
             description: descr,
@@ -464,7 +465,7 @@ class TaskProducer {
             interval_id: inter,
             type: "schedule",
             extra: {
-                ship: ship_id,
+                ship_id: ship_id,
                 destination_id: dock_id
             },
             description: descr,
@@ -929,7 +930,7 @@ module.exports.createScheduleAndTasks = (configs) => {
 };
 
 
-// let data = require("./expecteddata.js");
+let data = require("./expecteddata.js");
 
-// let result = this.createScheduleAndTasks(data.resp7);
-// console.log(result);
+let result = this.createScheduleAndTasks(data.resp7);
+console.log(result.tasks);
