@@ -46,7 +46,7 @@
                getTasks() {
                     axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/tasks/sim1/tl1')
                       .then(function(response){
-                        //console.log(response.data);
+                        console.log(response.data);
 
                         if(response.status == 200){
                           for(var i = 0;i < response.data.tasks.length;i++){

@@ -9,11 +9,11 @@ export default class Ship {
     this.destination = destination;
     this.status = status;
 
-    this.height = 20;
-    this.width = 80;
-    this.position_x = 40;
-    this.position_y = 10;
-    this.bezierCurve = 18;
+    this.height = 40;
+    this.width = 120;
+    this.position_x = 140;
+    this.position_y = 30;
+    this.bezierCurve = 25;
 
     this.drawShip = function(context){
          context.fillStyle = '#ff8400';
@@ -28,13 +28,17 @@ export default class Ship {
          context.closePath();
          context.fill();
          context.fillStyle = '#ffffff';
-         context.strokeRect(this.position_x+4,this.position_y+4,this.width-8,this.height-8);
-         context.fillRect(this.position_x+4,this.position_y+4,this.width-8,this.height-8);
+         context.strokeRect(this.position_x+6,this.position_y+6,this.width-12,this.height-12);
+         context.fillRect(this.position_x+6,this.position_y+6,this.width-12,this.height-12);
 
   }
 
    this.moveForward = function(context){
         this.position_x += 30;
+   }
+
+   this.setY = function(index){
+        this.position_y = (index+1)*this.position_y+20;
    }
 
    this.checkClick = function(x,y){

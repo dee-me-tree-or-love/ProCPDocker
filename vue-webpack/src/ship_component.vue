@@ -1,5 +1,5 @@
 <template>
-  <div style="width:100%;height:80px;border:1px solid black;margin-top:10px;margin-bottom:10px"><p>Ship:{{ ship.id }}</p></div>
+  <div class="col-md-3" id="ShipComponentContainer"><p>Ship:{{ ship.id }}</p></div>
 </template>
 
 <script>
@@ -7,3 +7,14 @@
       props: ['ship']
     }
 </script>
+
+<style>
+#ShipComponentContainer{
+     top:0px;
+     height:255px;
+     overflow-y:scroll;
+     overflow-x:hidden;
+     border:1px solid black;
+     overflow:false;
+}
+</style>
