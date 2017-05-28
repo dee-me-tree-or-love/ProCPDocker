@@ -102,7 +102,7 @@ functions:
 # CONTAINER
 
   getContainer:
-    handler: API/container/handler.getContainer
+    handler: API/container/root/index.handler
     events: 
       - http: 
           path: container/{simulation_id}/{timeline_id}/{container_id}
