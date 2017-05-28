@@ -7,126 +7,75 @@ module.exports.getConnection = () => {
 
     return mysql.createConnection(config);
 };
+class DBHelper {
 
-module.exports.DBHelper = class DBHelper{
+    constructor(connection) {
 
-    constructor(){
-
-        this.connected = false;
-        this.inTransaction = false;
+        this.connection = connection || mysql.createConnection(config);
     }
 
-    /**
-     *
-     * @returns {boolean}
-     */
-    checkConnected(){
-
-        return this.connected;
-    }
-    /**
-     *
-     * Establishes a connection
-     */
-    connect(){
+    processInOrder(queries) {
 
         return new Promise((resolve, reject) => {
 
-            if(this.connected){
+            if (queries.length === 0) resolve();
 
-                reject('Already connected');
-            }
-            this.connection = mysql.createConnection(config);
-            this.connection.connect(err => {
-                if (err) {
+            let counter = 0;
+            const executeQuery = () => {
 
-                    reject();
-                }else{
+                queries[counter]
+                    .then(() => {
 
-                    this.connected = true;
-                    console.log('Connection opened');
-                    resolve(this.connection.threadId);
-                }
-            });
-        })
+                        counter++;
+                        if (counter < events.length) {
+
+                            executeQuery();
+                        } else {
+
+                            resolve();
+                        }
+                    })
+                    .catch(error => {
+
+                        console.log(error);
+                        reject(error);
+                    });
+            };
+            executeQuery()
+        });
     }
 
-    /**
-     *
-     * @param query
-     * @param params
-     * @param message
-     * @returns {Promise}
-     */
-    runQuery(query, params, message){
+    runQuery(query, params, message, verbose) {
 
+        verbose = verbose | false;
         return new Promise((resolve, reject) => {
 
-            if(!this.connected){
-
-                reject('Not connected!');
-            }
-            console.log(`${message}: PENDING`);
+            if (verbose) console.log(`${message}: PENDING`);
             this.connection.query(query, params, (error, results, fields) => {
-
-                if(!this.inTransaction){
-
-                    this.connection.end();
-                    console.log('Connection closed');
-                }
                 if (error) {
 
-                    console.log(`${message}: FAIL`);
+                    console.log(error);
+                    if (verbose) console.log(`${message}: FAIL`);
                     reject(error);
                 } else {
 
-                    console.log(`${message}: OK`);
+                    if (verbose) console.log(`${message}: OK`);
                     resolve(results);
                 }
             });
         });
-    }
+    };
 
-    /**
-     *
-     * @returns {Promise}
-     */
-    beginTransaction(){
-
-        return new Promise((resolve, reject) => {
-            // Begin transaction
-            this.connection.beginTransaction(err => {
-                if (err) {
-
-                    this.inTransaction = true;
-                    console.log('Transaction started');
-                    reject(err);
-                } else {
-
-                    resolve();
-                }
-            });
-        })
-    }
-
-    /**
-     * Commits the transaction and closes the connection!
-     *
-     * @returns {Promise}
-     */
-    commitTransaction(){
+    start() {
 
         return new Promise((resolve, reject) => {
 
-            this.connection.end();
-            console.log('Connection closed');
-            this.connected = false;
-            this.connection.commit(err => {
-
-                this.inTransaction = false;
-                console.log('Transaction completed');
+            console.log('Begin transaction');
+            this.connection.open();
+            this.connection.beginTransaction(function (err) {
                 if (err) {
 
+                    console.log(err);
                     reject(err);
                 } else {
 
@@ -136,70 +85,16 @@ module.exports.DBHelper = class DBHelper{
         });
     }
 
-    /**
-     *
-     * @param queries
-     * @returns {Promise}
-     */
-    runQueriesInTransaction(queries){
-        return new Promise((resolve, reject) => {
+    commit() {
 
-            let connection = mysql.createConnection(config);
-            connection.open();
-            connection.beginTransaction(err => {
-
-                if(err){
-
-                    reject(err);
-                }else{
-
-                    queries.forEach(query => {
-
-                        query = new Promise((resolve,reject) => {
-
-                            connection.query(query.query, query.params, (error, results, fields) => {
-
-                                if (error) {
-
-                                    console.log(error);
-                                    reject(error);
-                                } else {
-
-                                    resolve(results);
-                                }
-                            });
-                        });
-                    });
-                    console.log(`Enqueued ${queries.length} promises`);
-                    Promise.all(queries)
-                        .then(result => {
-
-                            console.log(result);
-                            connection.commit(err => {
-
-                                connection.close();
-                                if (err) {
-
-                                    console.log(err);
-                                    reject(err);
-                                } else {
-
-                                    resolve(result);
-                                }
-                            });
-                        })
-                        .catch(error => {
-
-                            console.log(error);
-                            connection.rollback(() => {
-
-                                connection.close();
-                                reject(error);
-                            });
-                        });
-                }
-            });
-
-        });
+        this.connection.commit();
+        this.connection.destroy();
     }
-};
+
+    rollback() {
+
+        this.connection.rollback();
+        this.connection.destroy();
+    }
+}
+module.exports.DBHelper = DBHelper;

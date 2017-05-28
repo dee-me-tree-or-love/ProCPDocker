@@ -151,12 +151,28 @@ module.exports.getSimulationHarborData = (event, context, callback) => {
         requestOption = requestOption.toLowerCase();
 
         if (requestOption !== "docks" && requestOption !== "storages" && requestOption !== "ships") {
-            callback(new Error('Request option not recognized: make sure to ask for ships | docks | sotrages...'));
+            callback(null, {
+                statusCode: 200,
+                body: JSON.stringify({
+                    message: 'Request option not recognized: make sure to ask for ships | docks | sotrages...'
+                }),
+                headers:{
+                    "Access-Control-Allow-Origin":"*"
+                }
+            });
             // abort further processing
             return;
         }
     } catch (err) {
-        callback(new Error('Incorrect data requested'));
+        callback(null, {
+            statusCode: 200,
+            body: JSON.stringify({
+                message: 'Incorrect data requested'
+            }),
+            headers:{
+                "Access-Control-Allow-Origin":"*"
+            }
+        });
         // abort further processing
         return;
     }

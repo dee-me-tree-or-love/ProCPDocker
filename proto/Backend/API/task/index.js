@@ -1,43 +1,60 @@
 'use strict';
+const DBHelper = require('db-helper').DBHelper;
+const LambdaHelper = require('basic-lambda-helper');
 
-// TODO: do the custom error reporting
+module.exports.handler = (event, context, callback) => {
 
-// get tasks
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#taskssimulation_idtimeline_id
+    const lhelper = new LambdaHelper(event, context, callback);
+    const db = new DBHelper();
 
-module.exports.getTasks = (event, context, callback) => {
-    let simID = "";
-    let timelineID = "";
+    let sim_id = "";
+    let timeline_id = "";
+    let limit = event.queryStringParameters.simulation_id | 10;
+    let time_stamp = event.queryStringParameters.simulation_id | 0;
 
     try {
-        simID = event.pathParameters.simulation_id;
-        timelineID = event.pathParameters.timeline_id;
+        sim_id = event.pathParameters.simulation_id;
+        timeline_id = event.pathParameters.timeline_id;
     } catch (err) {
-        callback(new Error('Incorrect data requested'));
-        // abort further processing
+        lhelper.done({
+            statusCode: 400,
+            body: {
+                message: "Missing simulaiton_id or timeline_id"
+            }
+        }, true);
         return;
     }
+
+    lhelper.done({
+        statusCode: 200,
+        body: {
+            time_stamp,
+            timeline_id,
+            sim_id,
+            limit
+        }
+    }, true);
+    return;
 
     const response = {
         statusCode: 200,
         body: JSON.stringify({
             "tasks": [{
-                    "id": "ffgsdf121dh123esd234s",
+                "id": "ffgsdf121dh123esd234s",
+                "type": "",
+                /* TODO: Think of types */
+                "extra": {},
+                "description": "",
+                "status": "",
+                "time_to_complete": 0,
+                "events": [{
+                    "id": "",
                     "type": "",
                     /* TODO: Think of types */
-                    "extra": {},
-                    "description": "",
-                    "status": "",
-                    "time_to_complete": 0,
-                    "events": [{
-                        "id": "",
-                        "type": "",
-                        /* TODO: Think of types */
-                        "message": "",
-                        "time_stamp": 0
-                    }]
-                },
+                    "message": "",
+                    "time_stamp": 0
+                }]
+            },
                 {
                     "id": "fggsdf121ar123esd234s",
                     "type": "",
@@ -75,4 +92,4 @@ module.exports.getTasks = (event, context, callback) => {
         })
     }
     callback(null, response);
-}
+};

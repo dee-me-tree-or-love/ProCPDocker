@@ -74,7 +74,7 @@ functions:
 # TASKS
 
   getTasks:
-    handler: API/task/handler.getTasks
+    handler: API/task/index.handler
     events:
       - http:
           path: tasks/{simulation_id}/{timeline_id}
