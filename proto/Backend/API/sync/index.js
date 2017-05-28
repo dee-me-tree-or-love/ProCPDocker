@@ -137,7 +137,7 @@ module.exports.handler = (event, context, callback) => {
             return;
         })
         .catch(error => {
-
+            db.rollback();
             lhelper.done(error);
             context.done();
             return;

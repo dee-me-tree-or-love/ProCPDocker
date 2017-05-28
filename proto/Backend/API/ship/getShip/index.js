@@ -87,7 +87,7 @@ module.exports.handler = (event, context, callback) => {
             }
         })
         .catch(error => {
-
+            db.rollback();
             // something messed up happened
             console.log(error);
             lhelper.done({

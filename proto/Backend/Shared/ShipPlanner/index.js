@@ -691,7 +691,7 @@ class TaskProducer {
                         eventStartTime);
                     // aggregate it all into the task
                     tasks.push(TaskProducer.createTask(interval_id, dock.containers_toforward[i],
-                        dock.id,
+                        storageId,
                         "relocate the container from the dock to the storage", taskStartTime, events));
 
 
