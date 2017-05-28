@@ -498,9 +498,11 @@
         "id":"",                    
         "estimated_arrival_time":0
     },
-    "status":""            /* TODO: think of different option what can happen */
+   
   }
   ```
+  <!-- was abandoned due to uselessness -->
+  <!-- "status":""            /* TODO: think of different option what can happen */-->
 ## /ship/{simulation_id}/{timeline_id}/{storage_id}/containers/all
   - TODO: think if we need that or not and in what way...
   #### METHOD: GET
