@@ -9,9 +9,11 @@ module.exports.getConnection = () => {
 };
 class DBHelper {
 
-    constructor(connection) {
+    constructor() {
 
-        this.connection = connection || mysql.createConnection(config);
+        this.connection =  mysql.createConnection(config);
+        this.connection.connect();
+        console.log('Connection opened');
     }
 
     processInOrder(queries) {
@@ -21,13 +23,15 @@ class DBHelper {
             if (queries.length === 0) resolve();
 
             let counter = 0;
+            let results = [];
             const executeQuery = () => {
 
                 queries[counter]
-                    .then(() => {
+                    .then(result => {
 
+                        results.push(result);
                         counter++;
-                        if (counter < events.length) {
+                        if (counter < queries.length) {
 
                             executeQuery();
                         } else {
@@ -59,6 +63,7 @@ class DBHelper {
                     reject(error);
                 } else {
 
+                    console.log(results.length);
                     if (verbose) console.log(`${message}: OK`);
                     resolve(results);
                 }
@@ -71,7 +76,6 @@ class DBHelper {
         return new Promise((resolve, reject) => {
 
             console.log('Begin transaction');
-            this.connection.open();
             this.connection.beginTransaction(function (err) {
                 if (err) {
 
