@@ -84,7 +84,7 @@ functions:
 # STORAGE
 
   getStorage:
-    handler: API/storage/handler.getStorage
+    handler: API/storage/root/index.handler
     events:
       - http:
           path: storage/{simulation_id}/{timeline_id}/{storage_id}
@@ -92,7 +92,7 @@ functions:
           cors: true
   
   getStorageContainers:
-    handler: API/storage/handler.getStorageContainers
+    handler: API/storage/containers/index.handler
     events: 
       - http: 
           path: storage/{simulation_id}/{timeline_id}/{storage_id}/containers

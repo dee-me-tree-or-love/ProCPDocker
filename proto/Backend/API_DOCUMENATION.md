@@ -302,7 +302,7 @@
 <!-- Separator -->
 
 # Storage
-## /storage/{simulation_id}/{timeline_id}/{storage_id}
+## /storage/{simulation_id}/{timeline_id}/{storage_id} ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION  
   To get the storage with general information and references to other related harbor locations.

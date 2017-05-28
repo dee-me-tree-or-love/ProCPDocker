@@ -1,9 +1,5 @@
 'use strict';
-
-// get general info about a storage
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/develop/proto/Backend/API_DOCUMENATION.md#storagesimulation_idtimeline_idstorage_id
-
+const DBHelper = require('basic-lambda-helper');
 module.exports.getStorage = (event, context, callback) => {
 
     let simID = "";
