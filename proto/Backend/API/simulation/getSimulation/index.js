@@ -18,7 +18,7 @@ module.exports.handler = (event, context, callback) => {
             body: {
                 message: "Malformed JSON. Please check for syntax errors"
             }
-        });
+        },true);
         context.done();
     }
 
@@ -171,6 +171,7 @@ module.exports.handler = (event, context, callback) => {
                     body: {}
                 }, true);
                 context.done();
+                throw new Error();
             }
         })
         .then(all => {

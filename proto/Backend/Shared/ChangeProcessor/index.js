@@ -8,6 +8,35 @@ class ChangeProcessor {
         this.connection = connection;
     }
 
+    processEvents(events, isForward){
+
+        return new Promise((resolve, reject) => {
+
+            let counter = 0;
+            const executeEvent = () => {
+
+                this[events[counter].type](events[counter], isForward)
+                    .then(() => {
+
+                        counter++;
+                        if (counter < events.length) {
+
+                            executeEvent();
+                        } else {
+
+                            resolve();
+                        }
+                    })
+                    .catch(error => {
+
+                        console.log(error);
+                        reject(error);
+                    });
+            };
+            executeEvent()
+        });
+    }
+
     runQuery(query, params, message, verbose) {
 
         verbose = verbose | false;
@@ -17,6 +46,7 @@ class ChangeProcessor {
             this.connection.query(query, params, (error, results, fields) => {
                 if (error) {
 
+                    console.log(error);
                     if (verbose) console.log(`${message}: FAIL`);
                     reject(error);
                 } else {
@@ -32,7 +62,7 @@ class ChangeProcessor {
         return new Promise((resolve, reject) => {
 
             console.log('Begin transaction');
-            this.connection.beginTransaction(function(err) {
+            this.connection.beginTransaction(function (err) {
                 if (err) {
 
                     console.log(err);
@@ -83,12 +113,40 @@ class ChangeProcessor {
 
     dock(event, isForward) {
 
-        return this.runQuery("SELECT 1 + 1", [], "dock");
+        if (isForward) {
+            return this.runQuery(
+                "UPDATE Ships S " +
+                "JOIN Intervals I " +
+                "ON S.container_hold = I.ship_id " +
+                "JOIN Tasks T " +
+                "ON T.interval_id = I.id " +
+                "JOIN Events E " +
+                "ON E.task_id = T.id " +
+                "SET S.dock_id = T.destination_id " +
+                "WHERE E.id = ?", [event.id], 'Executing dock event')
+        } else {
+
+            return this.undock(event, !isForward);
+        }
     }
 
     undock(event, isForward) {
 
-        return this.runQuery("SELECT 1 + 1", [], "undock");
+        if (isForward) {
+            return this.runQuery(
+                "UPDATE Ships S " +
+                "JOIN Intervals I " +
+                "ON S.container_hold = I.ship_id " +
+                "JOIN Tasks T " +
+                "ON T.interval_id = I.id " +
+                "JOIN Events E " +
+                "ON E.task_id = T.id " +
+                "SET S.dock_id = NULL " +
+                "WHERE E.id = ?", [event.id], 'Executing dock event');
+        } else {
+
+            return this.dock(event, !isForward);
+        }
     }
 }
 
@@ -106,22 +164,25 @@ const Sync = (simulation_id, end_time) => {
         cp.start()
             .then(() => {
 
-                return cp.runQuery('SELECT * from Simulations WHERE id = ?', simulation_id, 'Getting Simulation info');
+                return cp.runQuery('SELECT * from Simulations WHERE id = ?', simulation_id, 'Getting Simulation info', true);
             })
             .then(simulation => {
 
                 if (simulation.length === 0)
-                    return { result: true, message: `No simulation with id: ${simulation_id}` };
+                    return {result: true, message: `No simulation with id: ${simulation_id}`};
                 else simulation = simulation[0];
 
                 if (simulation.current_time === end_time)
-                    return { result: true, message: `Simulation already at time: ${end_time}` };
+                    return {result: true, message: `Simulation already at time: ${end_time}`};
 
                 isForward = (simulation.current_time - end_time) < 0;
 
+                console.log(`------------------------`);
                 console.log(`Forward: ${isForward}`);
                 console.log(`Simulation id: ${simulation.id}`);
                 console.log(`Timeline id: ${simulation.current_timeline}`);
+                console.log(`Time diff: ${simulation.current_time} -> ${end_time}`);
+                console.log(`------------------------`);
 
                 let query =
                     "SELECT e.*" +
@@ -151,50 +212,32 @@ const Sync = (simulation_id, end_time) => {
             })
             .then(events => {
 
-                if (events.result) {
+                if (events.result || events.length === 0) {
 
-                    console.log(events.message);
-                    resolve(events);
-
+                    return true;
                 }
-                if (events.length === 0) {
 
-                    resolve();
-                }
-                let counter = 0;
-                const executeEvent = () => {
+                console.log(`===> Events: ${events.length}`);
+                return cp.processEvents(events, isForward);
+            })
+            .then(fastForward => {
 
-                    console.log(events[counter].start_time);
-                    cp[events[counter].type](events[counter], isForward)
-                        .then(() => {
-
-                            counter++;
-                            if (counter < events.length) {
-
-                                executeEvent();
-                            } else {
-
-                                console.log("resolved executing tasks")
-                                resolve();
-                            }
-                        })
-                        .catch(error => {
-                            reject(error);
-                        });
-                };
-                executeEvent();
-
+                if (fastForward) return;
+                return cp.runQuery(
+                    "UPDATE Simulations S " +
+                    "SET S.current_time = ? " +
+                    "WHERE S.id = ?;", [end_time, simulation_id], "Updating the current time", true);
             })
             .then(() => {
-                console.log("updating the simulation time")
-                return cp.runQuery("UPDATE Simulations S SET S.current_time = ? WHERE S.id = ?;", [end_time, simulation_id], "Updating the current time");
-            })
-            .then(() => {
+
                 connection.commit();
-                resolve();
+                connection.end();
+                resolve({result: true, message: 'All successful'});
             })
             .catch(error => {
+
                 connection.rollback();
+                connection.end();
                 reject(error);
             });
     });
@@ -202,8 +245,9 @@ const Sync = (simulation_id, end_time) => {
 
 module.exports.Sync = Sync;
 
-this.Sync("7fe9a6fe-d457-4c6e-84a4-a394178a2689", 120)
-    .then(res => {
+this.Sync("7fe9a6fe-d457-4c6e-84a4-a394178a2689", 0)
+    .then(() => {
+
         console.log('Done');
     })
     .catch(er => {
