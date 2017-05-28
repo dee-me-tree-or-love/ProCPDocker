@@ -63,12 +63,21 @@ class ChangeProcessor {
     }
 
     pick(event, isForward) {
-
-        return this.runQuery("SELECT 1 + 1", [], "pick");
+        let query = "UPDATE Tasks T " +
+            "join Events E " +
+            "on E.task_id = T.id ";
+        if (isForward) {
+            query += "SET T.status = \"executing\" ";
+        } else {
+            query += "SET T.status = \"waiting\" ";
+        }
+        console.log(`Executed pick with forward: ${isForward}`);
+        return this.runQuery(query + "WHERE E.id = ?;", [event.id], "pick");
     }
 
     transfer(event, isForward) {
-
+        // handling is implicit and is not taken to the extend of affecting the database
+        console.log(`Executed transfer with forward: ${isForward}`);
         return this.runQuery("SELECT 1 + 1", [], "transfer");
     }
 
