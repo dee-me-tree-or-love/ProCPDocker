@@ -207,7 +207,7 @@
 <!-- Separator -->
 <!-- not nice to use the path variables for such request?  -->
 # Sync
-## /sync/
+## /sync/ ![](check.png)
   #### METHOD: PATCH
   #### DESCRIPTION  
   To sync the database to a specific timestamp (roll-back/forward)
