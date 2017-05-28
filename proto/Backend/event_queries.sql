@@ -26,15 +26,15 @@ WHERE E.id = "88d4c33c-75f4-4df2-b0dc-5be70428a078";
 
 -- for testing display
 /*
-SELECT C.id as container, C.container_hold as location, T.destination_id as destination,
-	T.source_id as source, E.id as event_id, E.type as type
+SELECT C.id as container, C.container_hold as location, T.status as status, T.destination_id as destination,
+	T.source_id as source, E.id as event_id, E.type as type, E.start_time start_time
 FROM Containers C 
 	join Tasks T
 		on C.id = T.container_id
 	join Events E
 		on T.id = E.task_id
 WHERE E.type ="move";
-/**/
+/* */
 
 -- DOCK fwd query == UNDOCK bwd query
 UPDATE Ships S 
@@ -73,7 +73,7 @@ FROM Ships S
 	join Events E
 		on E.task_id = T.id
 WHERE E.type = "dock";
-/**/
+/* */
  
 -- PICK fwd query
 UPDATE Tasks T 
@@ -91,10 +91,28 @@ WHERE E.id = "7c065e07-abd6-401b-966a-a8b1f8ec2c11";
 
 -- for testing dispalay
 
+
+select count(*)
+from Tasks 
+where status= "done";
+
+
 SELECT T.id as task, T.status as status, E.id as event, E.type as type
 FROM Tasks T
 	join Events E
 		on E.task_id = T.id
 WHERE E.type = "pick";
-/**/
+/* */
+
+/*
+UPDATE Simulations S
+SET S.current_time = 255 
+WHERE S.id = "0fbf5dbf-38f5-4e00-ad12-34d6e246bdd0";  
+
+SELECT * 
+FROM Simulations S
+WHERE S.id = "0fbf5dbf-38f5-4e00-ad12-34d6e246bdd0";  
+*/
+
+
  

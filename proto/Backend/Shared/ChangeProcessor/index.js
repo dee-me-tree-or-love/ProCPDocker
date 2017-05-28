@@ -32,7 +32,7 @@ class ChangeProcessor {
         return new Promise((resolve, reject) => {
 
             console.log('Begin transaction');
-            this.connection.beginTransaction(function (err) {
+            this.connection.beginTransaction(function(err) {
                 if (err) {
 
                     console.log(err);
@@ -45,27 +45,39 @@ class ChangeProcessor {
         });
     }
 
-    move(interval) {
+    move(event, isForward) {
 
-        return this.runQuery("SELECT 1 + 1", [], "move");
+        let queryTop = "UPDATE Containers C " +
+            "JOIN Tasks T " +
+            "ON C.id = T.container_id " +
+            "JOIN Events E " +
+            "ON T.id = E.task_id ";
+
+        if (isForward) {
+            queryTop += "SET C.container_hold = T.destination_id, T.status = \"done\" ";
+        } else {
+            queryTop += "SET C.container_hold = T.source_id, T.status = \"executing\" ";
+        }
+        console.log(`Executed move with forward: ${isForward}`);
+        return this.runQuery(queryTop + "WHERE E.id = ?;", [event.id], "move");
     }
 
-    pick(interval) {
+    pick(event, isForward) {
 
         return this.runQuery("SELECT 1 + 1", [], "pick");
     }
 
-    transfer(interval) {
+    transfer(event, isForward) {
 
         return this.runQuery("SELECT 1 + 1", [], "transfer");
     }
 
-    dock(interval) {
+    dock(event, isForward) {
 
         return this.runQuery("SELECT 1 + 1", [], "dock");
     }
 
-    undock(interval) {
+    undock(event, isForward) {
 
         return this.runQuery("SELECT 1 + 1", [], "undock");
     }
@@ -90,11 +102,11 @@ const Sync = (simulation_id, end_time) => {
             .then(simulation => {
 
                 if (simulation.length === 0)
-                    return {result: true, message: `No simulation with id: ${simulation_id}`};
+                    return { result: true, message: `No simulation with id: ${simulation_id}` };
                 else simulation = simulation[0];
 
                 if (simulation.current_time === end_time)
-                    return {result: true, message: `Simulation already at time: ${end_time}`};
+                    return { result: true, message: `Simulation already at time: ${end_time}` };
 
                 isForward = (simulation.current_time - end_time) < 0;
 
@@ -134,10 +146,9 @@ const Sync = (simulation_id, end_time) => {
 
                     console.log(events.message);
                     resolve(events);
-                    connection.commit();
-                    connection.end();
+
                 }
-                if(events.length === 0){
+                if (events.length === 0) {
 
                     resolve();
                 }
@@ -154,28 +165,35 @@ const Sync = (simulation_id, end_time) => {
                                 executeEvent();
                             } else {
 
-                                connection.commit();
-                                connection.end();
+                                console.log("resolved executing tasks")
                                 resolve();
                             }
                         })
                         .catch(error => {
-
-                            connection.rollback();
-                            connection.end();
                             reject(error);
                         });
                 };
                 executeEvent();
 
             })
-            .catch();
+            .then(() => {
+                console.log("updating the simulation time")
+                return cp.runQuery("UPDATE Simulations S SET S.current_time = ? WHERE S.id = ?;", [end_time, simulation_id], "Updating the current time");
+            })
+            .then(() => {
+                connection.commit();
+                resolve();
+            })
+            .catch(error => {
+                connection.rollback();
+                reject(error);
+            });
     });
 };
 
 module.exports.Sync = Sync;
 
-this.Sync("0fbf5dbf-38f5-4e00-ad12-34d6e246bdd0", 10)
+this.Sync("7fe9a6fe-d457-4c6e-84a4-a394178a2689", 120)
     .then(res => {
         console.log('Done');
     })
