@@ -6,7 +6,7 @@
        <EventContainerComponent v-if="eventsbool" :events="events"></EventContainerComponent>
        <StorageComponent v-else-if="storagesbool" :storage="currentstorage"></StorageComponent>
        <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
-       <ShipComponent v-else-if="shipsbool" :ship="currentship"></ShipComponent>
+       <ShipComponent v-else :ship="currentship"></ShipComponent>
   </div>
 </template>
 
@@ -23,6 +23,7 @@ import Scope from './models/Scope.js';
 import ConnectedStorage from './models/ConnectedStorage.js';
 import Connection from './models/Connection.js';
 import ScheduledShip from './models/ScheduledShip.js';
+import Simulation from './models/Simulation.js';
 
 var that;
 
@@ -77,6 +78,7 @@ export default {
               }else if (value.includes("event")) {
                    this.eventsbool = true;
               }
+              console.log("dock: " + this.docksbool + ", ship: " + this.shipsbool + ", storage: " + this.storagesbool + ", event: " + this.eventsbool);
          },
         getSimulation(){
 
