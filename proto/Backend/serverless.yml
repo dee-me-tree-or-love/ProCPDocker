@@ -130,7 +130,7 @@ functions:
 # SHIP
 
   getShip:
-    handler: API/ship/handler.getShip
+    handler: API/ship/getShip/index.handler
     events: 
       - http: 
           path: ship/{simulation_id}/{timeline_id}/{ship_id}
