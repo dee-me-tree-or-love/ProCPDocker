@@ -46,7 +46,7 @@ functions:
           cors: true     
 
   getSimulationTimelines:
-    handler: API/simulation/handler.getSimulationTimelines
+    handler: API/simulation/getTimelines/index.handler
     events:
       - http:
           path: simulation/{simulation_id}/timelines
