@@ -64,7 +64,7 @@ functions:
 # SYNC
 
   syncStateTo:
-    handler: API/sync/handler.syncTo
+    handler: API/sync/index.handler
     events:
       - http:
           path: sync
