@@ -14,6 +14,7 @@ module.exports.handler = (event, context, callback) => {
     try {
         sim_id = event.pathParameters.simulation_id;
         timeline_id = event.pathParameters.timeline_id;
+        ship_id = event.pathParameters.ship_id;
     } catch (err) {
         lhelper.done({
             statusCode: 400,
@@ -30,8 +31,8 @@ module.exports.handler = (event, context, callback) => {
             // CH.timeline_id as timeline_id, TL.simulation_id as simulation_id
             return db.runQuery(
                 "SELECT CH.id as ship_id, CH.x as x, CH.y as y, CH.z as z, " +
-                "(x * y * z) as container_max, (SELECT COUNT(*) FROM ShipContainer " +
-                "WHERE ship_id = CH.id AND type = \"onboard\" ) as containers_current, " +
+                "(x * y * z) as container_max, " +
+                "(SELECT COUNT(*) FROM Containers WHERE container_hold = CH.id ) as containers_current, " +
                 "(SELECT COUNT(*) FROM ShipContainer WHERE ship_id = CH.id AND type=\"to_unload\") as containers_unload, " +
                 "(SELECT COUNT(*) FROM ShipContainer WHERE ship_id = CH.id AND type=\"to_load\") as containers_load, " +
                 "S.eta as ship_eta, " +
@@ -46,23 +47,23 @@ module.exports.handler = (event, context, callback) => {
         })
         .then(response => {
             db.commit();
-            console.log(response);
+            console.log(`response: ${response}`);
             if (response.length == 1) {
 
                 let ship = {
-                    id: response.ship_id,
+                    id: response[0].ship_id,
                     size: {
-                        x: response.x,
-                        y: response.y,
-                        z: response.z,
+                        x: response[0].x,
+                        y: response[0].y,
+                        z: response[0].z,
                     },
-                    containers_max: response.container_max,
-                    containers_current: response.containers_current,
-                    containers_unload: response.containers_unload,
-                    containers_load: response.containers_load,
+                    containers_max: response[0].container_max,
+                    containers_current: response[0].containers_current,
+                    containers_unload: response[0].containers_unload,
+                    containers_load: response[0].containers_load,
                     destination: {
-                        id: response.destination_id,
-                        estimated_arrival_time: response.ship_eta,
+                        id: response[0].destination_id,
+                        estimated_arrival_time: response[0].ship_eta,
                     }
                 }
 

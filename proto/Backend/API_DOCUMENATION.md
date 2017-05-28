@@ -479,7 +479,7 @@
 <!-- Separator -->
 
 # Ship
-## /ship/{simulation_id}/{timeline_id}/{ship_id}
+## /ship/{simulation_id}/{timeline_id}/{ship_id} ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION  
   To get the list of ships with general information
