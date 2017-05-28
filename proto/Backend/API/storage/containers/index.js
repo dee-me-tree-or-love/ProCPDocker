@@ -1,134 +1,75 @@
 'use strict';
-const DBHelper = require('basic-lambda-helper');
-module.exports.getStorage = (event, context, callback) => {
+const LHelper = require('basic-lambda-helper');
+const DBHelper = require('db-helper').DBHelper;
+const lodash = require('lodash');
 
-    let simID = "";
-    let timelineID = "";
-    let storageID = "";
+module.exports.handler = (event, context, callback) => {
 
-    try {
-        simID = event.pathParameters.simulation_id;
-        timelineID = event.pathParameters.timeline_id;
-        storageID = event.pathParameters.storage_id;
-    } catch (err) {
-        callback(new Error('Incorrect data requested'));
-        // abort further processing
-        return;
-    }
+    const lhelper = new LHelper(event, context, callback);
 
+    let simulation_id = event.pathParameters.simulation_id;
+    let timeline_id = event.pathParameters.timeline_id;
+    let storage_id = event.pathParameters.storage_id;
 
-    if (storageID == "st1") {
-        const response = {
-            statusCode: 200,
-            body: JSON.stringify({
-                "id": "st1",
-                "size": {
-                    "x": 40,
-                    "y": 20,
-                    "z": 10,
-                },
-                "containers_max": 8000,
-                "containers_current": 5055,
-                "connections": [{
-                    "id": "d1",
-                    "weight": 10
-                }],
-                "status": "operating" /* TODO: think of different option what can happen */
-            }),
-        }
-        callback(null, response);
-    } else {
-        const response = {
-            statusCode: 404,
-            body: JSON.stringify({
-                message: "couldn't find the storage with given parameters"
-            }),
-        }
-        callback(null, response);
-    }
-}
+    if(event.queryStringParameters === null) event.queryStringParameters = {};
+    lodash.defaults(event.queryStringParameters,{limit: 10,pagination_token: 0});
 
-// to get the containers of the storage
-//
-// https://github.com/dee-me-tree-or-love/ProCPDocker/blob/develop/proto/Backend/API_DOCUMENATION.md#storagesimulation_idtimeline_idstorage_idcontainers
+    let limit = event.queryStringParameters.limit;
+    let pagination_token = event.queryStringParameters.pagination_token;
 
-// really shitty implementation and I feel ashamed of this code, buuuut whatever works for mock it works
+    const db = new DBHelper();
+    let storage = {};
+    db.start()
+        .then(() => {
 
-module.exports.getStorageContainers = (event, context, callback) => {
-    let simID = "";
-    let timelineID = "";
-    let storageID = "";
+            return db.runQuery(
+                'SELECT c.* ' +
+                'FROM Containers c ' +
+                'JOIN ContainerHold ch ' +
+                'ON ch.id = c.container_hold ' +
+                'JOIN Timelines tl ' +
+                'ON tl.id = ch.timeline_id ' +
+                'WHERE simulation_id = ? ' +
+                'AND ch.id = ? ' +
+                'AND tl.id = ?' +
+                'AND c.weight > ? ' +
+                'ORDER by c.weight ' +
+                'LIMIT ?;', [simulation_id, storage_id, timeline_id, pagination_token, Number(limit)], 'Fetching Storages'
+            );
+        })
+        .then(containers => {
 
-    try {
-        simID = event.pathParameters.simulation_id;
-        timelineID = event.pathParameters.timeline_id;
-        storageID = event.pathParameters.storage_id;
-    } catch (err) {
-        callback(new Error('Incorrect data requested'));
-        // abort further processing
-        return;
-    }
-
-
-    if (storageID == "st1") {
-        // it's awful to do so
-        // to make uid like stuff
-        let hashCode = (code) => {
-            let hash = ""
-            for (let i = 0; i < 5; i++) {
-                hash = hash.concat(code, i.toString());
-            }
-            let shuffelWord = (word) => {
-                var shuffledWord = '';
-                var charIndex = 0;
-                word = word.split('');
-                while (word.length > 0) {
-                    charIndex = word.length * Math.random() << 0;
-                    shuffledWord += word[charIndex];
-                    word.splice(charIndex, 1);
-                }
-                return shuffledWord;
-            }
-            return shuffelWord(hash);
-        };
-
-        // dummy container constructor
-        class Container {
-            constructor(id, storageId) {
-                this.id = hashCode(id);
-                this.descritpion = "Lorem ipsum";
-                this.address = {
-                    location_id: storageId,
-                    // that's bullshit ofcourse
-                    x: Math.floor(Math.random() * 1000),
-                    y: Math.floor(Math.random() * 1000),
-                    z: Math.floor(Math.random() * 1000),
+            containers = containers.map((c) => {
+                return {
+                    id: c.id,
+                    description: c.description,
+                    address:{
+                        location_id: c.container_hold,
+                        x: c.x,
+                        y: c.y,
+                        z: c.z
+                    },
+                    weight: c.weight,
+                    cargo_type: c.cargo_type
                 };
-                this.weight = Math.floor(Math.random() * 100);
-                this.cargo_type = "whatever";
-            }
-        }
+            });
+            db.commit();
+            let pagination_token = containers[containers.length - 1].weight + 1;
+            lhelper.done({
+                statusCode: 200,
+                body: {
+                    containers,
+                    pagination_token,
+                    pagination_url: `https://${event.headers.Host}${event.requestContext.path}?limit=${limit}&pagination_token=${pagination_token}`
+                }
+            });
+        })
+        .catch(error => {
 
-        let containers_dummy = []
-        for (let char in "abcdefghijklmnop") {
-            containers_dummy.push(new Container(char, storageID));
-        }
-
-        const response = {
-            statusCode: 200,
-            body: JSON.stringify({
-                "id": simID,
-                "containers": containers_dummy,
-            }),
-        }
-        callback(null, response);
-    } else {
-        const response = {
-            statusCode: 404,
-            body: JSON.stringify({
-                message: "couldn't find the storage with given parameters"
-            }),
-        }
-        callback(null, response);
-    }
-}
+            console.log(error);
+            lhelper.done({
+                statusCode: 400,
+                body: error
+            });
+        });
+};

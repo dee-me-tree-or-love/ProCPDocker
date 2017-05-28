@@ -336,14 +336,17 @@
     "message":""
   }
   ```
-## /storage/{simulation_id}/{timeline_id}/{storage_id}/containers
+## /storage/{simulation_id}/{timeline_id}/{storage_id}/containers ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION
   Get the list of containers located in the storage
-  #### PARAMS
-  ```
-  /* TODO: consider pagination */
-  ```
+  #### PARAMS 
+   ```
+   {
+     "limit":10,          /* optional - deafults to 10 */
+     "pagination_token":0      /* optional  - deafults to 0 */
+   }
+   ```
   #### RETURNS 200 OK
   ```
   {

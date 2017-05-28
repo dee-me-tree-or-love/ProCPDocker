@@ -97,11 +97,13 @@ module.exports.handler = (event, context, callback) => {
             });
             let taskArr = [];
             for (let task in tasks) taskArr.push(tasks[task]);
+            let pagination_token = taskArr[taskArr.length - 1].end_time + 1;
             lhelper.done({
                 statusCode: 200,
                 body: {
                     tasks: taskArr,
-                    next_time_stamp: taskArr[taskArr.length - 1].end_time + 1
+                    next_time_stamp: pagination_token,
+                    next_time_stamp_url: `https://${event.headers.Host}${event.requestContext.path}?limit=${limit}&time_stamp=${pagination_token}`
                 }
             }, true);
         })
