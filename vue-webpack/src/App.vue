@@ -1,16 +1,33 @@
 <template>
   <div class="fluid-container" id="app">
-    <div class="col-md-8" id="CanvasPart">
-      <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
-      <button @click="simulationLoop" >draw simulation</button>
-      <button @click="getSimulation" >get simulation</button>
+    <div class="init" v-if="init">
+      <div class="col-md-4 topSpace text-center">
+        <span>Number of ships: </span><input type="number" v-model="shipStr">
+        <ShipFormComponent v-for="shipCount in shipCount" ref="ship{{shipCount}}"></ShipFormComponent>
+      </div>
+      <div class="col-md-4 topSpace text-center">
+
+      </div>
+      <div class="col-md-4 topSpace text-center">
+
+      </div>
+      <div class="col-md-12 text-center topSpace">
+        <input type="button" value="New simulation" @click="">
+      </div>
     </div>
-    <div class="col-md-4" id="InfoPart">
-      <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
-      <EventContainerComponent v-if="eventsbool" :events="events"></EventContainerComponent>
-      <StorageComponent v-else-if="storagesbool" :storage="currentstorage"></StorageComponent>
-      <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
-      <ShipComponent v-else :ship="currentship"></ShipComponent>
+    <div class="sim" v-else>
+      <div class="col-md-8" id="CanvasPart">
+        <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
+        <button @click="simulationLoop" >draw simulation</button>
+        <button @click="getSimulation" >get simulation</button>
+      </div>
+      <div class="col-md-4" id="InfoPart">
+        <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
+        <EventContainerComponent v-if="eventsbool" :events="events"></EventContainerComponent>
+        <StorageComponent v-else-if="storagesbool" :storage="currentstorage"></StorageComponent>
+        <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
+        <ShipComponent v-else :ship="currentship"></ShipComponent>
+      </div>
     </div>
   </div>
 </template>
@@ -62,6 +79,8 @@ export default {
               storagesbool: false,
               docksbool: false,
               canvas: null,
+              init: true,
+              shipStr: 0,
          }
     },
 
@@ -71,6 +90,9 @@ export default {
                  return this.tasks[0].events;
                }
           },
+          shipCount: function() {
+              return parseInt(this.shipStr);
+          }
     },
     methods:{
          setContext(value){
@@ -284,7 +306,10 @@ export default {
                        return this.docks[i];
                   }
              }
-        }
+        },
+        // getSim() {
+        //   let test = this.$refs.ship1.ship;
+        // }
     }
 
 }
@@ -319,5 +344,11 @@ export default {
 
 #InfoPart {
     height: 87%;
+}
+
+.init_components{
+  height: 100%;
+  width: 33%;
+  float: left;
 }
 </style>
