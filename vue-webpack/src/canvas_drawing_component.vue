@@ -86,5 +86,7 @@ export default{
 
 </script>
 <style>
-
+  #canvas{
+    position: relative;
+  }
 </style>

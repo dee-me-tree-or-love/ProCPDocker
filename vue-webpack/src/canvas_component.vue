@@ -2,14 +2,18 @@
      <div class="col-md-12 topSpace" style="height:100%;border:1px solid black;" id="main-simulation">
           <div class="topSpace" id="CanvasContainer" >
               <CanvasDrawingComponent  @context="setContext"  @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
-              <input type="range" min="0" max="100" value="0" step="1" id="slider" @mouseup="adjustTasksWithSlider"></input>
           </div>
-          <div class="text-center">
-               <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
-               <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
-               <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
-               <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
-               <button @click="syncSimulation" class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
+          <div id="wrapper" class="topSpace">
+            <div class="progress-bar text-center">
+              <input type="range" min="0" max="100" value="0" step="1" id="slider" @mouseup="adjustTasksWithSlider"></input>
+            </div>
+            <div class="buttons text-center">
+              <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
+              <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+              <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
+              <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
+              <button @click="syncSimulation" class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
+            </div>
           </div>
      </div>
 </template>
@@ -189,10 +193,30 @@
     #CanvasContainer{
         width: 100%;
         height: 80%;
-        overflow-y:scroll;
-        overflow-x:hidden;
+        overflow: scroll;
         border: 1px solid black;
     }
 
+    .buttons{
+      width: 100%;
+      height: 25%;
+    }
 
+    .progress-bar{
+      width: 100%;
+      height: 25%;
+      background-color: white;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+    }
+
+    #wrapper{
+      width: 100%;
+      height: 25%;
+    }
+
+    #slider{
+      position: inherit;
+    }
 </style>

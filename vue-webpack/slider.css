@@ -1,5 +1,4 @@
 #canvas{
-     position: absolute;
      width:700px;
      height:2000px;
      border: 1px solid black;
@@ -23,7 +22,6 @@ input[type=range] {
      width: 700px;
      top: 525px;
      left:50%;
-     margin-left:-350px;
 }
 input[type=range]:focus {
   outline: none;
