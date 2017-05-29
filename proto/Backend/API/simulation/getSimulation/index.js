@@ -1,6 +1,6 @@
 'use strict';
 const LambaHelper = require('basic-lambda-helper');
-const DBHelper = require('db-helper');
+const DBHelper = require('db-helper').DBHelper;
 // get simulation data function
 //
 // https: // github.com/dee-me-tree-or-love/ProCPDocker/blob/d3fb722f4d47c18c35077779a6b08addcd7c26fa/proto/Backend/API_DOCUMENATION.md#simulationsimulation_id
@@ -18,57 +18,25 @@ module.exports.handler = (event, context, callback) => {
             body: {
                 message: "Malformed JSON. Please check for syntax errors"
             }
-        },true);
+        }, true);
         context.done();
     }
 
     let simID = event.pathParameters.simulation_id;
     let scope = [];
-    if (typeof event.queryStringParameters.scope !== 'undefined') {
-
-        scope = event.queryStringParameters.scope.split(',');
-    }
+    if (event.queryStringParameters === null)  event.queryStringParameters = {
+        scope: 'storages,ships,docks,timelines,container_count'
+    };
+    scope = event.queryStringParameters.scope.split(',');
     console.log(scope);
 
-    const connection = DBHelper.getConnection();
     let response = {};
 
-    connection.connect();
-    const runQuery = (query, params, message) => {
-
-        return new Promise((resolve, reject) => {
-
-            console.log(`${message}: PENDING`);
-            connection.query(query, params, (error, results, fields) => {
-                if (error) {
-
-                    console.log(`${message}: FAIL`);
-                    console.log(error);
-                    reject(error);
-                } else {
-
-                    console.log(`${message}: OK`);
-                    resolve(results);
-                }
-            });
-        });
-    };
-
-    new Promise((resolve, reject) => {
-        // Begin transaction
-        connection.beginTransaction(function (err) {
-            if (err) {
-
-                reject(err);
-            } else {
-
-                resolve();
-            }
-        });
-    })
+    const db = new DBHelper();
+    db.start()
         .then(() => {
 
-            return runQuery('SELECT * FROM Simulations WHERE id = ?', simID, 'Fetching simulation');
+            return db.runQuery('SELECT * FROM Simulations WHERE id = ?', simID, 'Fetching simulation');
         })
         .then(result => {
 
@@ -89,7 +57,7 @@ module.exports.handler = (event, context, callback) => {
                         switch (component) {
                             case "docks":
                                 console.log('Docks requested');
-                                scopeComponents.push(runQuery(
+                                scopeComponents.push(db.runQuery(
                                     'SELECT * ' +
                                     'FROM Docks d ' +
                                     'WHERE d.id in (	' +
@@ -106,7 +74,7 @@ module.exports.handler = (event, context, callback) => {
 
                             case "ships":
                                 console.log('Ships requested');
-                                scopeComponents.push(runQuery(
+                                scopeComponents.push(db.runQuery(
                                     'SELECT * ' +
                                     'FROM Ships sh ' +
                                     'WHERE sh.container_hold in (	' +
@@ -122,7 +90,7 @@ module.exports.handler = (event, context, callback) => {
                                 break;
                             case "storages":
                                 console.log('Storages requested');
-                                scopeComponents.push(runQuery(
+                                scopeComponents.push(db.runQuery(
                                     'SELECT ch.id,x,y,z,ch.name ' +
                                     'FROM ContainerHold ch ' +
                                     'JOIN Timelines t ' +
@@ -135,7 +103,7 @@ module.exports.handler = (event, context, callback) => {
                                 break;
                             case "container_count":
                                 console.log('Container count requested');
-                                scopeComponents.push(runQuery(
+                                scopeComponents.push(db.runQuery(
                                     'SELECT COUNT(*) as container_count ' +
                                     'FROM Containers c ' +
                                     'JOIN ContainerHold ch ' +
@@ -149,7 +117,7 @@ module.exports.handler = (event, context, callback) => {
                                 break;
                             case "timelines":
                                 console.log('Timelines requested');
-                                scopeComponents.push(runQuery(
+                                scopeComponents.push(db.runQuery(
                                     'SELECT t.* ' +
                                     'FROM Timelines t ' +
                                     'JOIN Simulations s	' +
@@ -164,8 +132,7 @@ module.exports.handler = (event, context, callback) => {
             }
             else {
 
-                connection.commit();
-                connection.end();
+                db.commit();
                 lhelper.done({
                     statusCode: 200,
                     body: {}
@@ -176,8 +143,7 @@ module.exports.handler = (event, context, callback) => {
         })
         .then(all => {
 
-            connection.commit();
-            connection.end();
+            db.commit();
             let enrichedScope = {};
             for (let i = 0; i < response.scope.length; i++) {
 
@@ -189,7 +155,7 @@ module.exports.handler = (event, context, callback) => {
                         ship.id = ship.container_hold;
                         delete ship.container_hold;
                     })
-                }else if (component.toLowerCase() === 'container_count') {
+                } else if (component.toLowerCase() === 'container_count') {
 
                     enrichedScope[component] = all[i][0].container_count;
                     continue;
@@ -205,7 +171,7 @@ module.exports.handler = (event, context, callback) => {
         // Handle errors
         .catch(error => {
 
-            connection.end();
+            db.rollback();
             lhelper.done({
                 statusCode: 400,
                 body: error

@@ -12,7 +12,7 @@ module.exports.handler = (event, context, callback) => {
     let storage_id = event.pathParameters.storage_id;
 
     if(event.queryStringParameters === null) event.queryStringParameters = {};
-    lodash.defaults(event.queryStringParameters,{limit: 10,pagination_token: 0});
+    lodash.defaults(event.queryStringParameters,{limit: 10,pagination_token: ''});
 
     let limit = event.queryStringParameters.limit;
     let pagination_token = event.queryStringParameters.pagination_token;
@@ -21,6 +21,7 @@ module.exports.handler = (event, context, callback) => {
     db.start()
         .then(() => {
 
+            console.log(`Requesting MAX: ${limit} containers from storage @${storage_id}`);
             return db.runQuery(
                 'SELECT c.* ' +
                 'FROM Containers c ' +
