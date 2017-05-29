@@ -103,16 +103,22 @@ module.exports.handler = (event, context, callback) => {
                     time_id: event.time_id
                 });
             });
+
             //Limit tasks
-            tasksArr = tasksArr.splice(event.queryStringParameters.time_stamp, limit);
+            tasksArr = tasksArr.splice(0, limit);
 
             //Get time_id of last included event
+            let includedEventsCount = 0;
             [].concat.apply([], tasksArr.map(t => {
                 return t.events;
             })).forEach(e => {
+                includedEventsCount++;
                 if (e.time_id > pagination_token) pagination_token = e.time_id;
                 delete  e.time_id;
             });
+            console.log(`Expected events ${time_stamp} -> ${pagination_token}`);
+            console.log(`Included ${tasksArr.length} tasks and ${includedEventsCount} events`);
+
             lhelper.done({
                 statusCode: 200,
                 body: {
