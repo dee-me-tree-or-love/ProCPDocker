@@ -64,7 +64,7 @@ module.exports.handler = (event, context, callback) => {
                     pagination_token,
                     pagination_url
                 }
-            });
+            },true);
         })
         .catch(error => {
 
@@ -73,5 +73,5 @@ module.exports.handler = (event, context, callback) => {
                 statusCode: 400,
                 body: error
             });
-        });
+        },true);
 };

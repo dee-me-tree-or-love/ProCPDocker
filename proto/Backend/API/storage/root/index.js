@@ -35,7 +35,7 @@ module.exports.handler = (event, context, callback) => {
                     body: {
                         message: `No storage with id: ${storage_id} @sim:${simulation_id} @time:${timeline_id}`
                     }
-                });
+                }, true);
                 return;
             }
 
@@ -76,7 +76,7 @@ module.exports.handler = (event, context, callback) => {
             lhelper.done({
                 statusCode: 200,
                 body: storage
-            });
+            },true);
         })
         .catch(error => {
 
@@ -84,6 +84,6 @@ module.exports.handler = (event, context, callback) => {
             lhelper.done({
                 statusCode: 400,
                 body: error
-            });
+            },true);
         });
 };

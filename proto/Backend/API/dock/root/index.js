@@ -37,7 +37,7 @@ module.exports.handler = (event, context, callback) => {
                     body: {
                         message: `No dock with id: ${dock_id} @sim:${simulation_id} @time:${timeline_id}`
                     }
-                });
+                }, true);
                 return;
             }
             dock = docks[0];
@@ -88,7 +88,7 @@ module.exports.handler = (event, context, callback) => {
             lhelper.done({
                 statusCode: 200,
                 body: dock
-            });
+            },true);
         })
         .catch(error => {
 
@@ -97,6 +97,6 @@ module.exports.handler = (event, context, callback) => {
             lhelper.done({
                 statusCode: 400,
                 body: error
-            });
+            },true);
         });
 };

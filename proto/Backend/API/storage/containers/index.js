@@ -11,8 +11,8 @@ module.exports.handler = (event, context, callback) => {
     let timeline_id = event.pathParameters.timeline_id;
     let storage_id = event.pathParameters.storage_id;
 
-    if(event.queryStringParameters === null) event.queryStringParameters = {};
-    lodash.defaults(event.queryStringParameters,{limit: 10,pagination_token: ''});
+    if (event.queryStringParameters === null) event.queryStringParameters = {};
+    lodash.defaults(event.queryStringParameters, {limit: 10, pagination_token: ''});
 
     let limit = event.queryStringParameters.limit;
     let pagination_token = event.queryStringParameters.pagination_token;
@@ -43,7 +43,7 @@ module.exports.handler = (event, context, callback) => {
                 return {
                     id: c.id,
                     description: c.description,
-                    address:{
+                    address: {
                         location_id: c.container_hold,
                         x: c.x,
                         y: c.y,
@@ -64,7 +64,7 @@ module.exports.handler = (event, context, callback) => {
                     pagination_token,
                     pagination_url
                 }
-            });
+            }, true);
         })
         .catch(error => {
 
@@ -72,6 +72,6 @@ module.exports.handler = (event, context, callback) => {
             lhelper.done({
                 statusCode: 400,
                 body: error
-            });
+            }, true);
         });
 };
