@@ -117,9 +117,9 @@ export default {
 
                  if(response.status == 200){
                       //that.getTimelines(response.data.id);
-                      that.getShips(response.data.id,response.data.current_timeline_id);
                       that.getDocks(response.data.id,response.data.current_timeline_id);
                       that.getStorages(response.data.id,response.data.current_timeline_id);
+                      that.getShips(response.data.id,response.data.current_timeline_id);
 
 
                  }else{
@@ -150,7 +150,7 @@ export default {
 
                               var tempship = new Ship(response.data.ships[i].id,new Size(response.data.ships[i]["size"].x, response.data.ships[i]["size"].y, response.data.ships[i]["size"].z),response.data.ships[i].containers_max,response.data.ships[i].containers_current,response.data.ships[i].containers_unload,response.data.ships[i].containers_load,new Destination(response.data.ships[i]["destination"].id,response.data.ships[i]["destination"].estimated_arrival_time),response.data.ships[i].status);
 
-                              tempship.setY(i);
+                              tempship.setDock(that.findDock(tempship.destination.id));
                               that.ships.push(tempship);
                          }
                       }else{
@@ -234,25 +234,42 @@ export default {
              //this.getSimulation();
 
              this.canvas  = new Canvas(this.ctx);
-             var testship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
-             var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
-             var storage = new Storage("id","size","containers_max","containers_current","connections","status");
+             //var testship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
+             //var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
+             //var storage = new Storage("id","size","containers_max","containers_current","connections","status");
 
              this.canvas.drawBackground();
 
+             //var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
 
+             //tempship.setDock();
+             //that.ships.push(tempship);
 
+             for(var i = 0;i < 10;i++){
+                  var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
+                  dock.setY(i);
+                  this.docks.push(dock);
 
-             for(var i = 0; i < this.ships.length;i++){
-                  this.ships[i].drawShip(this.ctx);
+                  var storage = new Storage("id","size","containers_max","containers_current","connections","status");
+                  storage.setStoragePosition(i);
+                  this.storages.push(storage);
+
+                  var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
+                  tempship.setDock(dock);
+                  this.ships.push(tempship);
              }
+
 
              for(var i = 0; i < this.docks.length;i++){
                   this.docks[i].drawDock(this.ctx);
              }
 
              for(var i = 0; i < this.storages.length;i++){
-                  this.storages[i].drawStorage(this.ctx);
+                 this.storages[i].drawStorage(this.ctx);
+             }
+
+             for(var i = 0; i < this.ships.length;i++){
+                  this.ships[i].drawShip(this.ctx);
              }
 
              //testship.moveForward(ctx);
@@ -260,6 +277,13 @@ export default {
              //dock.drawDock(this.ctx);
              //storage.drawStorage(this.ctx);
 
+        },
+        findDock(dockid){
+             for(var i = 0;i < this.docks.length;i++){
+                  if(dockid == this.docks[i].id){
+                       return this.docks[i];
+                  }
+             }
         }
     }
 

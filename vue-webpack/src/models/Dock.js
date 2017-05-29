@@ -55,8 +55,8 @@ export default class Dock {
 }
 
 this.setY = function(index){
-     this.position_y = (index+1)*this.position_y;//+20;
-     this.loadingposition_y = (index+1)*this.position_y+10;//+30;
+     this.position_y = ((index+1)*(150))+this.position_y;//+20;
+     this.loadingposition_y = this.position_y+10;//+30;
 }
 
  this.checkClick = function(x,y){

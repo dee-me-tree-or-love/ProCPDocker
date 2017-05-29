@@ -13,6 +13,7 @@ export default class Storage {
     this.position_y = 10;
 
     this.drawStorage = function(context){
+
          context.fillStyle = '#ffffff';
          context.fillRect(this.position_x,this.position_y,this.width,this.height);
          context.fillStyle = '#ffffff';
@@ -39,20 +40,33 @@ export default class Storage {
     }
 
     this.setStoragePosition = function(index){
-         if((index + 1)%2 == 0){
-              this.setX(index);
+         if(index % 2 == 0){
+              //this.setX(index);
+              var num = index/2;
+
+              if(index != 0){
+                   this.setY(num);
+              }
          }else{
-              this.setY(index);
+              var num = (index - 1)/2;
+
+              this.setX(index);
+
+              if(index != 1){
+                   this.setY(num);
+              }
          }
     }
 
 
     this.setY = function(index){
-         this.position_y = (index+1)*this.position_y;//+20;
+         //this.position_y = (index+1)*this.position_y;//+20;
+         this.position_y = ((index)*(150))+this.position_y;
     }
 
     this.setX = function(index){
-         this.position_x = this.position_x + this.width * 2 - 10;
+         this.position_x = this.position_x + this.width * 2 - 10
+         //this.setY(index/2);
     }
   }
 }

@@ -1,16 +1,20 @@
 #canvas{
      position: absolute;
      width:700px;
-     height:500px;
+     height:2000px;
      border: 1px solid black;
      left:50%;
      margin-left:-350px;
 }
 
-#canvas-container{
+/*#canvas-container{
+     position: absolute;
+     border: 1px solid black;
      width:700px;
      height:500px;
-}
+     overflow:auto;
+}*/
+
 
 input[type=range] {
      position: absolute;

@@ -1,6 +1,6 @@
 <template>
      <div class="col-md-12 topSpace" style="height:100%;border:1px solid black;" id="main-simulation">
-          <div class="topSpace" id="CanvasContainer">
+          <div class="topSpace" id="CanvasContainer" >
               <CanvasDrawingComponent  @context="setContext"  @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
               <input type="range" min="0" max="100" value="0" step="1" id="slider"></input>
           </div>
@@ -184,5 +184,10 @@
     #CanvasContainer{
         width: 100%;
         height: 80%;
+        overflow-y:scroll;
+        overflow-x:hidden;
+        border: 1px solid black;
     }
+
+
 </style>

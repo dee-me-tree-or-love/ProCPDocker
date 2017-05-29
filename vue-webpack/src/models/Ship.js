@@ -1,3 +1,5 @@
+import Destination from './Destination.js';
+
 export default class Ship {
   constructor(id,size,containers_max,containers_current,containers_unload,containers_load,destination,status) {
     this.id = id;
@@ -14,6 +16,7 @@ export default class Ship {
     this.position_x = 140;
     this.position_y = 30;
     this.bezierCurve = 25;
+
 
     this.drawShip = function(context){
          context.beginPath();
@@ -40,6 +43,11 @@ export default class Ship {
 
    this.setY = function(index){
         this.position_y = (index+1)*this.position_y;//+20;
+   }
+
+   this.setDock = function(dock){
+        this.position_x = dock.position_x + 8;
+        this.position_y = dock.position_y - 50;
    }
 
    this.checkClick = function(x,y){
