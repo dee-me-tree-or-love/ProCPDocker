@@ -1,11 +1,11 @@
 {
-  "name": "container-loader",
-  "version": "1.0.0",
-  "description": "provides algs to load containers to the c.holders",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC"
+    "name": "container-loader",
+    "version": "1.0.0",
+    "description": "provides algs to load containers to the c.holders",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC"
 }
