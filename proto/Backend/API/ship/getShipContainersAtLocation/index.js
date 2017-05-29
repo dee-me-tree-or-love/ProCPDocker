@@ -21,7 +21,7 @@ module.exports.handler = (event, context, callback) => {
         location_type = event.pathParameters.location;
 
         if (event.queryStringParameters === null) event.queryStringParameters = {};
-        lodash.defaults(event.queryStringParameters, { limit: 10, pagination_token: 0 });
+        lodash.defaults(event.queryStringParameters, { limit: 10, pagination_token: '' });
 
         limit = event.queryStringParameters.limit;
         pagination_token = event.queryStringParameters.pagination_token;
@@ -62,9 +62,9 @@ module.exports.handler = (event, context, callback) => {
                 "(SELECT SC.container_id FROM ShipContainer as SC " +
                 "WHERE SC.ship_id = ? AND SC.type = ?) " +
                 "AND TL.id = ? AND TL.simulation_id = ? " +
-                "AND CH.type=\"ship\" " +
-                "ORDER by C.weight " +
-                "LIMIT ?;", [ship_id, location_type, timeline_id, sim_id, Number(limit)], `Getting the containers of type: ${location_type}`, true);
+                "AND CH.type=\"ship\" AND C.id > ? " +
+                "ORDER by C.id " +
+                "LIMIT ?;", [ship_id, location_type, timeline_id, sim_id, pagination_token, Number(limit)], `Getting the containers of type: ${location_type}`, true);
         })
         .then(containers => {
             // process response
@@ -91,7 +91,7 @@ module.exports.handler = (event, context, callback) => {
                 console.log(containers);
 
 
-                let pagination_token = containers[containers.length - 1].weight + 1;
+                pagination_token = containers[containers.length - 1].id;
 
                 lhelper.done({
                     statusCode: 200,
@@ -105,7 +105,7 @@ module.exports.handler = (event, context, callback) => {
 
             } else {
 
-                let pagination_token = 0;
+                let pagination_token = '';
                 lhelper.done({
                     statusCode: 200,
                     body: {

@@ -1,7 +1,7 @@
 'use strict';
 const DBHelper = require('db-helper').DBHelper;
 const LambdaHelper = require('basic-lambda-helper');
-const _ = require('underscore');
+const lodash = require('lodash');
 
 module.exports.handler = (event, context, callback) => {
 
@@ -9,15 +9,12 @@ module.exports.handler = (event, context, callback) => {
 
     const db = new DBHelper();
 
-    if (event.queryStringParameters == null) event.queryStringParameters = {};
-    _.defaults(event.queryStringParameters, {limit: 10, time_stamp: 0});
-
-    let limit = event.queryStringParameters.limit;
-    if (limit < 0) limit = 0;
+    if (event.queryStringParameters === null || typeof event.queryStringParameters === 'undefined') event.queryStringParameters = {};
+    lodash.defaults(event.queryStringParameters, {limit: 10, time_stamp: 0});
 
     let time_stamp = event.queryStringParameters.time_stamp;
-    if (time_stamp < 0) time_stamp = 0;
-
+    let limit = event.queryStringParameters.limit;
+    if (limit < 0) limit = 0;
 
     let sim_id, timeline_id;
     try {
@@ -37,7 +34,10 @@ module.exports.handler = (event, context, callback) => {
         .then(() => {
 
             return db.runQuery(
-                "SELECT t.id as task_id, t.type as task_type, t.description as task_description, t.status as task_status, source_id, destination_id, " +
+                "SET @counter = 0; " +
+                "SELECT (@counter := @counter +1) as time_id, sub.* " +
+                "FROM " +
+                "(SELECT t.id as task_id, t.type as task_type, t.description as task_description, t.status as task_status, source_id, destination_id, " +
                 "       t.container_id,e.id as event_id, e.type as event_type, e.message as event_message, e.start_time as event_start_time, t.end_time as task_end_time, t.start_time as task_start_time " +
                 "FROM Events e " +
                 "LEFT JOIN  Tasks t " +
@@ -48,15 +48,13 @@ module.exports.handler = (event, context, callback) => {
                 "ON i.timeline_id = tl.id " +
                 "WHERE tl.id = ? " +
                 "AND tl.simulation_id = ? " +
-                "AND e.start_time >= ? " +
-                "ORDER BY e.start_time, t.start_time " +
-                "LIMIT ? ", [timeline_id, sim_id, time_stamp, Number(limit)], "Getting tasks", true
+                "ORDER BY e.start_time, t.start_time ) sub " +
+                "order by time_id;", [timeline_id, sim_id], "Getting tasks", true
             );
         })
         .then(response => {
 
-
-            if (response.length === 0) {
+            if (response[1].length === 0) {
 
                 lhelper.done({
                     statusCode: 200,
@@ -68,12 +66,20 @@ module.exports.handler = (event, context, callback) => {
             }
             db.commit();
 
-            let tasks = {};
+            response = response[1];
+
+            console.log(`Total events: ${response.length}`);
+            let tasksIndecies = {}, tasksArr = [], counter = 0, pagination_token = 0;
             response.forEach(event => {
 
-                if (typeof tasks[event.task_id] === 'undefined') {
+                if (event.time_id <= time_stamp) return; //Only include events after the pagination time_stamp
 
-                    tasks[event.task_id] = {
+                if (typeof tasksIndecies[event.task_id] === 'undefined') {
+
+                    console.log(`First time task ${event.task_id}`);
+                    tasksIndecies[event.task_id] = counter;
+                    counter++;
+                    tasksArr.push({
                         id: event.task_id,
                         type: event.task_type,
                         start_time: event.task_start_time,
@@ -86,22 +92,31 @@ module.exports.handler = (event, context, callback) => {
                         description: event.task_description,
                         status: event.task_status,
                         events: []
-                    };
+                    });
+                    console.log(`We now have ${tasksArr.length} tasks`);
                 }
-                tasks[event.task_id].events.push({
+                tasksArr[tasksIndecies[event.task_id]].events.push({
                     id: event.event_id,
                     type: event.event_type,
                     message: event.event_message,
-                    time_stamp: event.event_start_time
+                    time_stamp: event.event_start_time,
+                    time_id: event.time_id
                 });
             });
-            let taskArr = [];
-            for (let task in tasks) taskArr.push(tasks[task]);
-            let pagination_token = taskArr[taskArr.length - 1].end_time + 1;
+            //Limit tasks
+            tasksArr = tasksArr.splice(event.queryStringParameters.time_stamp, limit);
+
+            //Get time_id of last included event
+            [].concat.apply([], tasksArr.map(t => {
+                return t.events;
+            })).forEach(e => {
+                if (e.time_id > pagination_token) pagination_token = e.time_id;
+                delete  e.time_id;
+            });
             lhelper.done({
                 statusCode: 200,
                 body: {
-                    tasks: taskArr,
+                    tasks: tasksArr,
                     next_time_stamp: pagination_token,
                     next_time_stamp_url: `https://${event.headers.Host}${event.requestContext.path}?limit=${limit}&time_stamp=${pagination_token}`
                 }
@@ -115,7 +130,7 @@ module.exports.handler = (event, context, callback) => {
                 body: {
                     error,
                     limit,
-                    time_stamp
+                    pagination_token
                 }
             }, true);
         });

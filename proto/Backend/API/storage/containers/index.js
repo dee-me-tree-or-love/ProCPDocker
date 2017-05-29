@@ -12,16 +12,16 @@ module.exports.handler = (event, context, callback) => {
     let storage_id = event.pathParameters.storage_id;
 
     if(event.queryStringParameters === null) event.queryStringParameters = {};
-    lodash.defaults(event.queryStringParameters,{limit: 10,pagination_token: 0});
+    lodash.defaults(event.queryStringParameters,{limit: 10,pagination_token: ''});
 
     let limit = event.queryStringParameters.limit;
     let pagination_token = event.queryStringParameters.pagination_token;
 
     const db = new DBHelper();
-    let storage = {};
     db.start()
         .then(() => {
 
+            console.log(`Requesting MAX: ${limit} containers from storage @${storage_id}`);
             return db.runQuery(
                 'SELECT c.* ' +
                 'FROM Containers c ' +
@@ -32,8 +32,8 @@ module.exports.handler = (event, context, callback) => {
                 'WHERE simulation_id = ? ' +
                 'AND ch.id = ? ' +
                 'AND tl.id = ?' +
-                'AND c.weight > ? ' +
-                'ORDER by c.weight ' +
+                'AND c.id > ? ' +
+                'ORDER by c.id ' +
                 'LIMIT ?;', [simulation_id, storage_id, timeline_id, pagination_token, Number(limit)], 'Fetching Storages'
             );
         })
@@ -55,7 +55,7 @@ module.exports.handler = (event, context, callback) => {
             });
             containers = (containers.length === 0 ) ? [] : containers;
             db.commit();
-            let pagination_token = (containers.length === 0 ) ? null : containers[containers.length - 1].weight + 1;
+            let pagination_token = (containers.length === 0 ) ? null : containers[containers.length - 1].id;
             let pagination_url = (containers.length === 0 ) ? null : `https://${event.headers.Host}${event.requestContext.path}?limit=${limit}&pagination_token=${pagination_token}`;
             lhelper.done({
                 statusCode: 200,

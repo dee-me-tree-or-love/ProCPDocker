@@ -12,13 +12,12 @@ module.exports.handler = (event, context, callback) => {
     let dock_id = event.pathParameters.dock_id;
 
     if(event.queryStringParameters === null) event.queryStringParameters = {};
-    lodash.defaults(event.queryStringParameters,{limit: 10,pagination_token: 0});
+    lodash.defaults(event.queryStringParameters,{limit: 10,pagination_token: ''});
 
     let limit = event.queryStringParameters.limit;
     let pagination_token = event.queryStringParameters.pagination_token;
 
     const db = new DBHelper();
-    let dock = {};
     db.start()
         .then(() => {
 
@@ -32,9 +31,9 @@ module.exports.handler = (event, context, callback) => {
                 'WHERE simulation_id = ? ' +
                 'AND ch.id = ? ' +
                 'AND tl.id = ?' +
-                'AND c.weight >= ? ' +
-                'AND ch.type = "dock"' +
-                'ORDER by c.weight ' +
+                'AND c.id > ? ' +
+                'AND ch.type = "dock" ' +
+                'ORDER by c.id ' +
                 'LIMIT ?;', [simulation_id, dock_id, timeline_id, pagination_token, Number(limit)], 'Fetching Containers'
             );
         })
@@ -56,7 +55,7 @@ module.exports.handler = (event, context, callback) => {
             });
             containers = (containers.length === 0 ) ? [] : containers;
             db.commit();
-            let pagination_token = (containers.length === 0 ) ? null : containers[containers.length - 1].weight + 1;
+            let pagination_token = (containers.length === 0 ) ? null : containers[containers.length - 1].id;
             let pagination_url = (containers.length === 0 ) ? null : `https://${event.headers.Host}${event.requestContext.path}?limit=${limit}&pagination_token=${pagination_token}`;
             lhelper.done({
                 statusCode: 200,
