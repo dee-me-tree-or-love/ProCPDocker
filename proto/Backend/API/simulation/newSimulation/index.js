@@ -5,6 +5,7 @@ const HarborValidator = require('harbor-validator');
 const HarborBuilder = require('harbor-builder');
 const ShipPlanner = require('ship-planner');
 const DBHelper = require('db-helper');
+const ContainerLoader = require('container-loader');
 const S3 = require('aws-sdk').S3;
 
 const uuid = require('uuid');
@@ -188,10 +189,12 @@ module.exports.handler = (event, context, callback) => {
         if (to_fill > 0) {
 
             let containers = ContainerFactory.create(to_fill, storage.id);
-            storage.containers_current = storage.containers_current.concat(containers);
-            all_containers = all_containers.concat(containers);
+            containers.forEach(c => {
+                c.address = Object.assign(c.address, ContainerLoader.calculateLocation(c, storage, ContainerLoader.linearLoad));
+                storage.containers_current.push(c);
+                all_containers.push(c);
+            });
         }
-
         delete storage.containers_to_fill;
     });
 
