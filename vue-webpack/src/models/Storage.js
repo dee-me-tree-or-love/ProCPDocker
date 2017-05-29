@@ -40,19 +40,19 @@ export default class Storage {
 
     this.setStoragePosition = function(index){
          if((index + 1)%2 == 0){
-
+              this.setX(index);
          }else{
-
+              this.setY(index);
          }
     }
 
 
     this.setY = function(index){
-         this.position_y = (index+1)*this.position_y+20;
+         this.position_y = (index+1)*this.position_y;//+20;
     }
 
     this.setX = function(index){
-         this.position_x = this.position_x + this.width * 2;
+         this.position_x = this.position_x + this.width * 2 - 10;
     }
   }
 }

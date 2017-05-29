@@ -2,6 +2,7 @@
   <div class="fluid-container" id="app">
     <div class="col-md-8" id="CanvasPart">
       <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
+      <button @click="simulationLoop" >draw simulation</button>
       <button @click="getSimulation" >get simulation</button>
     </div>
     <div class="col-md-4" id="InfoPart">
@@ -28,6 +29,7 @@ import ConnectedStorage from './models/ConnectedStorage.js';
 import Connection from './models/Connection.js';
 import ScheduledShip from './models/ScheduledShip.js';
 import Simulation from './models/Simulation.js';
+import Canvas from './models/Canvas.js';
 
 var that;
 
@@ -39,11 +41,14 @@ export default {
          this.shipsbool= false,
          this.storagesbool= false,
          this.docksbool= true
+         //this.waitForContext()
+         //console.log("mounted")
+         //this.waitForContext()
     },
     data () {
          return {
               currenttimeline : 'timeline1',
-              ctx: '',
+              ctx: null,
               tasks:[],
               completedtasks:[],
               ships:[new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status")],
@@ -56,6 +61,7 @@ export default {
               shipsbool: false,
               storagesbool: false,
               docksbool: false,
+              canvas: null,
          }
     },
 
@@ -70,10 +76,10 @@ export default {
          setContext(value){
               this.ctx = value;
               //alert(this.ctx);
-              for(var i = 0;i < this.ships.length;i++){
-                   this.ships[i].setY(i);
-                   this.ships[i].drawShip(this.ctx);
-              }
+              //for(var i = 0;i < this.ships.length;i++){
+                   //this.ships[i].setY(i);
+                   //this.ships[i].drawShip(this.ctx);
+              //}
          },
          setSidebarComponentBool(value){
               //alert(value);
@@ -115,7 +121,7 @@ export default {
                       that.getDocks(response.data.id,response.data.current_timeline_id);
                       that.getStorages(response.data.id,response.data.current_timeline_id);
 
-                      that.simulationLoop();
+
                  }else{
 
                  }
@@ -139,7 +145,13 @@ export default {
                       if(response.status == 200){
                            //that.getTimelines(response.data.id);
                          for(var i = 0;i < response.data.ships.length;i++){
-                              that.ships.push(new Ship(response.data.ships[i].id,new Size(response.data.ships[i]["size"].x, response.data.ships[i]["size"].y, response.data.ships[i]["size"].z),response.data.ships[i].containers_max,response.data.ships[i].containers_current,response.data.ships[i].containers_unload,response.data.ships[i].containers_load,new Destination(response.data.ships[i]["destination"].id,response.data.ships[i]["destination"].estimated_arrival_time),response.data.ships[i].status));
+
+                              that.ships = [];
+
+                              var tempship = new Ship(response.data.ships[i].id,new Size(response.data.ships[i]["size"].x, response.data.ships[i]["size"].y, response.data.ships[i]["size"].z),response.data.ships[i].containers_max,response.data.ships[i].containers_current,response.data.ships[i].containers_unload,response.data.ships[i].containers_load,new Destination(response.data.ships[i]["destination"].id,response.data.ships[i]["destination"].estimated_arrival_time),response.data.ships[i].status);
+
+                              tempship.setY(i);
+                              that.ships.push(tempship);
                          }
                       }else{
 
@@ -156,6 +168,7 @@ export default {
 
                       var connectedstorages = [];
                       var scheduledships = [];
+                      that.docks = [];
 
                       if(response.status == 200){
                            //that.getTimelines(response.data.id);
@@ -166,7 +179,13 @@ export default {
                               for(var j = 0;j < response.data.docks[i]["scheduled_ships"].length;j++){
                                    scheduledships.push(new ScheduledShip(response.data.docks[i]["scheduled_ships"][j].id,response.data.docks[i]["scheduled_ships"][j].time_arrived))
                               }
-                              that.docks.push(new Dock(response.data.docks[i].id,response.data.docks[i].loaders_count,connectedstorages,response.data.docks[i].container_count,response.data.docks[i].connected_ship_id,scheduledships));
+
+
+
+                              var tempdock = new Dock(response.data.docks[i].id,response.data.docks[i].loaders_count,connectedstorages,response.data.docks[i].container_count,response.data.docks[i].connected_ship_id,scheduledships);
+
+                              tempdock.setY(i);
+                              that.docks.push(tempdock);
                          }
                       }else{
 
@@ -187,12 +206,16 @@ export default {
 
 
                            var connections = [];
+                           that.storages = [];
 
                            for(var i = 0;i < response.data.storages.length;i++){
                               for(var j = 0;j < response.data.storages[i]["connections"].length;j++){
                                    connections.push(new Connection(response.data.storages[i]["connections"][j].id,response.data.storages[i]["connections"][j].weight));
                               }
-                              that.storages.push(new Storage(response.data.storages[i].id,new Size(response.data.storages[i]["size"].x, response.data.storages[i]["size"].y, response.data.storages[i]["size"].z),response.data.storages[i].containers_max,response.data.storages[i].containers_current,connections,response.data.storages[i].status));
+
+                              var tempstorage = new Storage(response.data.storages[i].id,new Size(response.data.storages[i]["size"].x, response.data.storages[i]["size"].y, response.data.storages[i]["size"].z),response.data.storages[i].containers_max,response.data.storages[i].containers_current,connections,response.data.storages[i].status);
+                              tempstorage.setStoragePosition(i);
+                              that.storages.push(tempstorage);
                            }
                            }else{
 
@@ -201,9 +224,41 @@ export default {
                  });
              //}
         },
+
         simulationLoop(){
 
+             //c = document.getElementById('canvas');
 
+             //ctx = c.getContext('2d');
+             //console.log(this.ctx);
+             //this.getSimulation();
+
+             this.canvas  = new Canvas(this.ctx);
+             var testship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
+             var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
+             var storage = new Storage("id","size","containers_max","containers_current","connections","status");
+
+             this.canvas.drawBackground();
+
+
+
+
+             for(var i = 0; i < this.ships.length;i++){
+                  this.ships[i].drawShip(this.ctx);
+             }
+
+             for(var i = 0; i < this.docks.length;i++){
+                  this.docks[i].drawDock(this.ctx);
+             }
+
+             for(var i = 0; i < this.storages.length;i++){
+                  this.storages[i].drawStorage(this.ctx);
+             }
+
+             //testship.moveForward(ctx);
+             //testship.drawShip(this.ctx);
+             //dock.drawDock(this.ctx);
+             //storage.drawStorage(this.ctx);
 
         }
     }

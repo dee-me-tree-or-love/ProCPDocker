@@ -16,6 +16,7 @@ export default class Ship {
     this.bezierCurve = 25;
 
     this.drawShip = function(context){
+         context.beginPath();
          context.fillStyle = '#ff8400';
          context.lineWidth = 2;
          context.moveTo(this.position_x + this.width, this.position_y);
@@ -38,7 +39,7 @@ export default class Ship {
    }
 
    this.setY = function(index){
-        this.position_y = (index+1)*this.position_y+20;
+        this.position_y = (index+1)*this.position_y;//+20;
    }
 
    this.checkClick = function(x,y){
