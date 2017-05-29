@@ -1,3 +1,7 @@
+import ScheduledShip from './ScheduledShip.js';
+import ConnectedStorage from './ConnectedStorage.js';
+
+
 export default class Dock {
   constructor(id,loaders_count,connected_storages,container_count,connected_ship_id,scheduled_ships) {
     this.id = id;

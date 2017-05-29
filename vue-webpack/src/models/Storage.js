@@ -1,3 +1,5 @@
+import Connection from './Connection.js';
+
 export default class Storage {
   constructor(id,size,containers_max,containers_current,connections,status) {
     this.id = id;

@@ -1,4 +1,5 @@
 import Destination from './Destination.js';
+import Size from './Size.js';
 
 export default class Ship {
   constructor(id,size,containers_max,containers_current,containers_unload,containers_load,destination,status) {
@@ -34,6 +35,32 @@ export default class Ship {
          context.fillStyle = '#ffffff';
          context.strokeRect(this.position_x+6,this.position_y+6,this.width-12,this.height-12);
          context.fillRect(this.position_x+6,this.position_y+6,this.width-12,this.height-12);
+
+         this.drawContainers(context);
+
+  }
+
+  this.drawContainers = function(context){
+
+       context.beginPath();
+       context.strokeStyle = '#000000';
+
+       var counter_x = this.position_x+6+12;
+       var counter_y = this.position_y+6+7;
+
+       for(var i = 0;i < 9;i++){
+            context.moveTo(counter_x,this.position_y+6);
+            context.lineTo(counter_x,this.position_y+34);
+            counter_x = counter_x + 12;
+       }
+
+       for(var i = 0;i < 4;i++){
+            context.moveTo(this.position_x+6,counter_y);
+            context.lineTo(this.position_x+this.width-6,counter_y);
+            counter_y = counter_y + 7;
+       }
+
+       context.stroke();
 
   }
 

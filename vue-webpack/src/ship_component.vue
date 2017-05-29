@@ -2,9 +2,12 @@
   <div class="col-md-12 topSpace" id="ShipComponentContainer">
     <ul class="list-unstyled">
       <li>Ship: {{ ship.id }}</li>
+      <li>Ship size:  ( x: {{ ship.size.x }}, y: {{ ship.size.y}}, z: {{ ship.size.z}} )</li>
       <li>Max containers: {{ ship.containers_max }}</li>
       <li>Current containers: {{ ship.containers_current }}</li>
-      <li>Destination: {{ ship.destination }}</li>
+      <li>Containers to unload: {{ ship.containers_unload }}</li>
+      <li>Containers to load: {{ ship.containers_load }}</li>
+      <li>Destination: ( Dock id: {{ ship.destination.id }}, ETA: {{ ship.destination.estimated_arrival_time}} )</li>
       <li>Status: {{ ship.status }}</li>
     </ul>
   </div>
