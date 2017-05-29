@@ -5,8 +5,8 @@
   "main": "index.js",
   "dependencies": {
     "basic-lambda-helper": "^1.1.1",
-    "underscore": "^1.8.3",
-    "db-helper": "file:../../Shared/DBHelper"
+    "db-helper": "file:../../Shared/DBHelper",
+    "lodash": "^4.17.4"
   },
   "devDependencies": {},
   "scripts": {
