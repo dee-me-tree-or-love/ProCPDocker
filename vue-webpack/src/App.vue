@@ -314,10 +314,10 @@ export default {
 }
 
 #CanvasPart {
-    height: 100%;
+    height: 87%;
 }
 
 #InfoPart {
-    height: 100%;
+    height: 87%;
 }
 </style>
