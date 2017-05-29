@@ -1,10 +1,10 @@
 <template>
   <div class="col-md-12 topSpace" id="EventContainer">
        <ul class="list-unstyled topSpace">
-           <li>event id : {{ event.id }}</li>
-           <li>event type : {{ event.type }}</li>
-           <li>event message : {{ event.extra }}</li>
-           <li>event timestamp : {{ event.description }}</li>
+           <li>Event: {{ event.id }}</li>
+           <li>Type: {{ event.type }}</li>
+           <li>Message: {{ event.extra }}</li>
+           <li>Timestamp: {{ event.description }}</li>
       </ul>
   </div>
 </template>

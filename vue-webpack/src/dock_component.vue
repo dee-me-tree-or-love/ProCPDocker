@@ -1,6 +1,10 @@
 <template>
   <div class="col-md-12 topSpace" id="DockComponentContainer">
-    <p>Dock: {{ dock.id }}</p>
+    <ul class="list-unstyled">
+        <li>Dock: {{ dock.id }}</li>
+        <li>Width: {{ dock.width }}</li>
+        <li>Height: {{ dock.height }}</li>
+    </ul>
   </div>
 </template>
 

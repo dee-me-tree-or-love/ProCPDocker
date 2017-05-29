@@ -1,6 +1,12 @@
 <template>
   <div class="col-md-12 topSpace" id="ShipComponentContainer">
-    <p>Ship:{{ ship.id }}</p>
+    <ul class="list-unstyled">
+      <li>Ship: {{ ship.id }}</li>
+      <li>Max containers: {{ ship.containers_max }}</li>
+      <li>Current containers: {{ ship.containers_current }}</li>
+      <li>Destination: {{ ship.destination }}</li>
+      <li>Status: {{ ship.status }}</li>
+    </ul>
   </div>
 </template>
 

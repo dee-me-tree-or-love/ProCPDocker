@@ -1,7 +1,5 @@
 <template>
-     <div id="canvas-container topSpace">
-          <canvas id="canvas" height="500px" width="700px" onload="setContext()" v-on:click="check"></canvas>
-     </div>
+        <canvas id="canvas" height="500px" width="700px" onload="setContext()" v-on:click="check"></canvas>
 </template>
 
 <script>

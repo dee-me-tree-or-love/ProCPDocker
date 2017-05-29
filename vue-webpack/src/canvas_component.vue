@@ -1,20 +1,16 @@
 <template>
      <div class="col-md-12 topSpace" style="height:100%;border:1px solid black;" id="main-simulation">
-          <!--<button @click="getTasks">get more tasks</button>
-          <button @click="performTask">do task</button>
-          <button @click="reverseTask">reverse task</button>-->
-          <div class="">
-               <!--<button @click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>-->
+          <div class="topSpace" id="CanvasContainer">
+              <CanvasDrawingComponent  @context="setContext"  @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
+              <input type="range" min="0" max="100" value="0" step="1" id="slider"></input>
+          </div>
+          <div class="text-center">
                <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
                <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
                <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
                <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
                <button @click="syncSimulation" class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
           </div>
-
-          <CanvasDrawingComponent  @context="setContext"  @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
-
-          <input type="range" min="0" max="100" value="0" step="1" @click="sliderChanged" id="slider"></input>
      </div>
 </template>
 <script>
@@ -32,9 +28,27 @@
      var currentTask;
      var events = [];
 
-    //  var sliderChanged = function() {
-    //    console.log("opsa");
-    //  };
+    //  document.getElementById('slider').addEventListener('change', function() {
+    //     that = this;
+    //     if(that.completedtasks.length != document.getElementById('slider').value) {
+    //         that.pauseSimulation();
+    //         if(that.completedtasks.length > document.getElementById('slider').value) {
+    //           //the user moves backwards the slider
+    //           for(var i = that.completedtasks.length; i >= document.getElementById('slider').value; i--) {
+    //               that.tasks.unshift(that.completedtasks.pop());
+    //           }
+    //         } else {
+    //           //the user moves forwards the slider
+    //           for(var i = that.completedtasks.length; i < document.getElementById('slider').value; i++) {
+    //               if(that.completedtasks.length + that.tasks.length < document.getElementById('slider').value) {
+    //                   that.getTasks();
+    //               }
+    //               that.completedtasks.push(that.tasks.shift());
+    //           }
+    //         }
+    //         that.playSimulation();
+    //     }
+    //  });
 
      export default {
           props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage','completedtasks', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],
@@ -158,27 +172,6 @@
                   //    }
                   // });
                },
-               sliderChanged() {
-                  // that = this;
-                  // if(that.completedtasks.length != document.getElementById('slider').value) {
-                  //     that.pauseSimulation();
-                  //     if(that.completedtasks.length > document.getElementById('slider').value) {
-                  //       //the user moves backwards the slider
-                  //       for(var i = that.completedtasks.length; i >= document.getElementById('slider').value; i--) {
-                  //           that.tasks.unshift(that.completedtasks.pop());
-                  //       }
-                  //     } else {
-                  //       //the user moves forwards the slider
-                  //       for(var i = that.completedtasks.length; i < document.getElementById('slider').value; i++) {
-                  //           if(that.completedtasks.length + that.tasks.length < document.getElementById('slider').value) {
-                  //               that.getTasks();
-                  //           }
-                  //           that.completedtasks.push(that.tasks.shift());
-                  //       }
-                  //     }
-                  //     that.playSimulation();
-                  // }
-               },
           },
           components:{
                'CanvasDrawingComponent': CanvasDrawingComponent
@@ -186,3 +179,10 @@
 
      }
 </script>
+
+<style media="screen">
+    #CanvasContainer{
+        width: 100%;
+        height: 80%;
+    }
+</style>
