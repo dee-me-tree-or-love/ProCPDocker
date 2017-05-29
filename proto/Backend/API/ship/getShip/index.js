@@ -82,7 +82,7 @@ module.exports.handler = (event, context, callback) => {
                     body: {
                         message: "Unexpected response size, check your request for correctness..."
                     }
-                });
+                }, true);
                 return;
             }
         })

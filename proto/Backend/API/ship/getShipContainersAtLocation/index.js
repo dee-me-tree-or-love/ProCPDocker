@@ -36,7 +36,7 @@ module.exports.handler = (event, context, callback) => {
         if (location_type.includes("load")) {
             location_type = "to_" + location_type;
             console.log(`updated the location type to be: ${location_type}`);
-        }else{
+        } else {
             ship_constraint = "AND CH.type=\"ship\" ";
         }
     } catch (err) {
@@ -103,7 +103,7 @@ module.exports.handler = (event, context, callback) => {
                         pagination_token,
                         pagination_url: `https://${event.headers.Host}${event.requestContext.path}?limit=${limit}&pagination_token=${pagination_token}`
                     }
-                });
+                }, true);
                 return;
 
             } else {
@@ -116,7 +116,7 @@ module.exports.handler = (event, context, callback) => {
                         pagination_token,
                         pagination_url: `https://${event.headers.Host}${event.requestContext.path}?limit=${limit}&pagination_token=${pagination_token}`
                     }
-                });
+                }, true);
                 return;
             }
         })
@@ -127,7 +127,7 @@ module.exports.handler = (event, context, callback) => {
             lhelper.done({
                 statusCode: 400,
                 body: error
-            });
+            }, true);
         })
 
 }
