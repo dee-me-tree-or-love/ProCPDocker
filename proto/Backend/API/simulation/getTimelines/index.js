@@ -48,7 +48,7 @@ module.exports.handler = (event, context, callback) => {
                     body: {
                         timelines,
                     }
-                });
+                }, true);
                 return;
 
             } else {
@@ -58,7 +58,7 @@ module.exports.handler = (event, context, callback) => {
                     body: {
                         timelines,
                     }
-                });
+                }, true);
                 return;
             }
         })
