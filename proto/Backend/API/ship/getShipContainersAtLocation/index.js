@@ -13,7 +13,7 @@ module.exports.handler = (event, context, callback) => {
 
     let sim_id, timeline_id, ship_id, location_type;
     let limit, pagination_token;
-
+    let ship_constraint = "";
     try {
         sim_id = event.pathParameters.simulation_id;
         timeline_id = event.pathParameters.timeline_id;
@@ -36,6 +36,8 @@ module.exports.handler = (event, context, callback) => {
         if (location_type.includes("load")) {
             location_type = "to_" + location_type;
             console.log(`updated the location type to be: ${location_type}`);
+        }else{
+            ship_constraint = "AND CH.type=\"ship\" ";
         }
     } catch (err) {
         console.log(err);
@@ -62,7 +64,8 @@ module.exports.handler = (event, context, callback) => {
                 "(SELECT SC.container_id FROM ShipContainer as SC " +
                 "WHERE SC.ship_id = ? AND SC.type = ?) " +
                 "AND TL.id = ? AND TL.simulation_id = ? " +
-                "AND CH.type=\"ship\" AND C.id > ? " +
+                ship_constraint +
+                "AND C.id > ? " +
                 "ORDER by C.id " +
                 "LIMIT ?;", [ship_id, location_type, timeline_id, sim_id, pagination_token, Number(limit)], `Getting the containers of type: ${location_type}`, true);
         })

@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "basic-lambda-helper": "^1.1.1",
-    "db-helper": "file:../../Shared/DBHelper",
+    "db-helper": "file:../../../Shared/DBHelper",
     "lodash": "^4.17.4"
   }
 }
