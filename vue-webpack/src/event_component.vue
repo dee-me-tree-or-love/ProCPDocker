@@ -1,6 +1,6 @@
 <template>
-  <div style="width:100%;border:1px solid black;margin-top:10px;margin-bottom:10px">
-       <ul class="list-unstyled">
+  <div class="col-md-12 topSpace" id="EventContainer">
+       <ul class="list-unstyled topSpace">
            <li>event id : {{ event.id }}</li>
            <li>event type : {{ event.type }}</li>
            <li>event message : {{ event.extra }}</li>
@@ -14,3 +14,9 @@
     props: ['event']
   }
 </script>
+
+<style media="screen">
+    #EventContainer {
+        border: 1px solid black;
+    }
+</style>

@@ -1,5 +1,5 @@
 <template>
-     <div id="canvas-container">
+     <div id="canvas-container topSpace">
           <canvas id="canvas" height="500px" width="700px" onload="setContext()" v-on:click="check"></canvas>
      </div>
 </template>
@@ -25,7 +25,7 @@ export default{
 
           this.ctx = this.c.getContext('2d')
 
-          alert(this.ctx)
+          //alert(this.ctx)
      },
      name: 'CanvasComponentVue',
      props:['ships','docks','storages','currentship','currentdock','currentstorage', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],

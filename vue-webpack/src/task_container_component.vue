@@ -1,5 +1,5 @@
 <template>
-     <div class="col-md-3" style="top:0px;height:255px;overflow-y:scroll;overflow-x:hidden;border:1px solid black;overflow:false" id="task-column">
+     <div class="col-md-12 topSpace" id="TaskComponentContainer">
          <TaskComponent v-for="t in tasks" :task="t" :key="t.id"></TaskComponent>
     </div>
 </template>
@@ -21,3 +21,14 @@
           }
      }
 </script>
+
+<style>
+#TaskComponentContainer{
+   height: 50%;
+   width: 100%;
+   overflow-y:scroll;
+   overflow-x:hidden;
+   border:1px solid black;
+   overflow:false;
+}
+</style>

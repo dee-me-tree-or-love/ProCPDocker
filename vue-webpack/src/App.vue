@@ -1,12 +1,16 @@
 <template>
   <div class="fluid-container" id="app">
-       <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
-       <button @click="getSimulation" >get simulation</button>
-       <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
-       <EventContainerComponent v-if="eventsbool" :events="events"></EventContainerComponent>
-       <StorageComponent v-else-if="storagesbool" :storage="currentstorage"></StorageComponent>
-       <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
-       <ShipComponent v-else :ship="currentship"></ShipComponent>
+    <div class="col-md-8" id="CanvasPart">
+      <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
+      <button @click="getSimulation" >get simulation</button>
+    </div>
+    <div class="col-md-4" id="InfoPart">
+      <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
+      <EventContainerComponent v-if="eventsbool" :events="events"></EventContainerComponent>
+      <StorageComponent v-else-if="storagesbool" :storage="currentstorage"></StorageComponent>
+      <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
+      <ShipComponent v-else :ship="currentship"></ShipComponent>
+    </div>
   </div>
 </template>
 
@@ -65,7 +69,7 @@ export default {
     methods:{
          setContext(value){
               this.ctx = value;
-              alert(this.ctx);
+              //alert(this.ctx);
               for(var i = 0;i < this.ships.length;i++){
                    this.ships[i].setY(i);
                    this.ships[i].drawShip(this.ctx);
@@ -78,7 +82,7 @@ export default {
               this.docksbool= false;
               this.eventsbool = false;
 
-              alert(value);
+              //alert(value);
 
               if(value.includes("ship")){
                    this.shipsbool = true;
@@ -209,8 +213,10 @@ export default {
 </script>
 <style lang="scss">
 #app {
-     font-family: 'Avenir', Helvetica, Arial, sans-serif;
-     color: #2c3e50;
+    height: 100%;
+    width: 100%;
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    color: #2c3e50;
 }
 
 .container-fluid{
@@ -219,16 +225,20 @@ export default {
      max-height: 100%
 }
 
-#task-column{
-     height:100%;
-     overflow-y:scroll;
-     overflow-x:hidden;
-     border:1px solid black;
-     overflow:false;
+.topSpace{
+    margin-top: 2%;
 }
 
 #main-simulation{
      height:100%;
      border:1px solid black;
+}
+
+#CanvasPart {
+    height: 100%;
+}
+
+#InfoPart {
+    height: 100%;
 }
 </style>

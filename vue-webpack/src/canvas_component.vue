@@ -1,21 +1,20 @@
 <template>
-     <div class="col-md-9" style="height:100%;border:1px solid black;" id="main-simulation">
+     <div class="col-md-12 topSpace" style="height:100%;border:1px solid black;" id="main-simulation">
           <!--<button @click="getTasks">get more tasks</button>
           <button @click="performTask">do task</button>
           <button @click="reverseTask">reverse task</button>-->
-          <div>
+          <div class="">
                <!--<button @click="reverseTask"  class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>-->
                <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
                <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
                <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
                <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
-               <button @click="syncSimulation" class="btn btn-success btn-lg"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
+               <button @click="syncSimulation" class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
           </div>
 
           <CanvasDrawingComponent  @context="setContext"  @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
 
-          <input type="range" min="0" max="100" value="0" step="1" oninput="sliderChanged()" id="slider"></input>
-          <p></p>
+          <input type="range" min="0" max="100" value="0" step="1" @click="sliderChanged" id="slider"></input>
      </div>
 </template>
 <script>
@@ -32,6 +31,10 @@
      var counter = 0;
      var currentTask;
      var events = [];
+
+    //  var sliderChanged = function() {
+    //    console.log("opsa");
+    //  };
 
      export default {
           props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage','completedtasks', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],
@@ -51,7 +54,7 @@
                getTasks() {
                     axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/tasks/sim1/tl1')
                       .then(function(response){
-                        console.log(response.data);
+                        //console.log(response.data);
 
                         if(response.status == 200){
                           for(var i = 0;i < response.data.tasks.length;i++){
@@ -75,11 +78,6 @@
                performTask(){
                     if(that.tasks.length > 0){
                         var temp = that.tasks.shift();
-
-                        //TODO: what's up with that???
-                        currentTask = temp;
-                        console.log(currentTask.events);
-
                         that.completedtasks.push(temp);
                         document.getElementById('slider').value++;
                         //this.$emit('currentTask', currentTask);
@@ -104,12 +102,9 @@
                          play = false;
                          timer = setInterval(function (){
                               var temp = that.tasks.shift();
-
-                              currentTask = temp;
-                              //console.log(currentTask.events);
-
                               if(that.tasks.length > 0){
                                    that.completedtasks.push(temp);
+                                   console.log(that.completedtasks);
                                    document.getElementById('slider').value++;
                               }else {
                                    that.getTasks();
@@ -142,7 +137,6 @@
                          alert("no more tasks to perform");
                     }
                },
-
                syncSimulation(){
                   //TODO: create a global variable for simulation and get the ids
                   //var ts = this.completedtasks[this.completedtasks.length - 1].events[this.completedtasks[this.completedtasks.length - 1].events.length - 1].time_stamp;
@@ -163,8 +157,28 @@
                   //       //TODO: handle bad response
                   //    }
                   // });
-               }
-
+               },
+               sliderChanged() {
+                  // that = this;
+                  // if(that.completedtasks.length != document.getElementById('slider').value) {
+                  //     that.pauseSimulation();
+                  //     if(that.completedtasks.length > document.getElementById('slider').value) {
+                  //       //the user moves backwards the slider
+                  //       for(var i = that.completedtasks.length; i >= document.getElementById('slider').value; i--) {
+                  //           that.tasks.unshift(that.completedtasks.pop());
+                  //       }
+                  //     } else {
+                  //       //the user moves forwards the slider
+                  //       for(var i = that.completedtasks.length; i < document.getElementById('slider').value; i++) {
+                  //           if(that.completedtasks.length + that.tasks.length < document.getElementById('slider').value) {
+                  //               that.getTasks();
+                  //           }
+                  //           that.completedtasks.push(that.tasks.shift());
+                  //       }
+                  //     }
+                  //     that.playSimulation();
+                  // }
+               },
           },
           components:{
                'CanvasDrawingComponent': CanvasDrawingComponent

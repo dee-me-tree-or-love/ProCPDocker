@@ -1,5 +1,5 @@
 <template>
-  <div class="col-md-3" id="EventComponentContainer">
+  <div class="col-md-3 topSpace" id="EventComponentContainer">
     <EventComponent v-for="e in events" :event="e" :key="e.id"></EventComponent>
   </div>
 </template>
@@ -23,8 +23,8 @@
 
 <style>
 #EventComponentContainer{
-     top:0px;
-     height:255px;
+     height: 50%;
+     width: 100%;
      overflow-y:scroll;
      overflow-x:hidden;
      border:1px solid black;

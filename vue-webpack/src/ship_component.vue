@@ -1,5 +1,7 @@
 <template>
-  <div class="col-md-3" id="ShipComponentContainer"><p>Ship:{{ ship.id }}</p></div>
+  <div class="col-md-12 topSpace" id="ShipComponentContainer">
+    <p>Ship:{{ ship.id }}</p>
+  </div>
 </template>
 
 <script>
@@ -10,11 +12,12 @@
 
 <style>
 #ShipComponentContainer{
-     top:0px;
-     height:255px;
-     overflow-y:scroll;
-     overflow-x:hidden;
-     border:1px solid black;
-     overflow:false;
+    border: 1px solid black;
+    width: 100%;
+    height: 50%;
+    overflow-y:scroll;
+    overflow-x:hidden;
+    border:1px solid black;
+    overflow:false;
 }
 </style>
