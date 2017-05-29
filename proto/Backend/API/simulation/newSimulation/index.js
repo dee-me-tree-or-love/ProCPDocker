@@ -27,7 +27,7 @@ module.exports.handler = (event, context, callback) => {
             body: {
                 message: "Malformed JSON. Please check for syntax errors"
             }
-        });
+        },true);
         return;
     }
     let config = event.body;
@@ -38,7 +38,7 @@ module.exports.handler = (event, context, callback) => {
         lhelper.done({
             statusCode: 400,
             body: errors
-        });
+        },true);
         return;
     }
 
@@ -135,7 +135,7 @@ module.exports.handler = (event, context, callback) => {
                             "Increase storage capacity. " +
                             "All containers \"TO LOAD\" should already be on the port and part of the filled storages"
                         }
-                    });
+                    },true);
                     return;
                 }
 
