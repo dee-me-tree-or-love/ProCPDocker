@@ -12,7 +12,7 @@
 
       </div>
       <div class="col-md-12 text-center topSpace">
-        <input type="button" value="New simulation" @click="">
+        <input type="button" value="New simulation" @click="test">
       </div>
     </div>
     <div class="sim" v-else>-->
@@ -349,9 +349,52 @@ export default {
                   }
              }
         },
-        // getSim() {
-        //   let test = this.$refs.ship1.ship;
-        // }
+        test() {
+            // var temp = {
+            //   "docks": [
+            //       {
+            //           "id": "1",
+            //           "number_loaders": 2
+            //       }
+            //   ],
+            //   "storages": [
+            //       {
+            //           "x": 2,
+            //           "y": 2,
+            //           "z": 2,
+            //           "id": "s1",
+            //           "filled": 40
+            //       }
+            //   ],
+            //   "ships": [
+            //       {
+            //           "id": "ship1",
+            //           "eta": 6,
+            //           "x": 1,
+            //           "y": 3,
+            //           "z": 3,
+            //           "filled": 50,
+            //           "unload": 20,
+            //           "load": 40
+            //       }
+            //   ]
+            // };
+            // axios({
+            //   method: 'put',
+            //   url: 'https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/new-simulation',
+            //   data: temp,
+            // }).then(function(response) {
+            //    if(response.status == 200) {
+            //       //TODO: success message maybe
+            //       console.log(response);
+            //    } else {
+            //       //TODO: handle bad response
+            //    }
+            // });
+            this.$children.forEach((child) => {
+                console.log(child.ship);
+            });
+        }
     }
 
 }
