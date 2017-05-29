@@ -3,15 +3,19 @@
     <ul class="list-unstyled">
         <li>Dock: {{ dock.id }}</li>
         <li>Loaders : {{ dock.loaders_count }}</li>
-        <li>connected storages : (connected storage id : {{ dock.connected_storages[0].id }}, weight :  {{ dock.connected_storages[0].weight }})</li>
+        <!-- <li>connected storages : (connected storage id : {{ dock.connected_storages[0].id }}, weight :  {{ dock.connected_storages[0].weight }})</li> -->
         <li>container count : {{ dock.container_count }}</li>
         <li>connected ship : {{ dock.connected_ship_id }}</li>
-        <li>scheduled ships : (ship id : {{ dock.scheduled_ships[0].id }}, ship arrival : {{ dock.scheduled_ships[0].time_arrived }})</li>
+        <!-- <li>scheduled ships : (ship id : {{ dock.scheduled_ships[0].id }}, ship arrival : {{ dock.scheduled_ships[0].time_arrived }})</li> -->
     </ul>
   </div>
 </template>
 
 <script>
+
+     import ConnectedStorage from './models/ConnectedStorage.js';
+     import ScheduledShip from './models/ScheduledShip.js';
+
     export default {
       props: ['dock']
     }

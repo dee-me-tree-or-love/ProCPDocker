@@ -33,7 +33,7 @@
      var events = [];
 
      export default {
-          props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage','completedtasks', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool'],
+          props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage','completedtasks', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool','simulationid','timeline'],
           data() {
                return {
                     currentTask,
@@ -48,7 +48,7 @@
                     this.$emit('componentsidebarcheck', value);
                },
                getTasks() {
-                    axios.get('https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/tasks/sim1/tl1')
+                    axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/tasks/'+this.simulationid+'/'+this.timeline+'?limit=10')
                       .then(function(response){
                         //console.log(response.data);
 

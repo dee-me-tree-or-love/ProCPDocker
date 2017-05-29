@@ -1,4 +1,5 @@
 import Connection from './Connection.js';
+import Size from './Size.js';
 
 export default class Storage {
   constructor(id,size,containers_max,containers_current,connections,status) {
