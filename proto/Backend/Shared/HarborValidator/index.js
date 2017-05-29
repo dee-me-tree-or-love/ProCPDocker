@@ -205,8 +205,8 @@ class RuleChecker {
 
         // check for the number of loaders
 
-        if ((dock.number_loaders < 0) || (dock.number_loaders > 4)) {
-            erros.push(new Error("The number of loaders should be in the range [0;4]"))
+        if ((dock.number_loaders < 1) || (dock.number_loaders > 4)) {
+            errors.push(new Error("The number of loaders should be in the range [1;4]"))
         }
 
         return RuleChecker.prepareReturn(errors);
