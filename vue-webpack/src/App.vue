@@ -1,6 +1,6 @@
 <template>
   <div class="fluid-container" id="app">
-    <div class="init" v-if="init">
+     <div class="init" v-if="init">
       <div class="col-md-4 topSpace text-center">
         <span>Number of ships: </span><input type="number" v-model="shipStr">
         <ShipFormComponent v-for="shipCount in shipCount" ref="ship{{shipCount}}"></ShipFormComponent>
@@ -29,7 +29,7 @@
         <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
         <ShipComponent v-else :ship="currentship"></ShipComponent>
       </div>
-    </div>
+     </div>
   </div>
 </template>
 
@@ -87,7 +87,7 @@ export default {
               storagesbool: false,
               docksbool: false,
               canvas: null,
-              init: true,
+              init: false,
               shipStr: 1,
               storStr: 1,
               dockStr: 1,
@@ -394,6 +394,7 @@ export default {
                     app.timeline_id_global = response.data.timeline_id;
                     app.sim_id_global = response.data.simulation_id;
                     app.changeInit();
+                    app.getSimulation();
                  } else {
                     alert("Fill in all fields!");
                  }

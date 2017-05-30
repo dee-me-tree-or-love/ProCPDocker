@@ -32,6 +32,7 @@
      var counter = 0;
      var currentTask;
      var events = [];
+     var event_lengths = [];
 
      export default {
           props:['ships','docks','storages','tasks','events','completedevents','currentship','currentdock','currentstorage','completedtasks', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool','simulationid','timelineid'],
@@ -56,15 +57,17 @@
 
                         if(response.status == 200){
 
-
+                           event_lengths = [];
 
                           for(var i = 0;i < response.data.tasks.length;i++){
                               for(var j = 0;j < response.data.tasks[i].events.length;j++){
                                 events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp));
+                                event_lengths[i].push(response.data.tasks[i].events.length);
                               }
                               that.tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
                               events = [];
                               counter++;
+                              //console.log(that.tasks[i]);
                           }
 
                           that.next_time_stamp = response.data.next_time_stamp;
@@ -115,13 +118,13 @@
                                    that.completedtasks.push(temp);
 
                                    document.getElementById('slider').value++;
-
-                                   that.playEvent(that.tasks[0]['events'].length);
+                                   //that.wait(2000);
+                                   //that.playEvent(that.tasks[0].events[0].length);
                               }else {
                                    that.getTasks();
-
-                                   console.log(that.tasks[0]);
-                                   that.playEvent(that.tasks[0]['events'].length);
+                                   //that.wait(2000);
+                                   //console.log(JSON.stringify(that.tasks));
+                                   //that.playEvent(that.tasks[0].events[0].length);
                               }
                          },interval);
 
@@ -141,6 +144,13 @@
                                    clearInterval(timer_event);
                               }
                     },interval/time);
+               },
+               wait(ms){
+                    var start = new Date().getTime();
+                    var end = start;
+                    while(end < start + ms) {
+                         end = new Date().getTime();
+                    }
                },
                pauseSimulation(){
                     clearInterval(timer);
