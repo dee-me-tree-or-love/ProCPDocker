@@ -95,21 +95,7 @@
     "message":""
   }
   ```
-    
-  ## /simulation/{simulation_id}/configuration ![](check.png)
-  Use the url from the new simulation to download the configuration
-  #### METHOD: GET  
-  #### DESCRIPTION 
-  To see a description of the simulation configuration
-  #### PARAMS
-  #### RETURNS 200 OK  
-  Check params of /new-simulation
-  #### RETURNS 404 RESOURCE NOT FOUND
-  ```
-  {
-    "message":""
-  }
-  ```
+
   ## /simulation/{simulation_id}/timelines :warning:
   #### METHOD: GET
   #### DESCRIPTION  
