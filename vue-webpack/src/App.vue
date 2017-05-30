@@ -20,7 +20,7 @@
     <div class="sim" v-else>
       <div class="col-md-8" id="CanvasPart">
         <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :timelineid="timelineid" :simulationid="simulationid" :completedtasks="completedtasks" :completedevents="completedevents" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :events="events" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
-        <button @click="getSimulation" >get simulation</button>
+        <!-- <button @click="getSimulation" >get simulation</button> -->
       </div>
       <div class="col-md-4" id="InfoPart">
         <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
