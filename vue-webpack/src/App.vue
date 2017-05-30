@@ -87,7 +87,7 @@ export default {
               storagesbool: false,
               docksbool: false,
               canvas: null,
-              init: false,
+              init: true,
               shipStr: 1,
               storStr: 1,
               dockStr: 1,
