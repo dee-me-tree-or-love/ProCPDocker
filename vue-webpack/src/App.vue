@@ -6,10 +6,12 @@
         <ShipFormComponent v-for="shipCount in shipCount" ref="ship{{shipCount}}"></ShipFormComponent>
       </div>
       <div class="col-md-4 topSpace text-center">
-
+        <span>Number of storages: </span><input type="number" v-model="storStr">
+        <StorageFormComponent v-for="storageCount in storageCount" ref="storage{{storageCount}}"></StorageFormComponent>
       </div>
       <div class="col-md-4 topSpace text-center">
-
+        <span>Number of docks: </span><input type="number" v-model="dockStr">
+        <DockFormComponent v-for="dockCount in dockCount" ref="dock{{dockCount}}"></DockFormComponent>
       </div>
       <div class="col-md-12 text-center topSpace">
         <input type="button" value="New simulation" @click="test">
@@ -86,7 +88,9 @@ export default {
               docksbool: false,
               canvas: null,
               init: true,
-              shipStr: 0,
+              shipStr: 1,
+              storStr: 1,
+              dockStr: 1,
          }
     },
 
@@ -98,7 +102,13 @@ export default {
           },
           shipCount: function() {
               return parseInt(this.shipStr);
-          }
+          },
+          storageCount: function(){
+              return parseInt(this.storStr);
+          },
+          dockCount: function(){
+            return parseInt(this.dockStr);
+          },
     },
     methods:{
          setContext(value){
@@ -349,50 +359,41 @@ export default {
                   }
              }
         },
+        changeInit() {
+            this.init = !this.init;
+        },
         test() {
-            // var temp = {
-            //   "docks": [
-            //       {
-            //           "id": "1",
-            //           "number_loaders": 2
-            //       }
-            //   ],
-            //   "storages": [
-            //       {
-            //           "x": 2,
-            //           "y": 2,
-            //           "z": 2,
-            //           "id": "s1",
-            //           "filled": 40
-            //       }
-            //   ],
-            //   "ships": [
-            //       {
-            //           "id": "ship1",
-            //           "eta": 6,
-            //           "x": 1,
-            //           "y": 3,
-            //           "z": 3,
-            //           "filled": 50,
-            //           "unload": 20,
-            //           "load": 40
-            //       }
-            //   ]
-            // };
-            // axios({
-            //   method: 'put',
-            //   url: 'https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/new-simulation',
-            //   data: temp,
-            // }).then(function(response) {
-            //    if(response.status == 200) {
-            //       //TODO: success message maybe
-            //       console.log(response);
-            //    } else {
-            //       //TODO: handle bad response
-            //    }
-            // });
+            var shipArr = [];
+            var dockArr = [];
+            var storageArr = [];
+            var app = this;
+
             this.$children.forEach((child) => {
-                console.log(child.ship);
+                if(child.ship){
+                    shipArr.push(child.ship);
+                } else if(child.dock) {
+                    dockArr.push(child.dock);
+                } else {
+                    storageArr.push(child.storage);
+                }
+            });
+
+            axios({
+              method: 'put',
+              url: 'https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/new-simulation',
+              data: {
+                "docks": dockArr,
+                "storages": storageArr,
+                "ships": shipArr
+              },
+            }).then(function(response) {
+                 if(response.status == 200) {
+                    app.timelineid = response.data.timeline_id;
+                    app.simulationid = response.data.simulation_id;
+                    app.changeInit();
+                 } else {
+                    alert("Fill in all fields!");
+                 }
             });
         }
     }

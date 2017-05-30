@@ -1,13 +1,13 @@
 <template lang="html">
   <div id="ships" class="col-md-12 ship-form topSpace">
-    <p><input v-model="shipID" placeholder="ID"></p>
-    <p><input v-model="eta" placeholder="ETA"></p>
-    <p><input v-model="shipsX" placeholder="X"></p>
-    <p><input v-model="shipsY" placeholder="Y"></p>
-    <p><input v-model="shipsZ" placeholder="Z"></p>
-    <p><input v-model="shipsFilled" placeholder="Filled %"></p>
-    <p><input v-model="load" placeholder="Load %"></p>
-    <p><input v-model="unload" placeholder="Unload %"></p>
+    <input v-model="shipID" placeholder="ID">
+    <input v-model="eta" placeholder="ETA">
+    <input v-model="shipsX" placeholder="X">
+    <input v-model="shipsY" placeholder="Y">
+    <input v-model="shipsZ" placeholder="Z">
+    <input v-model="shipsFilled" placeholder="Filled %">
+    <input v-model="load" placeholder="Load %">
+    <input v-model="unload" placeholder="Unload %">
   </div>
 </template>
 
@@ -31,13 +31,13 @@ export default {
     ship: function() {
       var temp = {
         id: this.shipID,
-        eta: this.eta,
-        x: this.shipsX,
-        y: this.shipsY,
-        z: this.shipsZ,
-        filled: this.shipsFilled,
-        unload: this.unload,
-        load: this.load,
+        eta: parseInt(this.eta),
+        x: parseInt(this.shipsX),
+        y: parseInt(this.shipsY),
+        z: parseInt(this.shipsZ),
+        filled: parseInt(this.shipsFilled),
+        unload: parseInt(this.unload),
+        load: parseInt(this.load),
       }
       return temp;
     }
