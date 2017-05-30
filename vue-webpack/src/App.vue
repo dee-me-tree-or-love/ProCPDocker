@@ -1,6 +1,6 @@
 <template>
   <div class="fluid-container" id="app">
-    <!-- <div class="init" v-if="init">
+    <div class="init" v-if="init">
       <div class="col-md-4 topSpace text-center">
         <span>Number of ships: </span><input type="number" v-model="shipStr">
         <ShipFormComponent v-for="shipCount in shipCount" ref="ship{{shipCount}}"></ShipFormComponent>
@@ -14,10 +14,10 @@
         <DockFormComponent v-for="dockCount in dockCount" ref="dock{{dockCount}}"></DockFormComponent>
       </div>
       <div class="col-md-12 text-center topSpace">
-        <input type="button" value="New simulation" @click="test">
+        <input type="button" value="New simulation" @click="initSim">
       </div>
     </div>
-    <div class="sim" v-else>-->
+    <div class="sim" v-else>
       <div class="col-md-8" id="CanvasPart">
         <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :timelineid="timelineid" :simulationid="simulationid" :completedtasks="completedtasks" :completedevents="completedevents" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :events="events" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
         <button @click="getSimulation" >get simulation</button>
@@ -29,7 +29,7 @@
         <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
         <ShipComponent v-else :ship="currentship"></ShipComponent>
       </div>
-    <!-- </div> -->
+    </div>
   </div>
 </template>
 
@@ -362,7 +362,7 @@ export default {
         changeInit() {
             this.init = !this.init;
         },
-        test() {
+        initSim() {
             var shipArr = [];
             var dockArr = [];
             var storageArr = [];
@@ -377,7 +377,7 @@ export default {
                     storageArr.push(child.storage);
                 }
             });
-
+            console.log(shipArr);
             axios({
               method: 'put',
               url: 'https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/new-simulation',
@@ -388,12 +388,14 @@ export default {
               },
             }).then(function(response) {
                  if(response.status == 200) {
-                    app.timelineid = response.data.timeline_id;
-                    app.simulationid = response.data.simulation_id;
+                    app.timeline_id_global = response.data.timeline_id;
+                    app.sim_id_global = response.data.simulation_id;
                     app.changeInit();
                  } else {
                     alert("Fill in all fields!");
                  }
+            }).catch(function(error) {
+                console.log(error.response);
             });
         }
     }

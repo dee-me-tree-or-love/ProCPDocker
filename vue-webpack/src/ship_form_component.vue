@@ -1,13 +1,13 @@
 <template lang="html">
   <div id="ships" class="col-md-12 ship-form topSpace">
-    <input v-model="shipID" placeholder="ID">
-    <input v-model="eta" placeholder="ETA">
-    <input v-model="shipsX" placeholder="X">
-    <input v-model="shipsY" placeholder="Y">
-    <input v-model="shipsZ" placeholder="Z">
-    <input v-model="shipsFilled" placeholder="Filled %">
-    <input v-model="load" placeholder="Load %">
-    <input v-model="unload" placeholder="Unload %">
+    <span>ID</span><input v-model="shipID" placeholder="ID">
+    <span>ETA</span><input v-model="eta" placeholder="ETA">
+    <span>X</span><input v-model="shipsX" placeholder="X">
+    <span>Y</span><input v-model="shipsY" placeholder="Y">
+    <span>Z</span><input v-model="shipsZ" placeholder="Z">
+    <span>Filled %</span><input v-model="shipsFilled" placeholder="Filled %">
+    <span>Load %</span><input v-model="load" placeholder="Load %">
+    <span>Unload %</span><input v-model="unload" placeholder="Unload %">
   </div>
 </template>
 
@@ -18,13 +18,13 @@ export default {
   data() {
     return {
       shipID: "",
-      eta: "",
+      eta: 0,
       shipsX: "",
       shipsY: "",
       shipsZ: "",
-      shipsFilled: "",
-      load: "",
-      unload: "",
+      shipsFilled: 0,
+      load: 0,
+      unload: 0,
     }
   },
   computed: {
