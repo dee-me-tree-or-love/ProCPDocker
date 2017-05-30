@@ -26,18 +26,20 @@
      var that;
      var timer;
      var play = true;
-     var interval = 1000;
+     var interval = 2000;
      var completedtasks = [];
      var counter = 0;
      var currentTask;
      var events = [];
 
      export default {
-          props:['ships','docks','storages','tasks','currentship','currentdock','currentstorage','completedtasks', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool','simulationid','timeline'],
+          props:['ships','docks','storages','tasks','events','completedevents','currentship','currentdock','currentstorage','completedtasks', 'storagesbool', 'shipsbool', 'docksbool', 'eventsbool','simulationid','timelineid'],
           data() {
                return {
                     currentTask,
                     events,
+                    time_stamp_token : '',
+                    next_time_stamp : '',
                }
           },
           methods: {
@@ -48,11 +50,14 @@
                     this.$emit('componentsidebarcheck', value);
                },
                getTasks() {
-                    axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/tasks/'+this.simulationid+'/'+this.timeline+'?limit=10')
+                    axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/tasks/'+this.simulationid+'/'+this.timelineid+'?limit=10'+this.time_stamp_token+this.next_time_stamp)
                       .then(function(response){
                         //console.log(response.data);
 
                         if(response.status == 200){
+
+
+
                           for(var i = 0;i < response.data.tasks.length;i++){
                               for(var j = 0;j < response.data.tasks[i].events.length;j++){
                                 events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp));
@@ -61,6 +66,11 @@
                               events = [];
                               counter++;
                           }
+
+                          that.next_time_stamp = response.data.next_time_stamp;
+
+                          that.time_stamp_token = '&time_stamp=';
+
                         } else {
                           //TODO: handle bad responses
                         }
@@ -96,6 +106,9 @@
 
                     if(play){
                          play = false;
+
+                         //setTimeout(internalCallback, factor);
+
                          timer = setInterval(function (){
                               var temp = that.tasks.shift();
                               if(that.tasks.length > 0){
@@ -106,6 +119,19 @@
                                    that.getTasks();
                               }
                          },interval);
+
+                         timer = setInterval(function (){
+                              var tempevent = that.tasks.shift();
+                              if(that.tasks[0].events.length > 0){
+                                   that.completedtasks.push(temp);
+                                   console.log(that.completedtasks);
+                                   document.getElementById('slider').value++;
+                              }else {
+                                   that.getTasks();
+                              }
+                         },interval);
+
+
                          //this.$emit('currentTask', currentTask);
                     }
 

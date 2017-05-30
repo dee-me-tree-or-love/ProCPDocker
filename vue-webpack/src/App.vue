@@ -1,6 +1,6 @@
 <template>
   <div class="fluid-container" id="app">
-    <div class="init" v-if="init">
+    <!-- <div class="init" v-if="init">
       <div class="col-md-4 topSpace text-center">
         <span>Number of ships: </span><input type="number" v-model="shipStr">
         <ShipFormComponent v-for="shipCount in shipCount" ref="ship{{shipCount}}"></ShipFormComponent>
@@ -15,10 +15,9 @@
         <input type="button" value="New simulation" @click="">
       </div>
     </div>
-    <div class="sim" v-else>
+    <div class="sim" v-else>-->
       <div class="col-md-8" id="CanvasPart">
-        <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :completedtasks="completedtasks" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
-        <button @click="simulationLoop" >draw simulation</button>
+        <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :timelineid="timelineid" :simulationid="simulationid" :completedtasks="completedtasks" :completedevents="completedevents" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :events="events" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
         <button @click="getSimulation" >get simulation</button>
       </div>
       <div class="col-md-4" id="InfoPart">
@@ -28,7 +27,7 @@
         <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
         <ShipComponent v-else :ship="currentship"></ShipComponent>
       </div>
-    </div>
+    <!-- </div> -->
   </div>
 </template>
 
@@ -49,6 +48,8 @@ import Simulation from './models/Simulation.js';
 import Canvas from './models/Canvas.js';
 
 var that;
+var sim_id_global;
+var timeline_id_global;
 
 
 export default {
@@ -60,15 +61,15 @@ export default {
          this.docksbool= true,
          this.simulationid = '483e46a8-0994-4a39-9b57-612513468c76',
          //this.getTimelines(this.simulationid),
-         this.timelineid = ''
+         this.timelineid = '569f56b9-9ccc-469d-9f63-43a5bd8aef1f'
          //this.waitForContext()
          //console.log("mounted")
          //this.waitForContext()
     },
     data () {
          return {
-              timelineid : '',
-              simulationid : '',
+              timelineid : '569f56b9-9ccc-469d-9f63-43a5bd8aef1f',
+              simulationid : '483e46a8-0994-4a39-9b57-612513468c76',
               currenttimeline : 'timeline1',
               ctx: null,
               tasks:[],
