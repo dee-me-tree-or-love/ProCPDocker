@@ -25,6 +25,7 @@
 
      var that;
      var timer;
+     var timer_event;
      var play = true;
      var interval = 2000;
      var completedtasks = [];
@@ -37,7 +38,6 @@
           data() {
                return {
                     currentTask,
-                    events,
                     time_stamp_token : '',
                     next_time_stamp : '',
                }
@@ -113,31 +113,38 @@
                               var temp = that.tasks.shift();
                               if(that.tasks.length > 0){
                                    that.completedtasks.push(temp);
-                                   console.log(that.completedtasks);
+
                                    document.getElementById('slider').value++;
+
+                                   that.playEvent(that.tasks[0]['events'].length);
                               }else {
                                    that.getTasks();
+
+                                   console.log(that.tasks[0]);
+                                   that.playEvent(that.tasks[0]['events'].length);
                               }
                          },interval);
-
-                         timer = setInterval(function (){
-                              var tempevent = that.tasks.shift();
-                              if(that.tasks[0].events.length > 0){
-                                   that.completedtasks.push(temp);
-                                   console.log(that.completedtasks);
-                                   document.getElementById('slider').value++;
-                              }else {
-                                   that.getTasks();
-                              }
-                         },interval);
-
 
                          //this.$emit('currentTask', currentTask);
                     }
 
                },
+               playEvent(time){
+
+                    clearInterval(timer_event);
+                    timer_event = setInterval(function (){
+                              var tempevent = that.tasks.shift();
+                              if(time > 0){
+                                   that.completedevents.push(tempevent);
+
+                              }else{
+                                   clearInterval(timer_event);
+                              }
+                    },interval/time);
+               },
                pauseSimulation(){
                     clearInterval(timer);
+                    clearInterval(timer_event);
                     play = true;
                },
                stepBackSimulation(){

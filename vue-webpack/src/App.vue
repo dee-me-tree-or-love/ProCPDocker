@@ -91,15 +91,18 @@ export default {
               shipStr: 1,
               storStr: 1,
               dockStr: 1,
+              events : [],
+              completedevents :[],
+
          }
     },
 
     computed:{
-          events : function(){
-               if(this.tasks.length > 0){
-                 return this.tasks[0].events;
-               }
-          },
+          //events : function(){
+               //if(this.tasks.length > 0){
+               //  return this.tasks[0].events;
+               //}
+          //},
           shipCount: function() {
               return parseInt(this.shipStr);
           },
