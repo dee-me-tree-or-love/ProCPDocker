@@ -1,3 +1,5 @@
+import Event from './Event.js';
+
 export default class Task {
   constructor(id,type,extra,description, status,time_to_complete,events) {
     this.id = id;

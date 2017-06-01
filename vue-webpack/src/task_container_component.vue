@@ -1,9 +1,8 @@
 <template>
-     <div class="col-md-3" style="height:100%;overflow-y:scroll;overflow-x:hidden;border:1px solid black;overflow:false" id="task-column">
-         <TaskComponent v-for="t in tasks" v-bind:task="t" v-bind:key="t.id"></TaskComponent>
+     <div class="col-md-12 topSpace" id="TaskComponentContainer">
+         <TaskComponent v-for="t in tasks" :task="t" :key="t.id"></TaskComponent>
     </div>
 </template>
-<script src="classes.js"></script>
 <script>
 
 
@@ -11,9 +10,10 @@
      import TaskComponent from './task_component.vue';
 
      export default {
+          props:['tasks'],
           data() {
                return {
-                    tasks: [new Task(1,"type","extra","description", "status","time_to_complete","events"),new Task(2,"type","extra","description", "status","time_to_complete","events")]
+
                }
           },
           components: {
@@ -21,3 +21,14 @@
           }
      }
 </script>
+
+<style>
+#TaskComponentContainer{
+   height: 50%;
+   width: 100%;
+   overflow-y:scroll;
+   overflow-x:hidden;
+   border:1px solid black;
+   overflow:false;
+}
+</style>

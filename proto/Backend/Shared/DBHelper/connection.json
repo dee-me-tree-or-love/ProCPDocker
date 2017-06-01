@@ -1,0 +1,7 @@
+{
+  "host"     : "docker.czhdztkpgqhz.eu-central-1.rds.amazonaws.com",
+  "user"     : "admin",
+  "password" : "docker_password",
+  "database" : "Docker",
+  "multipleStatements" : true
+}

@@ -1,0 +1,22 @@
+{
+  "name": "simulation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "basic-lambda-helper": "^1.1.1",
+    "harbor-builder": "file:../../../Shared/HarborBuilder",
+    "harbor-validator": "file:../../../Shared/HarborValidator",
+    "db-helper": "file:../../../Shared/DBHelper",
+    "container-factory": "file:../../../Shared/Container",
+    "ship-planner":"file:../../../Shared/ShipPlanner",
+    "container-loader":"file:../../../Shared/ContainerLoader",
+    "random-js": "^1.0.8",
+    "uuid": "^3.0.1"
+  }
+}

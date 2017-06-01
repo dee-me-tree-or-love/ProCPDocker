@@ -1,0 +1,28 @@
+﻿@model Docker.Models.Container[,]
+
+@{
+    int Y = @Model.GetLength(0);
+    int Z = @Model.GetLength(1);
+}
+
+
+<div class="col-md-12">
+    <table class="table-bordered">
+        @for (int i = Z - 1; i >= 0; i--)
+        {
+            <tr>
+                @for (int j = 0; j < Y; j++)
+                {
+                    if (@Model[j, i] != null)
+                    {
+                        <td class="text-cente">@Model[i, j].ID</td>
+                    }
+                    else
+                    {
+                        <td class="text-cente">empty</td>
+                    }
+                }
+            </tr>
+        }
+    </table>
+</div>

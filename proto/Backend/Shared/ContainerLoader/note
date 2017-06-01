@@ -1,0 +1,145 @@
+module.exports.weightBasedLoad = (container, container_hold) => {
+
+    let width, length, height;
+    width = container_hold.x;
+    length = container_hold.y;
+    height = container_hold.z;
+    let number_containers = container_hold.containers_in.length;
+
+    console.log(`per level: ${width*length}`);
+    console.log(`total: ${number_containers}`);
+
+    let height_level = Math.floor(Math.floor(number_containers / width) / length) % height;
+    console.log(`height to put to: ${height_level}`);
+
+    let cWieghtMatrix = {};
+    for (let key in container_hold.containers_in) {
+        console.log(container_hold.containers_in[key]);
+        let cellCoordX = container_hold.containers_in[key].address.x;
+        let cellCoordY = container_hold.containers_in[key].address.y;
+
+        // console.log(`coordinates of the cell: ${cellCoordX} : ${cellCoordY}`)
+
+        if (!cWieghtMatrix[cellCoordX]) {
+
+            // no containers on this X axis have been encountered => no y containers of this x axis are also 
+            cWieghtMatrix[cellCoordX] = {}
+            cWieghtMatrix[cellCoordX][cellCoordY] = { weight: container_hold.containers_in[key].weight, count: 1 };
+        } else if (!cWieghtMatrix[cellCoordX][cellCoordY]) {
+
+            // there have been containers on X axis, but not with this Y coordinate
+            cWieghtMatrix[cellCoordX][cellCoordY] = { weight: container_hold.containers_in[key].weight, count: 1 };
+        } else {
+
+            // there have already been recorded the containers on this X and Y => this container is stacked on top of it (or beneath) and should be added to the column mass weight
+            cWieghtMatrix[cellCoordX][cellCoordY].weight += container_hold.containers_in[key].weight;
+            cWieghtMatrix[cellCoordX][cellCoordY].count++;
+        }
+    }
+
+    console.log("produced weight mass matrix: ")
+    console.log(cWieghtMatrix);
+
+
+    let calculateCutMass = (cut, weightMatrix) => {
+        let totalMass = 0;
+        for (let x = cut.start_w; x < cut.end_w; x++) {
+            for (let y = cut.start_l; y < cut.end_l; y++) {
+                if (weightMatrix[x] && weightMatrix[x][y]) {
+                    totalMass += weightMatrix[x][y].weight;
+                    console.log(`coordinates: ${x} : ${y} ; weight: ${weightMatrix[x][y].weight}`);
+                }
+            }
+        }
+        return totalMass;
+    }
+
+    // begin cutting: 
+    let tryCut = (container, isParallelToWidth, width_start, length_start, width_end, length_end, iterationNumber) => {
+
+
+        iterationNumber++;
+        let makeNewCut = () => {
+                return {
+                    start_w: '',
+                    start_l: '',
+                    end_w: '',
+                    end_l: '',
+                    getWidth: function() { return this.end_w - this.start_w },
+                    getLength: function() { return this.end_l - this.start_l }
+                }
+            }
+            // console.log(`is width parallel: ${isParallelToWidth}; iteration number: ${iterationNumber}`)
+        let cuts = [makeNewCut(), makeNewCut()]
+
+        if (isParallelToWidth) {
+
+            let cutLineCoord = length_start + Math.floor((length_end - length_start) / 2);
+            // first cut
+            cuts[0].start_w = width_start;
+            cuts[0].end_w = width_end;
+            cuts[0].start_l = length_start;
+            cuts[0].end_l = cutLineCoord;
+            // second cut
+            cuts[1].start_w = width_start;
+            cuts[1].end_w = width_end;
+            cuts[1].start_l = cutLineCoord;
+            cuts[1].end_l = length_end;
+        } else {
+
+            let cutLineCoord = width_start + Math.floor((width_end - width_start) / 2);
+            // first cut
+            cuts[0].start_w = width_start;
+            cuts[0].end_w = cutLineCoord;
+            cuts[0].start_l = length_start;
+            cuts[0].end_l = length_end;
+            // second cut
+            cuts[1].start_w = cutLineCoord;
+            cuts[1].end_w = width_end;
+            cuts[1].start_l = length_start;
+            cuts[1].end_l = length_end;
+        }
+
+
+        // console.log("produced cuts:")
+        // console.log(cuts);
+        // console.log(cuts.map((o) => { return o.getLength() * o.getWidth() }));
+
+        console.log(cuts);
+        // select the cut with the least total weight
+        for (let key in cuts) {
+            // console.log(`cut's total weight: ${calculateCutMass(cuts[key], cWieghtMatrix)}`);
+            cuts[key].totalMass = calculateCutMass(cuts[key], cWieghtMatrix)
+        }
+        console.log(cuts.length);
+
+        let bestCut = {};
+        if (cuts[0].totalMass + container.weight < cuts[1].totalMass + container.weight) {
+            bestCut = cuts[0];
+        } else {
+            if ((iterationNumber != 1) || (cuts[0].totalMass + container.weight > cuts[1].totalMass + container.weight)) {
+                bestCut = cuts[1];
+            } else {
+                bestCut = cuts[0];
+            }
+        }
+
+        if ((bestCut.getLength() * bestCut.getWidth() == 1)) {
+            console.log("best cut: ")
+            console.log(bestCut);
+            return bestCut;
+        }
+
+
+        return tryCut(container, (iterationNumber % 2 == 0), bestCut.start_w, bestCut.start_l, bestCut.end_w, bestCut.end_l, iterationNumber);
+    }
+    let bestPosition = tryCut(container, true, 0, 0, width, length, 0);
+    console.log("received from the recursion")
+    console.log(bestPosition);
+    let bestX = bestPosition.start_w;
+    let bestY = bestPosition.start_l;
+    let bestZ = height_level;
+
+    return { x: bestX, y: bestY, z: bestZ }
+    // return { x: 0, y: 0, z: 0 }
+}
