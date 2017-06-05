@@ -51,6 +51,7 @@ module.exports.weightBasedLoad = (container, container_hold) => {
     // console.log(`per level: ${width*length}`);
     // console.log(`total: ${number_containers}`);
 
+    // TODO: move it into a separate method
     let height_level = Math.floor(Math.floor(number_containers / width) / length) % height;
     // console.log(`height to put to: ${height_level}`);
 
