@@ -239,14 +239,26 @@ module.exports.ShipLoader = class ShipLoader {
     getDistanceBetweenTwoPoints(point1, point2) {
 
         const schema = {
-            
+            id: '/point',
+            type: 'object',
+            properties:{
+                x:{type:'number'},
+                y:{type:'number'},
+                z:{type:'number'}
+            },
+            required:['x','y','z']
         };
         let valid = (
-            validate(point1, schema).errors.length === 0 &&
-            validate(point2, schema).errors.length === 0
+            validate(point1 || {}, schema).errors.length === 0 &&
+            validate(point2 || {}, schema).errors.length === 0
         );
         if(!valid) throw new Error('Invalid Input');
-        let errors = validate(point1, schema)
+
+        let x = Math.pow((point1.x - point2.x),2);
+        let y = Math.pow((point1.y - point2.y),2);
+        let z = Math.pow((point1.z - point2.z),2);
+
+        return Math.sqrt(x + y + z);
 
     }
 

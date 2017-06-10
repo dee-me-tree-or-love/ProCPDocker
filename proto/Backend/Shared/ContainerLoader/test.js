@@ -86,16 +86,32 @@ describe('Ship Loading Algorithm', function() {
             y: 10,
             z: 10
         };
+
         it('up getDistanceBetweenTwoPoints', function() {
 
             let sl = new ShipLoader(ship);
             expect(sl).to.respondsTo('getDistanceBetweenTwoPoints');
         });
+
         it('get correct distance between 2 points', function(){
 
             let sl = new ShipLoader(ship);
-            sl.getDistanceBetweenTwoPoints();
+            let distance = sl.getDistanceBetweenTwoPoints({x:7,y:4,z:3},{x:17,y:6,z:2});
+            expect(distance).to.equal(10.246950765959598);
         });
+
+        it('throw error if invalid input is supplied - only 1 point', function(){
+
+            let sl = new ShipLoader(ship);
+            expect(() => sl.getDistanceBetweenTwoPoints(({x:7,y:4,z:3}))).to.throw(Error);
+        });
+
+        it('throw error if invalid input is supplied - missing coordinates', function(){
+
+            let sl = new ShipLoader(ship);
+            expect(() => sl.getDistanceBetweenTwoPoints(({x:7,y:4},{x:1,y:1,z:2}))).to.throw(Error);
+        });
+
     });
 
 
