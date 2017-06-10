@@ -225,6 +225,7 @@ module.exports.ShipLoader = class ShipLoader {
         }
         return this.ship.containers_in.map(container => {
 
+
             if (typeof container.weight === 'undefined') {
 
                 return 0;
