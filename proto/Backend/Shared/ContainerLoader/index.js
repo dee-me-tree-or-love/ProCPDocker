@@ -36,7 +36,7 @@ module.exports.linearLoad = (container, container_hold) => {
             z = counter % container_hold.z;
         }
     }
-    return { x: x, y: y, z: z };
+    return {x: x, y: y, z: z};
 };
 
 
@@ -70,11 +70,11 @@ module.exports.weightBasedLoad = (container, container_hold) => {
 
             // no containers on this X axis have been encountered => no y containers of this x axis are also 
             cWieghtMatrix[cellCoordX] = {}
-            cWieghtMatrix[cellCoordX][cellCoordY] = { weight: container_hold.containers_in[key].weight, count: 1 };
+            cWieghtMatrix[cellCoordX][cellCoordY] = {weight: container_hold.containers_in[key].weight, count: 1};
         } else if (!cWieghtMatrix[cellCoordX][cellCoordY]) {
 
             // there have been containers on X axis, but not with this Y coordinate
-            cWieghtMatrix[cellCoordX][cellCoordY] = { weight: container_hold.containers_in[key].weight, count: 1 };
+            cWieghtMatrix[cellCoordX][cellCoordY] = {weight: container_hold.containers_in[key].weight, count: 1};
         } else {
 
             // there have already been recorded the containers on this X and Y => this container is stacked on top of it (or beneath) and should be added to the column mass weight
@@ -106,16 +106,20 @@ module.exports.weightBasedLoad = (container, container_hold) => {
 
         iterationNumber++;
         let makeNewCut = () => {
-                return {
-                    start_w: '',
-                    start_l: '',
-                    end_w: '',
-                    end_l: '',
-                    getWidth: function() { return this.end_w - this.start_w },
-                    getLength: function() { return this.end_l - this.start_l }
+            return {
+                start_w: '',
+                start_l: '',
+                end_w: '',
+                end_l: '',
+                getWidth: function () {
+                    return this.end_w - this.start_w
+                },
+                getLength: function () {
+                    return this.end_l - this.start_l
                 }
             }
-            // console.log(`is width parallel: ${isParallelToWidth}; iteration number: ${iterationNumber}`)
+        }
+        // console.log(`is width parallel: ${isParallelToWidth}; iteration number: ${iterationNumber}`)
         let cuts = [makeNewCut(), makeNewCut()]
 
         if (isParallelToWidth) {
@@ -170,9 +174,9 @@ module.exports.weightBasedLoad = (container, container_hold) => {
             }
         }
         let eq = ((cuts[0].end_l == cuts[0].end_l) &&
-            ((cuts[0].start_l == cuts[0].start_l) &&
-                (cuts[0].end_w == cuts[0].end_w) &&
-                (cuts[0].start_w == cuts[0].start_w)));
+        ((cuts[0].start_l == cuts[0].start_l) &&
+        (cuts[0].end_w == cuts[0].end_w) &&
+        (cuts[0].start_w == cuts[0].start_w)));
         if ((bestCut.getLength() * bestCut.getWidth() == 1) || eq) {
             // console.log("best cut: ")
             // console.log(bestCut);
@@ -189,15 +193,16 @@ module.exports.weightBasedLoad = (container, container_hold) => {
     let bestY = bestPosition.start_l;
     let bestZ = height_level;
 
-    return { x: bestX, y: bestY, z: bestZ }
+    return {x: bestX, y: bestY, z: bestZ}
     // return { x: 0, y: 0, z: 0 }
 };
 
+const validate = require('jsonschema').validate;
 module.exports.ShipLoader = class ShipLoader {
 
     constructor(ship) {
 
-        this.ship = ship;
+        this.ship = Object.assign({}, ship);
         this.totalMass = 0;
         this.allPossibilities = [];
         this.center = {
@@ -205,6 +210,29 @@ module.exports.ShipLoader = class ShipLoader {
             y: ship.y / 2,
             z: 0
         };
+    }
+
+    getTotalMass() {
+
+        if (typeof this.ship.containers_in === 'undefined') {
+
+            return 0;
+        }
+        return this.ship.containers_in.map(container => {
+
+            if(typeof container.weight === 'undefined'){
+
+                return 0;
+            }
+            return container.weight;
+        }).reduce((a, b) => {
+
+            return a + b;
+        }, 0);
+    }
+
+    getDistanceBetweenTwoPoints(){
+
     }
 };
 
