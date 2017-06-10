@@ -319,6 +319,7 @@ module.exports.ShipLoader = class ShipLoader {
             this.getPlacementPossibilities();
         }
 
+
     }
 
 
