@@ -40,6 +40,9 @@ module.exports.linearLoad = (container, container_hold) => {
 };
 
 
+/**
+ * @deprecated
+ */
 module.exports.weightBasedLoad = (container, container_hold) => {
 
     let width, length, height;
@@ -190,9 +193,9 @@ module.exports.weightBasedLoad = (container, container_hold) => {
     // return { x: 0, y: 0, z: 0 }
 };
 
-module.exports.ShipLoader = class ShipLoader{
+module.exports.ShipLoader = class ShipLoader {
 
-    constructor(ship){
+    constructor(ship) {
 
         this.ship = ship;
         this.totalMass = 0;
