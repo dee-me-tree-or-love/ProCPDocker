@@ -227,8 +227,6 @@ module.exports.ShipLoader = class ShipLoader {
 
             if (typeof container.weight === 'undefined') {
 
-            if (typeof container.weight === 'undefined') {
-
                 return 0;
             }
             return container.weight;
