@@ -91,7 +91,11 @@ describe('Ship Loading Algorithm', function() {
             let sl = new ShipLoader(ship);
             expect(sl).to.respondsTo('getDistanceBetweenTwoPoints');
         });
-        it('');
+        it('get correct distance between 2 points', function(){
+
+            let sl = new ShipLoader(ship);
+            sl.getDistanceBetweenTwoPoints();
+        });
     });
 
 

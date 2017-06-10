@@ -225,6 +225,7 @@ module.exports.ShipLoader = class ShipLoader {
         }
         return this.ship.containers_in.map(container => {
 
+            if (typeof container.weight === 'undefined') {
 
             if (typeof container.weight === 'undefined') {
 
@@ -237,7 +238,17 @@ module.exports.ShipLoader = class ShipLoader {
         }, 0);
     }
 
-    getDistanceBetweenTwoPoints() {
+    getDistanceBetweenTwoPoints(point1, point2) {
+
+        const schema = {
+            
+        };
+        let valid = (
+            validate(point1, schema).errors.length === 0 &&
+            validate(point2, schema).errors.length === 0
+        );
+        if(!valid) throw new Error('Invalid Input');
+        let errors = validate(point1, schema)
 
     }
 
