@@ -195,24 +195,24 @@ module.exports.weightBasedLoad = (container, container_hold) => {
 // this.weightBasedLoad({}, { x: 2, y: 3, z: 10, containers_in: [] })
 
 
-
-let st = {
-    containers_current: [],
-    x: 3,
-    y: 2,
-    z: 34,
-};
-let conts = [];
-
-for (let i = 0; i < 10; i++) {
-    let cont = { weight: Math.floor(Math.random() * 20), address: { x: 0, y: 0, z: 0 } };
-    conts.push(cont);
-}
-// conts.sort((a, b) => { return b.weight - a.weight });
-
-for (let key in conts) {
-    conts[key].address = Object.assign(conts[key].address, this.calculateLocation(conts[key], st, this.weightBasedLoad))
-    st.containers_current.push(conts[key]);
-}
-
-console.log(st.containers_current);
+//
+// let st = {
+//     containers_current: [],
+//     x: 3,
+//     y: 2,
+//     z: 34,
+// };
+// let conts = [];
+//
+// for (let i = 0; i < 10; i++) {
+//     let cont = { weight: Math.floor(Math.random() * 20), address: { x: 0, y: 0, z: 0 } };
+//     conts.push(cont);
+// }
+// // conts.sort((a, b) => { return b.weight - a.weight });
+//
+// for (let key in conts) {
+//     conts[key].address = Object.assign(conts[key].address, this.calculateLocation(conts[key], st, this.weightBasedLoad))
+//     st.containers_current.push(conts[key]);
+// }
+//
+// console.log(st.containers_current);
