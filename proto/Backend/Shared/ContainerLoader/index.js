@@ -188,7 +188,22 @@ module.exports.weightBasedLoad = (container, container_hold) => {
 
     return { x: bestX, y: bestY, z: bestZ }
     // return { x: 0, y: 0, z: 0 }
-}
+};
+
+module.exports.ShipLoader = class ShipLoader{
+
+    constructor(ship){
+
+        this.ship = ship;
+        this.totalMass = 0;
+        this.allPossibilities = [];
+        this.center = {
+            x: ship.x / 2,
+            y: ship.y / 2,
+            z: 0
+        };
+    }
+};
 
 
 // this.weightBasedLoad({ weight: 10 }, { x: 2, y: 3, z: 10, containers_in: [{ x: 0, y: 1, z: 3, weight: 10 }, { x: 0, y: 1, z: 2, weight: 10 }, { x: 0, y: 2, z: 3, weight: 15 }, { x: 1, y: 0, z: 3, weight: 19 }] })
