@@ -109,7 +109,7 @@ describe('Ship Loading Algorithm', function() {
         it('throw error if invalid input is supplied - missing coordinates', function(){
 
             let sl = new ShipLoader(ship);
-            expect(() => sl.getDistanceBetweenTwoPoints(({x:7,y:4},{x:1,y:1,z:2}))).to.throw(Error);
+            expect(() => sl.getDistanceBetweenTwoPoints({x:7,y:4},{x:1,y:1,z:2})).to.throw(Error);
         });
 
     });

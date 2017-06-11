@@ -1,0 +1,23 @@
+{
+  "production":{
+    "apiURL":"https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd",
+    "simulationId":"53b7d354-4021-4c2f-af76-bcf1ee3e4956",
+    "timeLineId":"6a73253f-75fa-4bd6-97a2-472e7d69ed30",
+    "shipId":"a36047b7-fa02-48d6-86fa-4b248e4d941b",
+    "storageId": "e590f025-03f2-4639-b0c7-5d95adc3afb3",
+    "storagePaginationToken":"1f2033e2-984f-4de9-8389-944f1ee32ee4",
+    "storageFirstContainerFirstPage":"0408297b-aec5-436d-9f63-acb2f91b007d",
+    "storageFirstContainerSecondPage":"26b85ad4-62d9-4c1c-897b-2ab5b0fb69f5",
+    "shipPaginationToken":"2e9b6c3e-a415-4588-8a7a-ea70243b8c21",
+    "shipUnloadFirstContainerFirstPage":"125c6205-5767-453e-8c65-1c376dc4cb49",
+    "shipUnloadFirstContainerSecondPage":"b1d23c01-eb01-4ec8-87a6-7c700a5c02ab",
+    "dockId":"e90bce82-e134-4c8c-80db-6033eb430aed",
+    "containerId": "0408297b-aec5-436d-9f63-acb2f91b007d",
+    "taskPaginationToken":"5",
+    "taskFirstTaskFirstPage":"ef83aabf-db7e-4f74-9cdd-f1ba7aedf2c0",
+    "taskFirstTaskSecondPage":"4d40142a-eb8c-4a70-abe4-f7de119d2696"
+  },
+  "development":{
+
+  }
+}
