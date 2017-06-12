@@ -241,27 +241,34 @@ module.exports.ShipLoader = class ShipLoader {
         const schema = {
             id: '/point',
             type: 'object',
-            properties:{
-                x:{type:'number'},
-                y:{type:'number'},
-                z:{type:'number'}
+            properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
             },
-            required:['x','y','z']
+            required: ['x', 'y', 'z']
         };
         let valid = (
             validate(point1 || {}, schema).errors.length === 0 &&
             validate(point2 || {}, schema).errors.length === 0
         );
-        if(!valid) throw new Error('Invalid Input');
+        if (!valid) throw new Error('Invalid Input');
 
-        let x = Math.pow((point1.x - point2.x),2);
-        let y = Math.pow((point1.y - point2.y),2);
-        let z = Math.pow((point1.z - point2.z),2);
+        let x = Math.pow((point1.x - point2.x), 2);
+        let y = Math.pow((point1.y - point2.y), 2);
+        let z = Math.pow((point1.z - point2.z), 2);
 
         return Math.sqrt(x + y + z);
 
     }
 
+
+    // [ DMITRII's SHIT ]
+
+    /**
+     * Retrieve a list of placement options
+     * @returns {Array} of x,y,z location options
+     */
     getPlacementPossibilities() {
         let options = [];
         let zMappingMatrix = {};
@@ -290,9 +297,10 @@ module.exports.ShipLoader = class ShipLoader {
         }
 
         for (let key in this.ship.containers_in) {
-            let xPos = this.ship.containers_in[key].x;
-            let yPos = this.ship.containers_in[key].y;
-            let zPos = this.ship.containers_in[key].z;
+            let xPos = this.ship.containers_in[key].address.x;
+            let yPos = this.ship.containers_in[key].address.y;
+            let zPos = this.ship.containers_in[key].address.z;
+
             // if the z entry of the options is less or equal to the discovered one, update to +1
             if (zMappingMatrix[xPos][yPos].option.z <= zPos) {
                 zMappingMatrix[xPos][yPos].option.z = zPos + 1;
@@ -301,6 +309,18 @@ module.exports.ShipLoader = class ShipLoader {
         this.allPossibilities = options;
         return this.allPossibilities;
     }
+
+    /**
+     * get the list of calculated centers of mass per each option
+     * @returns {Array} of objects having two xyz points: option, center_of_mass
+     */
+    getPlacementOptionsReport() {
+        if (this.allPossibilities == []) {
+            this.getPlacementPossibilities();
+        }
+
+    }
+
 
 };
 

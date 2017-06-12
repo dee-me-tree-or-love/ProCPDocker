@@ -93,23 +93,23 @@ describe('Ship Loading Algorithm', function() {
             expect(sl).to.respondsTo('getDistanceBetweenTwoPoints');
         });
 
-        it('get correct distance between 2 points', function(){
+        it('get correct distance between 2 points', function() {
 
             let sl = new ShipLoader(ship);
-            let distance = sl.getDistanceBetweenTwoPoints({x:7,y:4,z:3},{x:17,y:6,z:2});
+            let distance = sl.getDistanceBetweenTwoPoints({ x: 7, y: 4, z: 3 }, { x: 17, y: 6, z: 2 });
             expect(distance).to.equal(10.246950765959598);
         });
 
-        it('throw error if invalid input is supplied - only 1 point', function(){
+        it('throw error if invalid input is supplied - only 1 point', function() {
 
             let sl = new ShipLoader(ship);
-            expect(() => sl.getDistanceBetweenTwoPoints(({x:7,y:4,z:3}))).to.throw(Error);
+            expect(() => sl.getDistanceBetweenTwoPoints(({ x: 7, y: 4, z: 3 }))).to.throw(Error);
         });
 
-        it('throw error if invalid input is supplied - missing coordinates', function(){
+        it('throw error if invalid input is supplied - missing coordinates', function() {
 
             let sl = new ShipLoader(ship);
-            expect(() => sl.getDistanceBetweenTwoPoints({x:7,y:4},{x:1,y:1,z:2})).to.throw(Error);
+            expect(() => sl.getDistanceBetweenTwoPoints({ x: 7, y: 4 }, { x: 1, y: 1, z: 2 })).to.throw(Error);
         });
 
     });
@@ -154,7 +154,7 @@ describe('Ship Loading Algorithm', function() {
                 x: 4,
                 y: 4,
                 z: 4,
-                containers_in: [{ x: 1, y: 1, z: 0 }]
+                containers_in: [{ address: { x: 1, y: 1, z: 0 } }]
             };
             let SL = new ShipLoader(Ship);
             let optionsResult = SL.getPlacementPossibilities();
@@ -183,9 +183,9 @@ describe('Ship Loading Algorithm', function() {
                     y: 4,
                     z: 4,
                     containers_in: [
-                        { x: 1, y: 1, z: 0 },
-                        { x: 1, y: 0, z: 0 },
-                        { x: 3, y: 0, z: 0 }
+                        { address: { x: 1, y: 1, z: 0 } },
+                        { address: { x: 1, y: 0, z: 0 } },
+                        { address: { x: 3, y: 0, z: 0 } }
                     ]
                 };
                 let SL = new ShipLoader(Ship);
@@ -219,10 +219,10 @@ describe('Ship Loading Algorithm', function() {
                     y: 4,
                     z: 4,
                     containers_in: [
-                        { x: 1, y: 1, z: 0 },
-                        { x: 1, y: 0, z: 0 },
-                        { x: 3, y: 0, z: 0 },
-                        { x: 3, y: 0, z: 1 }
+                        { address: { x: 1, y: 1, z: 0 } },
+                        { address: { x: 1, y: 0, z: 0 } },
+                        { address: { x: 3, y: 0, z: 0 } },
+                        { address: { x: 3, y: 0, z: 1 } }
                     ]
                 };
                 let SL = new ShipLoader(Ship);
@@ -249,5 +249,44 @@ describe('Ship Loading Algorithm', function() {
     });
     describe('Get Center Of Mass', () => {
 
+        it("up getPlacementOptionsReport", () => {
+
+            let Ship = {
+                x: 4,
+                y: 4,
+                z: 4,
+                containers_in: []
+            };
+            let SL = new ShipLoader(Ship);
+            expect(SL).to.respondsTo("getPlacementOptionsReport");
+        });
+
+        it("All the returned objects in the array contain option and center_of_mass: {x,y,z} ", () => {
+
+        })
     });
+    // deprecated
+    // describe('Build the weight matrix', () => {
+    //     it("for a ship with containers: {xyz:(0,0,0);weight:10},{xyz:(0,0,1);weight:10},{xyz:(2,3,0);weight:10} " +
+    //         "returns the projection of weight of a coulmns to the X,Y plane as " +
+    //         "[0,0].weight=20 ; [2,3].weight=10", () => {
+
+    //             let Ship = {
+    //                 x: 4,
+    //                 y: 4,
+    //                 z: 4,
+    //                 containers_in: [
+    //                     { address: { x: 0, y: 0, z: 0 }, weight: 10 },
+    //                     { address: { x: 0, y: 0, z: 1 }, weight: 10 },
+    //                     { address: { x: 2, y: 3, z: 0 }, weight: 10 },
+    //                 ]
+    //             };
+    //             let SL = new ShipLoader(Ship);
+    //             let weightMatrix = SL.buildMassMatrix();
+
+    //             expect(weightMatrix[0][0].weight).to.be.equal(20);
+    //             expect(weightMatrix[2][3].weight).to.be.equal(10);
+    //             expect(Object.keys(weightMatrix).length).to.be.equal(2);
+    //         })
+    // })
 });
