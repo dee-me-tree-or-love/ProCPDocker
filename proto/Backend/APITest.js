@@ -7,18 +7,18 @@ const expect = require('chai').expect;
 const qs = require('querystring');
 const request = require('request');
 
-describe('Docker API End-to-End test', function () {
+describe('Docker API End-to-End test', function() {
 
     this.timeout(10000);
-    describe('PUT /simulation/new-simulation', function () {
+    describe('PUT /simulation/new-simulation', function() {
 
-        it('should create a new simulation and give back it\'s details', function (done) {
+        it('should create a new simulation and give back it\'s details', function(done) {
 
             request({
                 method: 'PUT',
                 url: `${conf.apiURL}/simulation/new-simulation`,
                 json: simulationCorrect
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(body).to.be.an('object');
@@ -31,7 +31,7 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should return 400 an error if input is missing something', function (done) {
+        it('should return 400 an error if input is missing something', function(done) {
 
             let simulationWrong = Object.assign({}, simulationCorrect);
             delete simulationWrong.docks;
@@ -40,7 +40,7 @@ describe('Docker API End-to-End test', function () {
                 method: 'PUT',
                 url: `${conf.apiURL}/simulation/new-simulation`,
                 json: simulationWrong
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 expect(response.statusCode).to.equal(400);
                 expect(body).to.be.an('array').that.is.not.empty;
@@ -51,14 +51,14 @@ describe('Docker API End-to-End test', function () {
         });
     });
 
-    describe('GET /simulation/{simulation_id}', function () {
+    describe('GET /simulation/{simulation_id}', function() {
 
-        it('should return details about a simulation', function (done) {
+        it('should return details about a simulation', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/simulation/${conf.simulationId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -79,7 +79,7 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should give specific scope details about a simulation', function (done) {
+        it('should give specific scope details about a simulation', function(done) {
 
             const scope = qs.stringify({
                 scope: "docks,container_count"
@@ -87,7 +87,7 @@ describe('Docker API End-to-End test', function () {
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/simulation/${conf.simulationId}?${scope}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -103,12 +103,12 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should return empty object if the simulation doesn\'t exist', function (done) {
+        it('should return empty object if the simulation doesn\'t exist', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/simulation/${conf.simulationId}000`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -121,14 +121,23 @@ describe('Docker API End-to-End test', function () {
 
     });
 
-    describe('GET /tasks/{simulation_id/{timeline_id}', function () {
 
-        it('should return an array with 10 tasks', function (done) {
+    // testing for the get {option}/all
+
+    describe.only('GET /simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all', function() {
+
+    })
+
+
+
+    describe('GET /tasks/{simulation_id/{timeline_id}', function() {
+
+        it('should return an array with 10 tasks', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/tasks/${conf.simulationId}/${conf.timeLineId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -158,7 +167,7 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should return an array with 5 tasks when limit is set', function (done) {
+        it('should return an array with 5 tasks when limit is set', function(done) {
 
             const query = qs.stringify({
                 limit: 5,
@@ -167,7 +176,7 @@ describe('Docker API End-to-End test', function () {
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/tasks/${conf.simulationId}/${conf.timeLineId}?${query}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -181,7 +190,7 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should return an empty array if the simulation or time line don\'t exists', function (done) {
+        it('should return an empty array if the simulation or time line don\'t exists', function(done) {
 
             const query = qs.stringify({
                 limit: 3
@@ -189,7 +198,7 @@ describe('Docker API End-to-End test', function () {
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/tasks/notExists/${conf.timeLineId}?${query}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -202,15 +211,15 @@ describe('Docker API End-to-End test', function () {
         });
 
     });
-    
-    describe('GET /storage/{simulation_id/{timeline_id}/{storage_id}', function () {
 
-        it('should give information about a specific storage', function (done) {
+    describe('GET /storage/{simulation_id/{timeline_id}/{storage_id}', function() {
+
+        it('should give information about a specific storage', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/storage/${conf.simulationId}/${conf.timeLineId}/${conf.storageId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -229,12 +238,12 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should give a 404 if there is no such storage or time line or simulation', function (done) {
+        it('should give a 404 if there is no such storage or time line or simulation', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/storage/notExists/${conf.timeLineId}/${conf.storageId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(404);
@@ -248,14 +257,14 @@ describe('Docker API End-to-End test', function () {
 
     });
 
-    describe('GET /storage/{simulation_id/{timeline_id}/{storage_id}/containers', function () {
+    describe('GET /storage/{simulation_id/{timeline_id}/{storage_id}/containers', function() {
 
-        it('should retrieve the first 10 containers for a specific storage', function (done) {
+        it('should retrieve the first 10 containers for a specific storage', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/storage/${conf.simulationId}/${conf.timeLineId}/${conf.storageId}/containers`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -270,7 +279,7 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should retrieve the next page of containers for a specific storage', function (done) {
+        it('should retrieve the next page of containers for a specific storage', function(done) {
 
             const query = qs.stringify({
                 limit: 5,
@@ -279,7 +288,7 @@ describe('Docker API End-to-End test', function () {
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/storage/${conf.simulationId}/${conf.timeLineId}/${conf.storageId}/containers?${query}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -294,12 +303,12 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should return 0 containers if simulation, time line or storage id doesn\'t exsits', function (done) {
+        it('should return 0 containers if simulation, time line or storage id doesn\'t exsits', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/storage/notExists/${conf.timeLineId}/${conf.storageId}/containers`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -315,14 +324,14 @@ describe('Docker API End-to-End test', function () {
 
     });
 
-    describe('GET /dock/{simulation_id/{timeline_id}/{dock_id}', function () {
+    describe('GET /dock/{simulation_id/{timeline_id}/{dock_id}', function() {
 
-        it('should give information about a specific dock', function (done) {
+        it('should give information about a specific dock', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/dock/${conf.simulationId}/${conf.timeLineId}/${conf.dockId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -339,12 +348,12 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should give a 404 if there is no such dock or time line or simulation', function (done) {
+        it('should give a 404 if there is no such dock or time line or simulation', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/storage/notExists/${conf.timeLineId}/${conf.dockId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(404);
@@ -358,15 +367,15 @@ describe('Docker API End-to-End test', function () {
 
     });
 
-    describe('GET /dock/{simulation_id/{timeline_id}/{dock_id}/containers', function () {
+    describe('GET /dock/{simulation_id/{timeline_id}/{dock_id}/containers', function() {
 
 
-        it('should return 0 containers for the new simulation', function (done) {
+        it('should return 0 containers for the new simulation', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/storage/${conf.simulationId}/${conf.timeLineId}/${conf.dockId}/containers`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -382,14 +391,14 @@ describe('Docker API End-to-End test', function () {
 
     });
 
-    describe('GET /ship/{simulation_id/{timeline_id}/{ship_id}', function () {
+    describe('GET /ship/{simulation_id/{timeline_id}/{ship_id}', function() {
 
-        it('should give information for a specific ship', function (done) {
+        it('should give information for a specific ship', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/storage/${conf.simulationId}/${conf.timeLineId}/${conf.storageId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -408,12 +417,12 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should give a 400 if there is no such storage or time line or simulation', function (done) {
+        it('should give a 400 if there is no such storage or time line or simulation', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/ship/notExists/${conf.timeLineId}/${conf.shipId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(400);
@@ -427,9 +436,9 @@ describe('Docker API End-to-End test', function () {
 
     });
 
-    describe('GET /ship/{simulation_id/{timeline_id}/{storage_id}/containers/unload', function () {
+    describe('GET /ship/{simulation_id/{timeline_id}/{storage_id}/containers/unload', function() {
 
-        it('should retrieve the first 2 containers to unload for a specific ship', function (done) {
+        it('should retrieve the first 2 containers to unload for a specific ship', function(done) {
 
             const query = qs.stringify({
                 limit: 2
@@ -437,7 +446,7 @@ describe('Docker API End-to-End test', function () {
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/ship/${conf.simulationId}/${conf.timeLineId}/${conf.shipId}/containers/unload?${query}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -452,7 +461,7 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should retrieve the next page of containers for a specific storage', function (done) {
+        it('should retrieve the next page of containers for a specific storage', function(done) {
 
             const query = qs.stringify({
                 limit: 2,
@@ -461,7 +470,7 @@ describe('Docker API End-to-End test', function () {
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/ship/${conf.simulationId}/${conf.timeLineId}/${conf.shipId}/containers/unload?${query}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -476,12 +485,12 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should return 0 containers if simulation, time line or storage id doesn\'t exsits', function (done) {
+        it('should return 0 containers if simulation, time line or storage id doesn\'t exsits', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/storage/notExists/${conf.timeLineId}/${conf.shipId}/containers`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -497,14 +506,14 @@ describe('Docker API End-to-End test', function () {
 
     });
 
-    describe('GET /container/{simulation_id/{timeline_id}/{container_id}', function () {
+    describe('GET /container/{simulation_id/{timeline_id}/{container_id}', function() {
 
-        it('should give information about a specific container', function (done) {
+        it('should give information about a specific container', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/container/${conf.simulationId}/${conf.timeLineId}/${conf.containerId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(200);
@@ -524,12 +533,12 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should give a 400 if there is no such container or time line or simulation', function (done) {
+        it('should give a 400 if there is no such container or time line or simulation', function(done) {
 
             request({
                 method: 'GET',
                 url: `${conf.apiURL}/ship/notExists/${conf.timeLineId}/${conf.shipId}`
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 body = JSON.parse(body);
                 expect(response.statusCode).to.equal(400);
@@ -543,7 +552,7 @@ describe('Docker API End-to-End test', function () {
 
     });
 
-    describe('PATCH /sync', function () {
+    describe('PATCH /sync', function() {
 
         const params = {
             simulation_id: conf.simulationId,
@@ -552,13 +561,13 @@ describe('Docker API End-to-End test', function () {
             return_tasks: true
         };
 
-        it('should return an acknowledgment and tasks when you sync a simulation', function (done) {
+        it('should return an acknowledgment and tasks when you sync a simulation', function(done) {
 
             request({
                 method: 'PATCH',
                 url: `${conf.apiURL}/sync`,
                 json: params
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(body).to.be.an('object');
@@ -568,7 +577,7 @@ describe('Docker API End-to-End test', function () {
                 request({
                     method: 'GET',
                     url: `${conf.apiURL}/simulation/${conf.simulationId}`
-                }, function (error, response, body) {
+                }, function(error, response, body) {
 
                     body = JSON.parse(body);
                     expect(response.statusCode).to.equal(200);
@@ -580,14 +589,14 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        it('should return an acknowledgment when you sync a simulation', function (done) {
+        it('should return an acknowledgment when you sync a simulation', function(done) {
 
             params.return_tasks = false;
             request({
                 method: 'PATCH',
                 url: `${conf.apiURL}/sync`,
                 json: params
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(body).to.be.an('object');
@@ -599,14 +608,14 @@ describe('Docker API End-to-End test', function () {
 
         });
 
-        after(function (done) {
+        after(function(done) {
 
             params.time_stamp = 0;
             request({
                 method: 'PATCH',
                 url: `${conf.apiURL}/sync`,
                 json: params
-            }, function (error, response, body) {
+            }, function(error, response, body) {
 
                 done();
                 if (error) console.log(error);

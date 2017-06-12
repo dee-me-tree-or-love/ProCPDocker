@@ -121,7 +121,7 @@
   }
   ```
 <!-- TODO: Are we sure that we need it? -->
-## /simulation/{simulation_id}/timelines/{timeline_id}
+## /simulation/{simulation_id}/timelines/{timeline_id} :no_entry_sign:
   #### METHOD: GET
   #### DESCRIPTION  
   Retrieve the timeline of the simulation with the given ID
