@@ -9,11 +9,17 @@ export default class Storage {
     this.containers_current = containers_current;
     this.connections = connections;
     this.status = status;
+    this.side = 'left';
 
     this.height = 60;
     this.width = 100;
     this.position_x = 360;
     this.position_y = 10;
+
+    this.roadheight = 10;
+    this.roadwidth = 52;
+    this.roadposition_x = this.position_x + 100;
+    this.roadposition_y = this.position_y + 25;
 
     this.drawStorage = function(context){
 
@@ -30,6 +36,9 @@ export default class Storage {
          context.moveTo(this.position_x+this.width-5,this.position_y+this.height-5);
          context.lineTo(this.position_x+5,this.position_y+5);
          context.stroke();
+
+         context.fillStyle = '#ffffff';
+         context.fillRect(this.roadposition_x,this.roadposition_y,this.roadwidth,this.roadheight);
 
     }
 
@@ -65,10 +74,13 @@ export default class Storage {
     this.setY = function(index){
          //this.position_y = (index+1)*this.position_y;//+20;
          this.position_y = ((index)*(150))+this.position_y;
+         this.roadposition_y = this.position_y + 25;
     }
 
     this.setX = function(index){
          this.position_x = this.position_x + this.width * 2 - 10
+         this.roadposition_x = this.position_x - 52;
+         this.side = 'right';
          //this.setY(index/2);
     }
   }

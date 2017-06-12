@@ -40,7 +40,13 @@
                     currentTask,
                     time_stamp_token : '',
                     next_time_stamp : '',
+                    interval_tasks : 2000,
                }
+          },
+          computed:{
+               interval_events: function() {
+                   return Math.floor(this.interval_tasks/this.events.length);
+               },
           },
           methods: {
                setContext(value){
@@ -62,6 +68,7 @@
                               for(var j = 0;j < response.data.tasks[i].events.length;j++){
                                 events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp));
                                 //event_lengths[i].push(response.data.tasks[i].events.length);
+                                //console.log(response.data.tasks[i].events[0]);
                               }
                               that.tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
                               events = [];
@@ -110,39 +117,59 @@
                          play = false;
 
                          //setTimeout(internalCallback, factor);
-
+                         //clearInterval(timer);
                          timer = setInterval(function (){
+                              //console.log("tasks interval time : "+that.interval_tasks);
                               var temp = that.tasks.shift();
+                              //console.log(that.tasks.length);
                               if(that.tasks.length > 0){
                                    that.completedtasks.push(temp);
 
                                    document.getElementById('slider').value++;
                                    //that.wait(2000);
-                                   //that.playEvent(that.tasks[0].events[0].length);
+                                   clearInterval(timer_event);
+                                   if(temp.events.length > 0){
+                                        that.playEvent(temp.events.length);
+                                   }
+
                               }else {
                                    that.getTasks();
-                                   //that.wait(2000);
-                                   //console.log(JSON.stringify(that.tasks));
-                                   //that.playEvent(that.tasks[0].events[0].length);
+                                   console.log(that.events);
+                                   //console.log(that.completedtasks[that.completedtasks.length-1]);
+                                   //clearInterval(timer_event);
+                                   //that.playEvent();
+                                   //setTimeout(that.test, that.interval_events);
                               }
-                         },interval);
+                         },2000);//that.interval_tasks);
 
                          //this.$emit('currentTask', currentTask);
                     }
 
                },
-               playEvent(time){
+               playEvent(n){
 
-                    clearInterval(timer_event);
+                    //var testtime = interval/time;
+                    var inter = interval/n;
+
+
+                    if(that.events.length == 0){
+                         inter = 1;
+                    }else{
+                         inter = interval/n;
+                    }
+
+                    console.log(inter);
+
                     timer_event = setInterval(function (){
-                              var tempevent = that.tasks.shift();
-                              if(time > 0){
+
+                              if(that.events.length > 0){
+                                   var tempevent = that.events.shift();
                                    that.completedevents.push(tempevent);
 
-                              }else{
-                                   clearInterval(timer_event);
-                              }
-                    },interval/time);
+                              }//else{
+                                   //clearInterval(timer_event);
+                              //}
+                    },inter);
                },
                wait(ms){
                     var start = new Date().getTime();

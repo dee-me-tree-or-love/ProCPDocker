@@ -1,6 +1,6 @@
 <template>
   <div class="fluid-container" id="app">
-     <div class="init" v-if="init">
+     <!-- <div class="init" v-if="init">
       <div class="col-md-4 topSpace text-center">
         <span>Number of ships: </span><input type="number" v-model="shipStr">
         <ShipFormComponent v-for="shipCount in shipCount" ref="ship{{shipCount}}"></ShipFormComponent>
@@ -16,11 +16,11 @@
       <div class="col-md-12 text-center topSpace">
         <input type="button" value="New simulation" @click="initSim">
       </div>
-    </div>
-    <div class="sim" v-else>
+    </div> -->
+    <!-- <div class="sim" v-else> -->
       <div class="col-md-8" id="CanvasPart">
         <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :timelineid="timelineid" :simulationid="simulationid" :completedtasks="completedtasks" :completedevents="completedevents" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :events="events" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
-        <!-- <button @click="getSimulation" >get simulation</button> -->
+        <button @click="getSimulation" >get simulation</button>
       </div>
       <div class="col-md-4" id="InfoPart">
         <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
@@ -29,13 +29,14 @@
         <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
         <ShipComponent v-else :ship="currentship"></ShipComponent>
       </div>
-     </div>
+     <!-- </div> -->
   </div>
 </template>
 
 <script>
 
 import Task from './models/Task.js';
+import Truck from './models/Truck.js';
 import Ship from './models/Ship.js';
 import Dock from './models/Dock.js';
 import Storage from './models/Storage.js';
@@ -48,6 +49,7 @@ import Connection from './models/Connection.js';
 import ScheduledShip from './models/ScheduledShip.js';
 import Simulation from './models/Simulation.js';
 import Canvas from './models/Canvas.js';
+import Road from './models/Road.js';
 
 var that;
 var sim_id_global;
@@ -91,18 +93,17 @@ export default {
               shipStr: 1,
               storStr: 1,
               dockStr: 1,
-              events : [],
               completedevents :[],
 
          }
     },
 
     computed:{
-          //events : function(){
-               //if(this.tasks.length > 0){
-               //  return this.tasks[0].events;
-               //}
-          //},
+          events : function(){
+               if(this.tasks.length > 0){
+                  return this.tasks[0].events;
+               }
+           },
           shipCount: function() {
               return parseInt(this.shipStr);
           },
@@ -322,19 +323,19 @@ export default {
              //tempship.setDock();
              //that.ships.push(tempship);
 
-          //    for(var i = 0;i < 10;i++){
-          //         var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
-          //         dock.setY(i);
-          //         this.docks.push(dock);
-             //
-          //         var storage = new Storage("id","size","containers_max","containers_current","connections","status");
-          //         storage.setStoragePosition(i);
-          //         this.storages.push(storage);
-             //
-          //         var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
-          //         tempship.setDock(dock);
-          //         this.ships.push(tempship);
-          //    }
+             for(var i = 0;i < 10;i++){
+                  var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
+                  dock.setY(i);
+                  this.docks.push(dock);
+
+                  var storage = new Storage("id","size","containers_max","containers_current","connections","status");
+                  storage.setStoragePosition(i);
+                  this.storages.push(storage);
+
+                  var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
+                  tempship.setDock(dock);
+                  this.ships.push(tempship);
+             }
 
 
              for(var i = 0; i < this.docks.length;i++){
@@ -348,6 +349,34 @@ export default {
              for(var i = 0; i < this.ships.length;i++){
                   this.ships[i].drawShip(this.ctx);
              }
+
+             var road = new Road(this.docks[this.docks.length-1],this.storages[this.storages.length-1]);
+             var truck = new Truck(this.docks[2],this.storages[7]);
+
+             truck.setDirection();
+
+             road.drawRoad(this.ctx);
+             //truck.drawTruck(this.ctx);
+             var pos = 0;
+             var id = setInterval(frame, 33);
+             var check = true;
+
+             function frame() {
+                    if (pos == 500) {
+                      //clearInterval(id);
+                      check = false;
+                 } else if (pos == -1) {
+                         check = true;
+                 }
+
+                 if(check){
+                      pos++;
+                      truck.moveTruckDockToStorage(that.ctx);
+                 }else if (!check) {
+                      pos--;
+                      truck.moveTruckStorageToDock(that.ctx);
+                 }
+               }
 
              //testship.moveForward(ctx);
              //testship.drawShip(this.ctx);

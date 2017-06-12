@@ -16,6 +16,11 @@ export default class Dock {
     this.position_x = 132;
     this.position_y = 80;
 
+    this.roadheight = 10;
+    this.roadwidth = 470;
+    this.roadposition_x = 192;
+    this.roadposition_y = 100;
+
     this.loadingwidth = this.height-20;
     this.loadingheight = this.height-20;
     this.loadingposition_x = this.position_x+10;
@@ -36,6 +41,9 @@ export default class Dock {
        context.closePath();
 
        this.drawLoadingZone(context);
+
+       context.fillStyle = '#ffffff';
+       context.fillRect(this.roadposition_x,this.roadposition_y,this.roadwidth,this.roadheight);
 
  }
 
@@ -61,6 +69,7 @@ export default class Dock {
 this.setY = function(index){
      this.position_y = ((index+1)*(150))+this.position_y;//+20;
      this.loadingposition_y = this.position_y+10;//+30;
+     this.roadposition_y = this.position_y+20;
 }
 
  this.checkClick = function(x,y){
