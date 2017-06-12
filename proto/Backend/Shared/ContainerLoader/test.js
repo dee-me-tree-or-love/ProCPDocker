@@ -369,6 +369,44 @@ describe('Ship Loading Algorithm', function () {
             expect(SL.allPossibilities).to.be.deep.equal(expectedOptions);
         });
 
+        it("in a storage with 4 containers and dimensions given as x:2, y:2, z:1 returns an empty array", () => {
+            let Ship = {
+                x: 2,
+                y: 2,
+                z: 1,
+                containers_in: [
+                    { address: { x: 0, y: 0, z: 0 } },
+                    { address: { x: 0, y: 1, z: 0 } },
+                    { address: { x: 1, y: 0, z: 0 } },
+                    { address: { x: 1, y: 1, z: 0 } }
+                ]
+            };
+
+            let SL = new ShipLoader(Ship);
+            let optionsResult = SL.getPlacementPossibilities();
+
+            expect(optionsResult.length).to.be.empty;
+        });
+
+        it("in a storage with 3 containers and dimensions given as x:2, y:2, z:1 returns an array with 1 option", () => {
+            let Ship = {
+                x: 2,
+                y: 2,
+                z: 1,
+                containers_in: [
+                    { address: { x: 0, y: 0, z: 0 } },
+                    { address: { x: 0, y: 1, z: 0 } },
+                    { address: { x: 1, y: 0, z: 0 } },
+                ]
+            };
+
+            let only_option = { address: { x: 1, y: 1, z: 0 } };
+
+            let SL = new ShipLoader(Ship);
+            let optionsResult = SL.getPlacementPossibilities();
+
+            expect(optionsResult[0]).to.be.deep.eq(only_option.address);
+        });
 
         it("in a storage hold with 4 containers at (1,1,0); (1,0,0); (3,0,0); (3,0,1)" +
             " returns the list of (0,0,0) to (3,3,0) " +

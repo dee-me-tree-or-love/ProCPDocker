@@ -1,5 +1,5 @@
 'use strict';
-const conf = require('./meta/testConfig').production;
+const conf = require('./meta/testConfig').development;
 const simulationCorrect = require('./meta/simulationCorrect');
 
 const expect = require('chai').expect;
@@ -126,6 +126,24 @@ describe('Docker API End-to-End test', function() {
 
     describe.only('GET /simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all', function() {
 
+        it('should return 400 if asking for an options not in {"docks","ships","storages"}', function(done) {
+
+            console.log(`${conf.apiURL}/simulation/${conf.simulationId}/timelines/${conf.timeLineId}/bullshit/all`);
+
+            request({
+                    method: 'GET',
+                    url: `${conf.apiURL}/simulation/${conf.simulationId}/timelines/${conf.timeLineId}/bullshit/all`
+                },
+                function(error, response, body) {
+
+                    console.log(error);
+                    console.log(body);
+                    // body = JSON.parse(body);
+                    expect(response.statusCode).to.equal(400);
+                    // expect(body).to.be.an('array').that.is.not.empty;
+                    done();
+                })
+        })
     })
 
 

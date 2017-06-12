@@ -54,7 +54,7 @@ functions:
           cors: true           
   
   getSimulationHarborData:
-    handler: API/simulation/handler.getSimulationHarborData
+    handler: API/simulation/getEntities/index.handler
     events:
       - http:
           path: simulation/{simulation_id}/timelines/{timeline_id}/{option}/all

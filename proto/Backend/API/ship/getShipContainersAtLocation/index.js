@@ -126,7 +126,7 @@ module.exports.handler = (event, context, callback) => {
             console.log(err);
             lhelper.done({
                 statusCode: 400,
-                body: error
+                body: err
             }, true);
         })
 

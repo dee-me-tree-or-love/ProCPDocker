@@ -367,6 +367,13 @@ module.exports.ShipLoader = class ShipLoader {
             // if the z entry of the options is less or equal to the discovered one, update to +1
             if (zMappingMatrix[xPos][yPos].option.z <= zPos) {
                 zMappingMatrix[xPos][yPos].option.z = zPos + 1;
+
+                // check if it is even possible to put it on top without violating the maximum height of the ship
+                if (zMappingMatrix[xPos][yPos].option.z >= this.ship.z) {
+
+                    // remove the option from the list
+                    options.splice(options.indexOf(zMappingMatrix[xPos][yPos].option), 1);
+                }
             }
         }
         this.allPossibilities = options;
