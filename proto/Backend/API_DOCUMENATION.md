@@ -95,21 +95,7 @@
     "message":""
   }
   ```
-    
-  ## /simulation/{simulation_id}/configuration ![](check.png)
-  Use the url from the new simulation to download the configuration
-  #### METHOD: GET  
-  #### DESCRIPTION 
-  To see a description of the simulation configuration
-  #### PARAMS
-  #### RETURNS 200 OK  
-  Check params of /new-simulation
-  #### RETURNS 404 RESOURCE NOT FOUND
-  ```
-  {
-    "message":""
-  }
-  ```
+
   ## /simulation/{simulation_id}/timelines :warning:
   #### METHOD: GET
   #### DESCRIPTION  
@@ -264,7 +250,7 @@
     "tasks":[
       {
         "id":"ffgsdf121dr123esd234s",
-        "type":"",                      /* TODO: Think of types */
+        "type":"",
         "extra":{
             
         },
@@ -274,7 +260,7 @@
         "events":[
           {
             "id":"",
-            "type":"",                  /* TODO: Think of types */
+            "type":"",
             "message":"",
             "time_stamp":0
           }
@@ -356,13 +342,13 @@
         "id":"",
         "descritpion":"",
         "address":{
-          "location_id":"",      /* TODO: change later? */
+          "location_id":"",
           "x":0,
           "y":0,
           "z":0
         },
         "weight":0,
-        "cargo_type":"",        /* TODO: think of types */  
+        "cargo_type":"", 
       }
     ]
   }
@@ -374,8 +360,6 @@
     "message":""
   }
   ```
-
-  - TODO: think of the possible PATCH methods
 
 <!-- Separator -->
 
@@ -391,13 +375,13 @@
     "id":"",
     "descritpion":"",
     "address":{
-      "location_id":"",      /* TODO: change later? */
+      "location_id":"",
       "x":0,
       "y":0,
       "z":0
     },
     "weight":0,
-    "cargo_type":""        /* TODO: think of types */  
+    "cargo_type":""
   }
   ```
   #### RETURNS 404 RESOURCE NOT FOUND
@@ -455,13 +439,13 @@
         "id",
         "descritpion",
         "address":{
-          "location_id":"",      /* TODO: change later? */
+          "location_id":"",
           "x":-1,
           "y":-1,
           "z":-1                 /* since the dock's loading zone by definition is infinite and work on pure magic */ 
         },
         "weight":0,
-        "cargo_type":"",         /* TODO: think of types */  
+        "cargo_type":""
       }
     ]
   }
@@ -473,8 +457,6 @@
     "message":""
   }
   ```
-  - TODO: think of the possible PATCH methods
-
 
 <!-- Separator -->
 
@@ -507,13 +489,11 @@
   <!-- was abandoned due to uselessness -->
   <!-- "status":""            /* TODO: think of different option what can happen */-->
 ## /ship/{simulation_id}/{timeline_id}/{storage_id}/containers/all :no_entry_sign:
-  - TODO: think if we need that or not and in what way...
   #### METHOD: GET
   #### DESCRIPTION
   Get the list of containers associated on the ship: onboard, requested to be load from the harbor and the ones to unload
   #### PARAMS
   ```
-  /* TODO: consider pagination */
   ```
   #### RETURNS 200 OK
   ```
@@ -524,13 +504,13 @@
         "id",
         "descritpion",
         "address":{
-          "location_id":"",      /* TODO: change later? */
+          "location_id":"",
           "x":0,
           "y":0,
           "z":0
         },
         "weight":0,
-        "cargo_type":"",        /* TODO: think of types */  
+        "cargo_type":"", 
       }
     ],
     "containers_load":[
@@ -538,13 +518,13 @@
         "id",
         "descritpion",
         "address":{
-          "location_id":"",      /* TODO: change later? */
+          "location_id":"",
           "x":0,
           "y":0,
           "z":0
         },
         "weight":0,
-        "cargo_type":"",        /* TODO: think of types */  
+        "cargo_type":"",
       }
     ]
     "containers_unload":[
@@ -552,13 +532,13 @@
         "id",
         "descritpion",
         "address":{
-          "location_id":"",      /* TODO: change later? */
+          "location_id":"",  
           "x":0,
           "y":0,
           "z":0
         },
         "weight":0,
-        "cargo_type":"",        /* TODO: think of types */  
+        "cargo_type":"",       
       }
     ]
   }
@@ -576,7 +556,6 @@
   Get the list of containers related to the ship as either : onboard, toload, tounload
   #### PARAMS
   ```
-  /* TODO: consider pagination */
   ```
   #### RETURNS 200 OK
   ```
@@ -586,13 +565,13 @@
         "id",
         "descritpion",
         "address":{
-          "location_id":"",      /* TODO: change later? */
+          "location_id":"",
           "x":0,
           "y":0,
           "z":0
         },
         "weight":0,
-        "cargo_type":"",        /* TODO: think of types */  
+        "cargo_type":"", 
       }
     ]
   }
@@ -680,10 +659,10 @@
     "new_timeline_id":"",
     "acknowledged_timestamp":"",
     "next_time_stamp":"",
-    "tasks":[                             /* At most 5 tasks */
+    "tasks":[                          
         {
           "id":"ffgsdf121dr123esd234s",
-          "type":"",                      /* TODO: Think of types */
+          "type":"",                  
           "extra":{},
           "description":"",
           "status":"",
@@ -691,7 +670,7 @@
           "events":[
             {
               "id":"",
-              "type":"",                  /* TODO: Think of types */
+              "type":"",      
               "message":"",
               "time_stamp":0
             }

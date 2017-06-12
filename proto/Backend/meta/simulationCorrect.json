@@ -1,0 +1,39 @@
+{
+  "docks": [
+    {
+      "id": "1",
+      "number_loaders": 2
+    }
+  ],
+  "storages": [
+    {
+      "x": 20,
+      "y": 2,
+      "z": 2,
+      "id": "s1",
+      "filled": 60
+    }
+  ],
+  "ships": [
+    {
+      "id": "ship1",
+      "eta": 6,
+      "x": 5,
+      "y": 2,
+      "z": 1,
+      "filled": 50,
+      "unload": 0,
+      "load": 40
+    },
+    {
+      "id": "ship1",
+      "eta": 6,
+      "x": 5,
+      "y": 2,
+      "z": 1,
+      "filled": 50,
+      "unload": 40,
+      "load": 0
+    }
+  ]
+}
