@@ -1,22 +1,22 @@
 const expect = require('chai').expect;
 const ShipLoader = require('./').ShipLoader;
-describe('Ship Loading Algorithm', function() {
+describe('Ship Loading Algorithm', function () {
 
-    describe('Calculate total mass for all containers on ship', function() {
+    describe('Calculate total mass for all containers on ship', function () {
 
         let ship = {
             x: 10,
             y: 10,
             z: 20,
             containers_in: [{
-                    "address": {
-                        "location_id": "",
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                    },
-                    "weight": 20
+                "address": {
+                    "location_id": "",
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
                 },
+                "weight": 20
+            },
                 {
                     "address": {
                         "location_id": "",
@@ -38,13 +38,13 @@ describe('Ship Loading Algorithm', function() {
             ]
         };
 
-        it('up getTotalMass', function() {
+        it('up getTotalMass', function () {
 
             let sl = new ShipLoader(ship);
             expect(sl).to.respondsTo('getTotalMass');
         });
 
-        it('create a proper object', function() {
+        it('create a proper object', function () {
 
             let sl = new ShipLoader(ship);
             expect(sl.center.x).to.equal(5);
@@ -53,14 +53,14 @@ describe('Ship Loading Algorithm', function() {
 
         });
 
-        it('should give the correct total mass for a filled ship', function() {
+        it('should give the correct total mass for a filled ship', function () {
 
             let sl = new ShipLoader(ship);
             let totalMass = sl.getTotalMass();
             expect(totalMass).to.equal(100);
         });
 
-        it('should return 0 if there are no containers on the ship', function() {
+        it('should return 0 if there are no containers on the ship', function () {
 
             let shipWithoutcontainers = Object.assign({}, ship);
             delete shipWithoutcontainers.containers_in;
@@ -69,7 +69,7 @@ describe('Ship Loading Algorithm', function() {
             expect(totalMass).to.equal(0);
         });
 
-        it('should skip container if it doesn\'t have weight property', function() {
+        it('should skip container if it doesn\'t have weight property', function () {
 
             let shipWithWeightlessContainers = Object.assign({}, ship);
             delete shipWithWeightlessContainers.containers_in[0].weight;
@@ -79,7 +79,7 @@ describe('Ship Loading Algorithm', function() {
         });
     });
 
-    describe('Get distance between 2 points in 3D space', function() {
+    describe('Get distance between 2 points in 3D space', function () {
 
         const ship = {
             x: 10,
@@ -87,7 +87,7 @@ describe('Ship Loading Algorithm', function() {
             z: 10
         };
 
-        it('up getDistanceBetweenTwoPoints', function() {
+        it('up getDistanceBetweenTwoPoints', function () {
 
             let sl = new ShipLoader(ship);
             expect(sl).to.respondsTo('getDistanceBetweenTwoPoints');
@@ -114,6 +114,166 @@ describe('Ship Loading Algorithm', function() {
 
     });
 
+    describe('Get the dimension to weight number container', function () {
+
+        it('up _getContainerCoordinatesToWeight', function () {
+
+            let SL = new ShipLoader({x: 2, y: 2, z: 2});
+            expect(SL).to.respondsTo('_getContainerCoordinatesToWeight');
+
+        });
+
+        it('give correct result for a container', function () {
+
+            let SL = new ShipLoader({x: 2, y: 2, z: 2});
+            let container = {
+                address: {
+                    x: 5,
+                    y: 5,
+                    z: 5
+                },
+                weight: 100
+            };
+            let result = SL._getContainerCoordinatesToWeight(container);
+            expect(result.x).to.equal(500);
+            expect(result.y).to.equal(500);
+            expect(result.z).to.equal(500);
+
+        });
+
+        it('should throw an error if the input is bad', function () {
+
+            let SL = new ShipLoader({x: 2, y: 2, z: 2});
+            let container = {
+                address: {
+                    x: 5,
+                    y: 5,
+                },
+                weight: 100
+            };
+            expect(() => {
+                SL._getContainerCoordinatesToWeight(container);
+            }).to.throw(Error);
+
+        })
+
+    });
+
+    describe('Get total dimension to weight numbers for ship', function () {
+
+        it('up getDimensionToWeightForShip', function () {
+
+            let SL = new ShipLoader({x: 2, y: 2, z: 2});
+            expect(SL).to.respondsTo('getDimensionToWeightForShip');
+
+        });
+
+        it('give the total weight to coordinate ration for ship', function () {
+
+            const ship = {
+                x: 2,
+                y: 2,
+                z: 1,
+                containers_in: [
+                    {
+                        address: {
+                            x: 0,
+                            y: 0,
+                            z: 0
+                        },
+                        weight: 100
+                    },
+                    {
+                        address: {
+                            x: 0,
+                            y: 1,
+                            z: 0
+                        },
+                        weight: 100
+                    },
+                    {
+                        address: {
+                            x: 1,
+                            y: 0,
+                            z: 0
+                        },
+                        weight: 100
+                    },
+                    {
+                        address: {
+                            x: 1,
+                            y: 1,
+                            z: 0
+                        },
+                        weight: 100
+                    }
+                ]
+            };
+            let SL = new ShipLoader(ship);
+            SL.getDimensionToWeightForShip();
+            expect(SL.dimensionToWeight.x).to.equal(600);
+            expect(SL.dimensionToWeight.y).to.equal(600);
+            expect(SL.dimensionToWeight.z).to.equal(400);
+            expect(SL.ship.containers_in[0].address.x).to.equal(0);
+        });
+    });
+
+    describe('calculate sum of moments', function () {
+
+        it('up', function () {
+
+            let SL = new ShipLoader({x: 2, y: 2, z: 2});
+            expect(SL).to.respondsTo('calculateSumOfMoments');
+
+        });
+
+        it('calculate one sum of moments for every option', function () {
+
+            const ship = {
+                x: 2,
+                y: 2,
+                z: 1,
+                containers_in: [
+                    {
+                        address: {
+                            x: 0,
+                            y: 0,
+                            z: 0
+                        },
+                        weight: 100
+                    },
+                    {
+                        address: {
+                            x: 0,
+                            y: 1,
+                            z: 0
+                        },
+                        weight: 100
+                    },
+                    {
+                        address: {
+                            x: 1,
+                            y: 0,
+                            z: 0
+                        },
+                        weight: 100
+                    },
+                    {
+                        address: {
+                            x: 1,
+                            y: 1,
+                            z: 0
+                        },
+                        weight: 100
+                    }
+                ]
+            };
+            let SL = new ShipLoader(ship);
+            SL.calculateSumOfMoments();
+
+        });
+
+    });
 
     // [ DMITIRII's SHIT ]
 
@@ -141,7 +301,7 @@ describe('Ship Loading Algorithm', function() {
             let expectedOptions = [];
             for (let xPos = 0; xPos < 4; xPos++) {
                 for (let yPos = 0; yPos < 4; yPos++) {
-                    expectedOptions.push({ x: xPos, y: yPos, z: 0 });
+                    expectedOptions.push({x: xPos, y: yPos, z: 0});
                 }
             }
 
@@ -166,7 +326,7 @@ describe('Ship Loading Algorithm', function() {
                     if (xPos == 1 && yPos == 1) {
                         zPos = 1;
                     }
-                    expectedOptions.push({ x: xPos, y: yPos, z: zPos });
+                    expectedOptions.push({x: xPos, y: yPos, z: zPos});
                 }
             }
 
@@ -191,23 +351,23 @@ describe('Ship Loading Algorithm', function() {
                 let SL = new ShipLoader(Ship);
                 let optionsResult = SL.getPlacementPossibilities();
 
-                let expectedOptions = [];
-                for (let xPos = 0; xPos < 4; xPos++) {
-                    for (let yPos = 0; yPos < 4; yPos++) {
-                        let zPos = 0;
-                        if ((xPos == 1 && yPos == 1) ||
-                            (xPos == 1 && yPos == 0) ||
-                            (xPos == 3 && yPos == 0)) {
-                            zPos = 1;
-                        }
-                        expectedOptions.push({ x: xPos, y: yPos, z: zPos });
+            let expectedOptions = [];
+            for (let xPos = 0; xPos < 4; xPos++) {
+                for (let yPos = 0; yPos < 4; yPos++) {
+                    let zPos = 0;
+                    if ((xPos == 1 && yPos == 1) ||
+                        (xPos == 1 && yPos == 0) ||
+                        (xPos == 3 && yPos == 0)) {
+                        zPos = 1;
                     }
+                    expectedOptions.push({x: xPos, y: yPos, z: zPos});
                 }
+            }
 
-                expect(optionsResult.length).to.be.equal(16);
-                expect(optionsResult).to.be.deep.equal(expectedOptions);
-                expect(SL.allPossibilities).to.be.deep.equal(expectedOptions);
-            });
+            expect(optionsResult.length).to.be.equal(16);
+            expect(optionsResult).to.be.deep.equal(expectedOptions);
+            expect(SL.allPossibilities).to.be.deep.equal(expectedOptions);
+        });
 
 
         it("in a storage hold with 4 containers at (1,1,0); (1,0,0); (3,0,0); (3,0,1)" +
@@ -228,24 +388,24 @@ describe('Ship Loading Algorithm', function() {
                 let SL = new ShipLoader(Ship);
                 let optionsResult = SL.getPlacementPossibilities();
 
-                let expectedOptions = [];
-                for (let xPos = 0; xPos < 4; xPos++) {
-                    for (let yPos = 0; yPos < 4; yPos++) {
-                        let zPos = 0;
-                        if ((xPos == 1 && yPos == 1) ||
-                            (xPos == 1 && yPos == 0)) {
-                            zPos = 1;
-                        }
-                        if ((xPos == 3 && yPos == 0)) {
-                            zPos = 2;
-                        }
-                        expectedOptions.push({ x: xPos, y: yPos, z: zPos });
+            let expectedOptions = [];
+            for (let xPos = 0; xPos < 4; xPos++) {
+                for (let yPos = 0; yPos < 4; yPos++) {
+                    let zPos = 0;
+                    if ((xPos == 1 && yPos == 1) ||
+                        (xPos == 1 && yPos == 0)) {
+                        zPos = 1;
                     }
+                    if ((xPos == 3 && yPos == 0)) {
+                        zPos = 2;
+                    }
+                    expectedOptions.push({x: xPos, y: yPos, z: zPos});
                 }
+            }
 
-                expect(optionsResult.length).to.be.equal(16);
-                expect(optionsResult).to.be.deep.equal(expectedOptions);
-            });
+            expect(optionsResult.length).to.be.equal(16);
+            expect(optionsResult).to.be.deep.equal(expectedOptions);
+        });
     });
     describe('Get Center Of Mass', () => {
 
