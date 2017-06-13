@@ -208,17 +208,13 @@ module.exports.ShipLoader = class ShipLoader {
      */
     constructor(ship) {
 
+        if(typeof ship.containers_in === 'undefined') ship.containers_in = [];
         this.ship = Object.assign({}, ship);
         this.totalMass = 0;
         this.allPossibilities = [];
-        this.dimensionToWeight = {
-            x: 0,
-            z: 0,
-            y: 0
-        };
         this.center = {
-            x: ship.x / 2,
-            y: ship.y / 2,
+            x: (this.ship.containers_in.length > 0 ) ? (ship.x / 2) : (ship.x / 2 + 1),
+            y: (this.ship.containers_in.length > 0 ) ? (ship.y / 2) : (ship.y / 2 + 1),
             z: 0
         };
     }
@@ -248,9 +244,9 @@ module.exports.ShipLoader = class ShipLoader {
             id: '/point',
             type: 'object',
             properties: {
-                x: { type: 'number' },
-                y: { type: 'number' },
-                z: { type: 'number' }
+                x: {type: 'number'},
+                y: {type: 'number'},
+                z: {type: 'number'}
             },
             required: ['x', 'y', 'z']
         };
@@ -270,6 +266,17 @@ module.exports.ShipLoader = class ShipLoader {
 
     getDimensionToWeightForShip() {
 
+        if (this.ship.containers_in.length === 0) {
+
+            return this.center;
+        }
+
+        let dimensionToWeight = {
+            x: 0,
+            z: 0,
+            y: 0
+        };
+
         for (let i = 0; i < this.ship.containers_in.length; i++) {
 
             let c = this.ship.containers_in[i];
@@ -282,11 +289,11 @@ module.exports.ShipLoader = class ShipLoader {
                 weight: c.weight
             };
             const weightToCoordinateContainer = this._getContainerCoordinatesToWeight(container);
-            this.dimensionToWeight.x += weightToCoordinateContainer.x;
-            this.dimensionToWeight.y += weightToCoordinateContainer.y;
-            this.dimensionToWeight.z += weightToCoordinateContainer.z;
-
+            dimensionToWeight.x += weightToCoordinateContainer.x;
+            dimensionToWeight.y += weightToCoordinateContainer.y;
+            dimensionToWeight.z += weightToCoordinateContainer.z;
         }
+        return dimensionToWeight;
     }
 
     _getContainerCoordinatesToWeight(container) {
@@ -322,14 +329,60 @@ module.exports.ShipLoader = class ShipLoader {
         }
     }
 
-    calculateSumOfMoments(container){
+    calculateCentersOfGravityForOptions(weight) {
 
-        this.getDimensionToWeightForShip();
-        let options = this.getPlacementPossibilities();
+        // Get the sum of all {container coordinate}*{container weight}
+        let dimensionToWeight = this.getDimensionToWeightForShip();
+        // Get total mass of all containers
+        let totalMass = this.getTotalMass();
+        // Add the new container
+        totalMass += weight;
+        // See where we can put the container
+        const options = this.getPlacementPossibilities();
+        // Prepare for the answers
+        let moments = [];
+        // Put container on every spot
         options.forEach(option => {
-
-            console.log(option);
+            let dimensionToWeightForOption = Object.assign({}, dimensionToWeight);
+            dimensionToWeightForOption.y += option.y * weight;
+            dimensionToWeightForOption.z += option.z * weight;
+            dimensionToWeightForOption.x += option.x * weight;
+            // Add the new container and it's {container coordinate}*{container weight} number
+            let x = dimensionToWeightForOption.x + (option.x + 1) * weight;
+            x /= totalMass;
+            let y = dimensionToWeightForOption.y + (option.y + 1) * weight;
+            y /= totalMass;
+            let z = dimensionToWeightForOption.z + (option.z + 1) * weight;
+            z /= totalMass;
+            moments.push({
+                address: option,         // Save the option
+                newCenter: {x, y, z}    // and it's center of gravity
+            });
         });
+        return moments;
+    }
+
+    getLocationForContainer(weight) {
+
+        let options = this.calculateCentersOfGravityForOptions(weight);
+        let best = {
+            number: Number.MAX_VALUE,
+            address: {}
+        };
+        options.forEach(option => {
+            let centerRelative = {
+                x: Math.abs(this.center.x - option.address.x),
+                y: Math.abs(this.center.y - option.address.y),
+                z: Math.abs(this.center.z - option.address.z)
+            };
+            let distanceToMiddle = this.getDistanceBetweenTwoPoints(option.newCenter, centerRelative);
+            if (distanceToMiddle < best.number) {
+
+                best.number = distanceToMiddle;
+                best.address = option.address;
+            }
+        });
+        return best.address;
     }
 
     getPlacementPossibilities() {
