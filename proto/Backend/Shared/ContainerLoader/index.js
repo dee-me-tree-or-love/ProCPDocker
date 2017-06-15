@@ -213,9 +213,9 @@ module.exports.ShipLoader = class ShipLoader {
         this.totalMass = 0;
         this.allPossibilities = [];
         this.center = {
-            x: (this.ship.containers_in.length > 0 ) ? (ship.x / 2) : (ship.x / 2 + 1),
-            y: (this.ship.containers_in.length > 0 ) ? (ship.y / 2) : (ship.y / 2 + 1),
-            z: 0
+            x: (ship.x / 2),
+            y: (ship.y / 2),
+            z: (ship.z / 2)
         };
     }
 
@@ -264,6 +264,7 @@ module.exports.ShipLoader = class ShipLoader {
 
     }
 
+    // sum of x*weight y*weight z*weight
     getDimensionToWeightForShip() {
 
         if (this.ship.containers_in.length === 0) {
@@ -348,12 +349,9 @@ module.exports.ShipLoader = class ShipLoader {
             dimensionToWeightForOption.z += option.z * weight;
             dimensionToWeightForOption.x += option.x * weight;
             // Add the new container and it's {container coordinate}*{container weight} number
-            let x = dimensionToWeightForOption.x + (option.x + 1) * weight;
-            x /= totalMass;
-            let y = dimensionToWeightForOption.y + (option.y + 1) * weight;
-            y /= totalMass;
-            let z = dimensionToWeightForOption.z + (option.z + 1) * weight;
-            z /= totalMass;
+            let x = dimensionToWeightForOption.x / totalMass;
+            let y = dimensionToWeightForOption.y / totalMass;
+            let z = dimensionToWeightForOption.z / totalMass;
             moments.push({
                 address: option,         // Save the option
                 newCenter: {x, y, z}    // and it's center of gravity
@@ -370,12 +368,8 @@ module.exports.ShipLoader = class ShipLoader {
             address: {}
         };
         options.forEach(option => {
-            let centerRelative = {
-                x: Math.abs(this.center.x - option.address.x),
-                y: Math.abs(this.center.y - option.address.y),
-                z: Math.abs(this.center.z - option.address.z)
-            };
-            let distanceToMiddle = this.getDistanceBetweenTwoPoints(option.newCenter, centerRelative);
+
+            let distanceToMiddle = this.getDistanceBetweenTwoPoints(option.newCenter, this.center);
             if (distanceToMiddle < best.number) {
 
                 best.number = distanceToMiddle;
@@ -404,11 +398,11 @@ module.exports.ShipLoader = class ShipLoader {
 
                     zMappingMatrix[xPos][yPos] = {};
                 }
-
                 let option = {x: xPos, y: yPos, z: 0};
-                zMappingMatrix[xPos][yPos].option = option;
 
+                zMappingMatrix[xPos][yPos].option = option;
                 options.push(option);
+
             }
         }
 
@@ -416,7 +410,6 @@ module.exports.ShipLoader = class ShipLoader {
             let xPos = this.ship.containers_in[key].address.x;
             let yPos = this.ship.containers_in[key].address.y;
             let zPos = this.ship.containers_in[key].address.z;
-
             // if the z entry of the options is less or equal to the discovered one, update to +1
             if (zMappingMatrix[xPos][yPos].option.z <= zPos) {
                 zMappingMatrix[xPos][yPos].option.z = zPos + 1;

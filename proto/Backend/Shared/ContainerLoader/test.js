@@ -49,7 +49,7 @@ describe('Ship Loading Algorithm', function () {
             let sl = new ShipLoader(ship);
             expect(sl.center.x).to.equal(5);
             expect(sl.center.y).to.equal(5);
-            expect(sl.center.z).to.equal(0);
+            expect(sl.center.z).to.equal(10);
 
         });
 
@@ -385,7 +385,7 @@ describe('Ship Loading Algorithm', function () {
             };
             let SL = new ShipLoader(ship);
             // We have 2 empty spaces and a container with weight 10
-            let location = SL.getLocationForContainer(500);
+            let location = SL.getLocationForContainer(50);
             expect(location.x).to.equal(0);
             expect(location.z).to.equal(1);
 
@@ -403,14 +403,144 @@ describe('Ship Loading Algorithm', function () {
             let SL = new ShipLoader(ship);
             // We have 2 empty spaces and a container with weight 10
             let location = SL.getLocationForContainer(50);
-            console.log(location);
             // Container should be on the ground in the center row
-            expect(location.y).to.equal(3);
+            expect(location.y).to.equal(1);
             expect(location.z).to.equal(0);
 
         });
 
+        it('get the best location for a container for specific scenario', function () {
 
+            const ship = {
+                x: 3,
+                y: 4,
+                z: 1,
+                containers_in: [
+                    {
+                        address: {
+                            x: 0,
+                            y: 0,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 1,
+                            y: 0,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 2,
+                            y: 0,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 0,
+                            y: 1,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 1,
+                            y: 1,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 2,
+                            y: 1,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                ]
+            };
+            let SL = new ShipLoader(ship);
+            // We have 2 empty spaces and a container with weight 10
+            let location = SL.getLocationForContainer(50);
+            // Container should be on the ground in the center row
+            expect(location.y).to.equal(3);
+            expect(location.x).to.equal(1);
+            expect(location.z).to.equal(0);
+
+        });
+
+        it('get the best location for a container for specific scenario - no spot on first row', function () {
+
+            const ship = {
+                x: 2,
+                y: 3,
+                z: 2,
+                containers_in: [
+                    {
+                        address: {
+                            x: 0,
+                            y: 0,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 0,
+                            y: 1,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 0,
+                            y: 2,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 1,
+                            y: 0,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 1,
+                            y: 1,
+                            z: 0
+                        },
+                        weight: 10
+                    },
+                    {
+                        address: {
+                            x: 1,
+                            y: 2,
+                            z: 0
+                        },
+                        weight: 10
+                    }
+                ]
+            };
+            let SL = new ShipLoader(ship);
+            // We have 2 empty spaces and a container with weight 10
+            let location = SL.getLocationForContainer(50);
+            // Container should be on the ground in the center row
+            expect(location.y).to.equal(1);
+            expect(location.z).to.equal(1);
+
+        });
     });
 
     describe('Get a list of all the placement possibilities', () => {
