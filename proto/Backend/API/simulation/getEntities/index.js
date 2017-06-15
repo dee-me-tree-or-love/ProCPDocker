@@ -19,14 +19,14 @@ class Retriever {
      * @abstract
      * @returns a promise db.runQuery
      */
-    getFlatData() { throw new Error("Not implemented by handler!"); }
+    getFlatData() { return Promise.resolve("not implemented or not needed"); }
 
     /**
      * Is used to retrieve the arrays of data associated with the requested object
      * @abstract
      * @returns a promise resolve with the final data of the asked stuff
      */
-    getAggregataData() { throw new Error("Not implemented by handler!"); }
+    getAggregataData() { return Promise.resolve("not implemented or not needed"); }
 
     static constructRetriever(option, timeline_id, simulaiton_id, db) {
         switch (option) {
@@ -37,8 +37,10 @@ class Retriever {
 
             case STORAGE_OPTIONS:
                 throw new Error("not implemented yet!");
+
             case SHIP_OPTION:
-                throw new Error("not implemented yet!");
+
+                return new ShipRetriver(timeline_id, simulaiton_id, db);
 
         }
     }
@@ -48,17 +50,23 @@ class DockRetriever extends Retriever {
 
     // could kinda use the JS setter functions, but meh...
     setDocks(_docks) {
-        this.docks = _docks;
-        // construct the associative array
-        this.docksById = {};
-        for (let key in this.docks) {
-            // this.docksById[this.docks[key].id] = {};
-            this.docksById[this.docks[key].id] = this.docks[key];
+            this.docks = _docks;
+            // construct the associative array
+            this.docksById = {};
+            for (let key in this.docks) {
+                // this.docksById[this.docks[key].id] = {};
+                this.docksById[this.docks[key].id] = this.docks[key];
+            }
         }
-    }
+        /**
+         * @deprecated
+         */
     getDockIDs() {
-        return this.docks.map((o) => { return o.id; })
-    }
+            return this.docks.map((o) => { return o.id; })
+        }
+        /**
+         * @deprecated
+         */
     getDockIDsString() {
         return history.getDockIDs.join('","');
     }
@@ -118,7 +126,8 @@ class DockRetriever extends Retriever {
     // OVERRIDING HANDLERS
 
     /**
-     * @returns a promise resolved or rejected
+     * Returns a promise resolved or rejected
+     * @returns 
      */
     getFlatData() {
 
@@ -195,6 +204,107 @@ class DockRetriever extends Retriever {
     }
 }
 
+// ridicoulous - > I had a Re!_R_!triever written and it wouldn't work :) 
+class ShipRetriver extends Retriever {
+
+    setShipData(ships) {
+        this.ships = ships;
+    }
+
+    /**
+     * Processes the response array to construct correct list with ship objects wit required structure
+     * Sets the data to the ships
+     * @param {Array} response from the db query 
+     */
+    parseFlatResponse(response) {
+        let temp_ships = [];
+        for (let key in response) {
+            let ship = {
+                id: response[key].ship_id,
+                size: {
+                    x: response[key].x,
+                    y: response[key].y,
+                    z: response[key].z,
+                },
+                containers_max: response[key].container_max,
+                containers_current: response[key].containers_current,
+                containers_unload: response[key].containers_unload,
+                containers_load: response[key].containers_load,
+                destination: {
+                    id: response[key].destination_id,
+                    estimated_arrival_time: response[key].ship_eta,
+                }
+            }
+            temp_ships.push(ship);
+        }
+        this.setShipData(temp_ships);
+    }
+
+
+    getShipDataQuery() {
+        return "SELECT CH.id as ship_id, CH.x as x, CH.y as y, CH.z as z, " +
+            "(x * y * z) as container_max, " +
+            "(SELECT COUNT(*) FROM Containers WHERE container_hold = CH.id ) as containers_current, " +
+            "(SELECT COUNT(*) FROM ShipContainer WHERE ship_id = CH.id AND type=\"to_unload\") as containers_unload, " +
+            "(SELECT COUNT(*) FROM ShipContainer WHERE ship_id = CH.id AND type=\"to_load\") as containers_load, " +
+            "S.eta as ship_eta, " +
+            "(SELECT D.id " +
+            "FROM Docks AS D JOIN Tasks AS T ON T.destination_id = D.id JOIN " +
+            "Intervals AS I ON I.id = T.interval_id WHERE T.type = \"schedule\" AND I.ship_id = CH.id " +
+            "GROUP BY D.id) as destination_id " +
+            "FROM Ships AS S JOIN ContainerHold as CH ON S.container_hold = CH.id " +
+            "JOIN Timelines as TL ON TL.id = CH.timeline_id " +
+            `WHERE TL.simulation_id = "${this.simulation_id}" AND TL.id = "${this.timeline_id}";`
+    }
+
+    getFlatData() {
+
+        let retriever = this;
+
+        console.log(retriever.getShipDataQuery());
+        return retriever.db.runQuery(retriever.getShipDataQuery(), [], "Retrieving ship data", true)
+            .then(ships => {
+                console.log("retrieved ships");
+                console.log(ships);
+
+                if (ships.length > 0) {
+                    retriever.parseFlatResponse(ships);
+
+                    return Promise.resolve(retriever.ships);
+                } else {
+
+                    return Promise.reject("Could not retrieve the ships");
+                }
+            });
+    }
+
+    // there aint aggregate data from the ships that you can get...
+    /**
+     * @returns a promise resolve with the ship data 
+     */
+    getAggregataData() {
+        let retriever = this;
+        return Promise.resolve(retriever.ships);
+    }
+}
+
+class StorageRetriever extends Retriever {
+
+    getStorageDataQuery() {
+        return `SELECT ch.id, ch.x, ch.y, ch.z, (ch.x * ch.y * ch.z) AS containers_max, ` +
+            ` (SELECT COUNT(*) FROM Containers WHERE container_hold = ch.id) AS containers_current ` +
+            ` FROM ContainerHold ch JOIN Timelines tl ON ch.timeline_id = tl.id ` +
+            ` WHERE tl.id = "${this.timeline_id}" ` +
+            ` AND tl.simulation_id = "${this.simulation_id}" ` +
+            `AND type = "storage"; `
+    }
+
+    getFlatData() {
+        let retriever = this;
+
+        return retriever.db.runQuery(retriever.getStorageDataQuery(), [], "Retrieving the storage flat data");
+    }
+}
 
 const DOCKS_OPTIONS = "docks"
 const STORAGE_OPTIONS = "storages"
@@ -221,7 +331,7 @@ module.exports.handler = (event, context, callback) => {
         // check if the option is one of the three
         option = option.toLowerCase();
         console.log(option);
-        console.log(DOCKS_OPTIONS);
+        // console.log(SHIP_OPTION);
         if (option != DOCKS_OPTIONS && option != SHIP_OPTION && option != STORAGE_OPTIONS) {
             console.log("the option was incorrectly specified, aborting...");
             throw new Error("Wrong option!")

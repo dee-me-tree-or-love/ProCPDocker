@@ -311,10 +311,11 @@
           "weight":0
         }
       ],
-      "status":""            /* TODO: think of different option what can happen */
     }
   }
   ```
+  <!-- removed the bottom from the json above -->
+  <!--  "status":""            /* TODO: think of different option what can happen */ -->
   #### RETURNS 404 RESOURCE NOT FOUND
   If the parameters: either simulation, timeline or storage, are not found.
   ```
