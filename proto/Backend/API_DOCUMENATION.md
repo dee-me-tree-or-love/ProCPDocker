@@ -407,7 +407,8 @@
     "loaders_count":0,
     "connected_storages":[
       {
-        "id":"",
+        "storage_id":"",
+        "dock_id":"",
         "weight":0
       }
     ],
@@ -415,8 +416,8 @@
     "connected_ship_id":"",
     "scheduled_ships":[
       {
-        "id":"",
-        "time_arrived":0
+        "ship_id":"",
+        "eta":0
       }
     ]
   }

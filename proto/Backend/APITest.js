@@ -128,7 +128,7 @@ describe('Docker API End-to-End test', function() {
 
         it('should return 400 if asking for an options not in {"docks","ships","storages"}', function(done) {
 
-            console.log(`${conf.apiURL}/simulation/${conf.simulationId}/timelines/${conf.timeLineId}/bullshit/all`);
+            // console.log(`${conf.apiURL}/simulation/${conf.simulationId}/timelines/${conf.timeLineId}/bullshit/all`);
 
             request({
                     method: 'GET',
@@ -136,12 +136,61 @@ describe('Docker API End-to-End test', function() {
                 },
                 function(error, response, body) {
 
-                    console.log(error);
-                    console.log(body);
+                    // console.log(error);
+                    // console.log(body);
                     // body = JSON.parse(body);
                     expect(response.statusCode).to.equal(400);
                     // expect(body).to.be.an('array').that.is.not.empty;
                     done();
+                })
+        });
+
+        it('should return a response with code 200 and not empty body when requesting docks', function(done) {
+
+            request({
+                    method: 'GET',
+                    url: `${conf.apiURL}/simulation/${conf.simulationId}/timelines/${conf.timeLineId}/docks/all`
+                },
+                function(error, response, body) {
+
+                    // console.log(error);
+                    // console.log(body);
+                    body = JSON.parse(body);
+                    console.log(body);
+                    expect(response.statusCode).to.equal(200);
+                    expect(body).to.be.an('array').that.is.not.empty;
+                    done();
+                })
+        })
+
+        it('should return a response with code 200 and not the body with specific attributes when requesting docks', function(done) {
+
+            request({
+                    method: 'GET',
+                    url: `${conf.apiURL}/simulation/${conf.simulationId}/timelines/${conf.timeLineId}/docks/all`
+                },
+                function(error, response, body) {
+
+                    // console.log(error);
+                    // console.log(body);
+                    body = JSON.parse(body);
+                    console.log(body);
+                    expect(response.statusCode).to.equal(200);
+                    expect(body).to.be.an('array').that.is.not.empty;
+                    console.log(body[0].connected_storages);
+                    console.log(body[0].scheduled_ships);
+                    for (let key in body) {
+                        // check properties
+                        expect(body[key]).to.have.property("id");
+                        expect(body[key]).to.have.property("loaders_count");
+                        expect(body[key]).to.have.property("connected_storages");
+                        expect(body[key].connected_storages).to.be.an('array').that.is.not.empty;
+                        expect(body[key]).to.have.property("container_count");
+                        expect(body[key]).to.have.property("connected_ship_id");
+                        expect(body[key]).to.have.property("scheduled_ships");
+                        expect(body[key].scheduled_ships).to.be.an('array');
+                        done();
+                    }
                 })
         })
     })
