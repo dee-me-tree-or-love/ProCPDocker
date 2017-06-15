@@ -94,6 +94,8 @@ export default {
               storStr: 1,
               dockStr: 1,
               completedevents :[],
+              empty :[],
+              //events: [],
 
          }
     },
@@ -102,7 +104,9 @@ export default {
           events : function(){
                if(this.tasks.length > 0){
                   return this.tasks[0].events;
-               }
+             }else {
+                  return this.empty;
+             }
            },
           shipCount: function() {
               return parseInt(this.shipStr);
@@ -130,7 +134,7 @@ export default {
               this.docksbool= false;
               this.eventsbool = false;
 
-              console.log(this.docks[0]);
+              //console.log(this.docks[0]);
 
               if(value.includes("ship")){
                    this.shipsbool = true;
@@ -147,7 +151,7 @@ export default {
               }else if (value.includes("event")) {
                    this.eventsbool = true;
               }
-              console.log("dock: " + this.docksbool + ", ship: " + this.shipsbool + ", storage: " + this.storagesbool + ", event: " + this.eventsbool);
+              //console.log("dock: " + this.docksbool + ", ship: " + this.shipsbool + ", storage: " + this.storagesbool + ", event: " + this.eventsbool);
          },
         getSimulation(){
 

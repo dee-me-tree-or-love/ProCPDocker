@@ -39,7 +39,7 @@
                return {
                     currentTask,
                     time_stamp_token : '',
-                    next_time_stamp : '',
+                    next_time_stamp : 0,
                     interval_tasks : 2000,
                }
           },
@@ -56,7 +56,7 @@
                     this.$emit('componentsidebarcheck', value);
                },
                getTasks() {
-                    axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/tasks/'+this.simulationid+'/'+this.timelineid+'?limit=10'+this.time_stamp_token+this.next_time_stamp)
+                    axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/tasks/'+this.simulationid+'/'+this.timelineid+'?limit=10&time_stamp='+this.next_time_stamp)
                       .then(function(response){
                         //console.log(response.data);
 
@@ -72,16 +72,28 @@
                               }
                               that.tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
                               events = [];
+
+
+
                               counter++;
                               //console.log(that.tasks[i]);
                           }
 
+                          //that.events.push(that.tasks[0].events);
+
+
+                         console.log(that.next_time_stamp);
+                         console.log(response.data.next_time_stamp);
+
                           that.next_time_stamp = response.data.next_time_stamp;
+
+
 
                           that.time_stamp_token = '&time_stamp=';
 
                         } else {
                           //TODO: handle bad responses
+                          console.log("get tasks dropped out with error "+response.status);
                         }
                          //response.data.tasks[i].id
 
@@ -121,26 +133,32 @@
                          timer = setInterval(function (){
                               //console.log("tasks interval time : "+that.interval_tasks);
                               var temp = that.tasks.shift();
+
+
+                              //console.log(temp = that.tasks.shift());
                               //console.log(that.tasks.length);
                               if(that.tasks.length > 0){
                                    that.completedtasks.push(temp);
 
+
+
                                    document.getElementById('slider').value++;
                                    //that.wait(2000);
                                    clearInterval(timer_event);
-                                   if(temp.events.length > 0){
-                                        that.playEvent(temp.events.length);
-                                   }
+
+                                   //if(that.tasks[0].events.length > 0){
+                                   that.playEvent(that.tasks[0].events.length);
+                                   //}
 
                               }else {
                                    that.getTasks();
-                                   console.log(that.events);
+                                   //console.log(that.events);
                                    //console.log(that.completedtasks[that.completedtasks.length-1]);
                                    //clearInterval(timer_event);
                                    //that.playEvent();
                                    //setTimeout(that.test, that.interval_events);
                               }
-                         },2000);//that.interval_tasks);
+                         },interval);//that.interval_tasks);
 
                          //this.$emit('currentTask', currentTask);
                     }
@@ -149,22 +167,30 @@
                playEvent(n){
 
                     //var testtime = interval/time;
-                    var inter = interval/n;
+                    var inter = 1900;
 
+                    that = this;
 
-                    if(that.events.length == 0){
-                         inter = 1;
-                    }else{
-                         inter = interval/n;
-                    }
+                    //if(that.events.length == 0){
+                         //inter = 1900;
+                    //}else{
+                    inter = (inter)/n;
+                    //}
 
+                    console.log(n);
                     console.log(inter);
 
                     timer_event = setInterval(function (){
 
+                              //console.log(that.events);
+                              //console.log(that.completedevents);
+
+                              var tempevent = that.tasks[0].events.shift();
+
                               if(that.events.length > 0){
-                                   var tempevent = that.events.shift();
+
                                    that.completedevents.push(tempevent);
+
 
                               }//else{
                                    //clearInterval(timer_event);
