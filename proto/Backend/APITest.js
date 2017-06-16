@@ -13,14 +13,18 @@ describe('Docker API End-to-End test', function() {
     this.timeout(10000);
     describe('PUT /simulation/new-simulation', function() {
 
-        it('should create a new simulation and give back it\'s details', function(done) {
+        it.only('should create a new simulation and give back it\'s details', function(done) {
 
-            console.log(`${conf.apiURL}/simulation/new-simulation`);
+
             request({
                 method: 'PUT',
                 url: `${conf.apiURL}/simulation/new-simulation`,
                 json: simulationCorrect
             }, function(error, response, body) {
+
+                // console.log(">>")
+                // console.log(body.timeline_id);
+                // console.log("<<")
 
                 expect(response.statusCode).to.equal(200);
                 expect(body).to.be.an('object');

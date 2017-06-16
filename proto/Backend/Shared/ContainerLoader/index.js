@@ -36,7 +36,7 @@ module.exports.linearLoad = (container, container_hold) => {
             z = counter % container_hold.z;
         }
     }
-    return {x: x, y: y, z: z};
+    return { x: x, y: y, z: z };
 };
 
 
@@ -70,11 +70,11 @@ module.exports.weightBasedLoad = (container, container_hold) => {
 
             // no containers on this X axis have been encountered => no y containers of this x axis are also 
             cWieghtMatrix[cellCoordX] = {}
-            cWieghtMatrix[cellCoordX][cellCoordY] = {weight: container_hold.containers_in[key].weight, count: 1};
+            cWieghtMatrix[cellCoordX][cellCoordY] = { weight: container_hold.containers_in[key].weight, count: 1 };
         } else if (!cWieghtMatrix[cellCoordX][cellCoordY]) {
 
             // there have been containers on X axis, but not with this Y coordinate
-            cWieghtMatrix[cellCoordX][cellCoordY] = {weight: container_hold.containers_in[key].weight, count: 1};
+            cWieghtMatrix[cellCoordX][cellCoordY] = { weight: container_hold.containers_in[key].weight, count: 1 };
         } else {
 
             // there have already been recorded the containers on this X and Y => this container is stacked on top of it (or beneath) and should be added to the column mass weight
@@ -106,20 +106,20 @@ module.exports.weightBasedLoad = (container, container_hold) => {
 
         iterationNumber++;
         let makeNewCut = () => {
-            return {
-                start_w: '',
-                start_l: '',
-                end_w: '',
-                end_l: '',
-                getWidth: function () {
-                    return this.end_w - this.start_w
-                },
-                getLength: function () {
-                    return this.end_l - this.start_l
+                return {
+                    start_w: '',
+                    start_l: '',
+                    end_w: '',
+                    end_l: '',
+                    getWidth: function() {
+                        return this.end_w - this.start_w
+                    },
+                    getLength: function() {
+                        return this.end_l - this.start_l
+                    }
                 }
             }
-        }
-        // console.log(`is width parallel: ${isParallelToWidth}; iteration number: ${iterationNumber}`)
+            // console.log(`is width parallel: ${isParallelToWidth}; iteration number: ${iterationNumber}`)
         let cuts = [makeNewCut(), makeNewCut()]
 
         if (isParallelToWidth) {
@@ -174,9 +174,9 @@ module.exports.weightBasedLoad = (container, container_hold) => {
             }
         }
         let eq = ((cuts[0].end_l == cuts[0].end_l) &&
-        ((cuts[0].start_l == cuts[0].start_l) &&
-        (cuts[0].end_w == cuts[0].end_w) &&
-        (cuts[0].start_w == cuts[0].start_w)));
+            ((cuts[0].start_l == cuts[0].start_l) &&
+                (cuts[0].end_w == cuts[0].end_w) &&
+                (cuts[0].start_w == cuts[0].start_w)));
         if ((bestCut.getLength() * bestCut.getWidth() == 1) || eq) {
             // console.log("best cut: ")
             // console.log(bestCut);
@@ -193,7 +193,7 @@ module.exports.weightBasedLoad = (container, container_hold) => {
     let bestY = bestPosition.start_l;
     let bestZ = height_level;
 
-    return {x: bestX, y: bestY, z: bestZ}
+    return { x: bestX, y: bestY, z: bestZ }
     // return { x: 0, y: 0, z: 0 }
 };
 
@@ -208,7 +208,13 @@ module.exports.ShipLoader = class ShipLoader {
      */
     constructor(ship) {
 
-        if(typeof ship.containers_in === 'undefined') ship.containers_in = [];
+        // make a copy
+        if (ship.containers_current) {
+
+            ship.containers_in = ship.containers_current.slice();
+        }
+
+        if (typeof ship.containers_in === 'undefined') ship.containers_in = [];
         this.ship = Object.assign({}, ship);
         this.totalMass = 0;
         this.allPossibilities = [];
@@ -244,9 +250,9 @@ module.exports.ShipLoader = class ShipLoader {
             id: '/point',
             type: 'object',
             properties: {
-                x: {type: 'number'},
-                y: {type: 'number'},
-                z: {type: 'number'}
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
             },
             required: ['x', 'y', 'z']
         };
@@ -267,10 +273,10 @@ module.exports.ShipLoader = class ShipLoader {
     // sum of x*weight y*weight z*weight
     getDimensionToWeightForShip() {
 
-        if (this.ship.containers_in.length === 0) {
+        // if (this.ship.containers_in.length === 0) {
 
-            return this.center;
-        }
+        //     return this.center;
+        // }
 
         let dimensionToWeight = {
             x: 0,
@@ -303,9 +309,9 @@ module.exports.ShipLoader = class ShipLoader {
             id: '/container_dimensions',
             type: 'object',
             properties: {
-                x: {type: 'number'},
-                y: {type: 'number'},
-                z: {type: 'number'}
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
             },
             required: ['x', 'y', 'z']
         };
@@ -313,8 +319,8 @@ module.exports.ShipLoader = class ShipLoader {
             id: '/container',
             type: 'object',
             properties: {
-                weight: {type: 'number'},
-                address: {'$ref': '/container_dimensions'}
+                weight: { type: 'number' },
+                address: { '$ref': '/container_dimensions' }
             },
             required: ['weight', 'address']
         };
@@ -342,6 +348,11 @@ module.exports.ShipLoader = class ShipLoader {
         const options = this.getPlacementPossibilities();
         // Prepare for the answers
         let moments = [];
+        console.log('>>>>>>>>>>>>>>>>>>>>');
+        console.log(dimensionToWeight);
+        console.log('Total mass ' + totalMass);
+        console.log('Container on board: ' + this.ship.containers_in.length);
+        console.log('<<<<<<<<<<<<<<<<<<<<');
         // Put container on every spot
         options.forEach(option => {
             let dimensionToWeightForOption = Object.assign({}, dimensionToWeight);
@@ -353,8 +364,8 @@ module.exports.ShipLoader = class ShipLoader {
             let y = dimensionToWeightForOption.y / totalMass;
             let z = dimensionToWeightForOption.z / totalMass;
             moments.push({
-                address: option,         // Save the option
-                newCenter: {x, y, z}    // and it's center of gravity
+                address: option, // Save the option
+                newCenter: { x, y, z } // and it's center of gravity
             });
         });
         return moments;
@@ -368,7 +379,6 @@ module.exports.ShipLoader = class ShipLoader {
             address: {}
         };
         options.forEach(option => {
-
             let distanceToMiddle = this.getDistanceBetweenTwoPoints(option.newCenter, this.center);
             if (distanceToMiddle < best.number) {
 
@@ -398,7 +408,7 @@ module.exports.ShipLoader = class ShipLoader {
 
                     zMappingMatrix[xPos][yPos] = {};
                 }
-                let option = {x: xPos, y: yPos, z: 0};
+                let option = { x: xPos, y: yPos, z: 0 };
 
                 zMappingMatrix[xPos][yPos].option = option;
                 options.push(option);
