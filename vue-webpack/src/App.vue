@@ -124,7 +124,7 @@ export default {
               dockStr: 1,
               completedevents :[],
               empty :[],
-              //currentTask : ,
+              current_time : 0,
               time_stamp_token : '',
               next_time_stamp : 0,
               interval_tasks : 2000,
@@ -487,7 +487,7 @@ export default {
 
 
                       }
-                      that.tasks.push(new Task(counter,response.data.tasks[i].type,new Extra(response.data.tasks[i].extra.container_id,response.data.tasks[i].extra.source_id,response.data.tasks[i].extra.destination_id),response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
+                      that.tasks.push(new Task(counter,response.data.tasks[i].type,new Extra(response.data.tasks[i].extra.container_id,response.data.tasks[i].extra.source_id,response.data.tasks[i].extra.destination_id),response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].start_time,response.data.tasks[i].end_time,events))
                       events = [];
                       counter++;
                   }
@@ -536,6 +536,10 @@ export default {
 
                       if(that.tasks.length > 0){
 
+                           that.current_time = that.tasks[0].end_time;
+
+                           console.log(that.current_time);
+
                            document.getElementById('slider').value++;
                            //that.wait(2000);
                            clearInterval(canvas_sim_id);
@@ -574,10 +578,10 @@ export default {
                                 }
 
                            }
-
+                           that.completedtasks.push(that.tasks.shift());
                            that.playEvent(that.tasks[0].events.length);
                            //}
-                           that.completedtasks.push(that.tasks.shift());
+
 
                       }else if(that.next_time_stamp == 0 && that.taskCheck) {
                            that.taskCheck = false;

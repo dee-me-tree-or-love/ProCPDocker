@@ -1,13 +1,14 @@
 import Event from './Event.js';
 
 export default class Task {
-  constructor(id,type,extra,description, status,time_to_complete,events) {
+  constructor(id,type,extra,description, status,start_time,end_time,events) {
     this.id = id;
     this.type = type;
     this.extra = extra;
     this.description = description;
     this.status = status;
-    this.time_to_complete = time_to_complete;
+    this.start_time = start_time;
+    this.end_time = end_time;
     this.events = events;
   }
 }
