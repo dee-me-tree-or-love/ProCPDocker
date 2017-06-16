@@ -145,7 +145,7 @@
   ```
 <!-- TODO: maybe also /{ ...| complete }/all to retrieve everything at once? -->
 <!-- TODO: maybe without }/timelines/{ part? -->
-## /simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all
+## /simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION  
   Retrieve the timeline of the simulation with the given ID
