@@ -1,5 +1,6 @@
 import Destination from './Destination.js';
 import Size from './Size.js';
+import Dock from './Dock.js';
 
 export default class Ship {
   constructor(id,size,containers_max,containers_current,containers_unload,containers_load,destination,status) {
@@ -11,6 +12,7 @@ export default class Ship {
     this.containers_load = containers_load;
     this.destination = destination;
     this.status = status;
+    this.dock = new Dock();
 
     this.height = 40;
     this.width = 120;
@@ -62,7 +64,12 @@ export default class Ship {
 
        context.stroke();
 
-  }
+   }
+
+   this.removeShip = function(context){
+        context.fillStyle = '#0289b3';
+        context.fillRect(this.position_x-2,this.position_y-2,this.width+this.bezierCurve+4,this.height+4);
+   }
 
    this.moveForward = function(context){
         this.position_x += 30;
@@ -73,12 +80,13 @@ export default class Ship {
    }
 
    this.setDock = function(dock){
+        this.dock = dock;
         this.position_x = dock.position_x + 8;
         this.position_y = dock.position_y - 50;
    }
 
    this.checkClick = function(x,y){
-        if(((x >= this.position_x)&&(x <= this.position_x+this.width+this.bezierCurve))&&((y >= this.position_y)&&(y <= this.position_y+this.height))){
+        if(((x >= this.position_x)&&(x <= this.position_x+this.width+this.bezierCurve))&&((y >= this.position_y)&&(y <= this.position_y+this.height)) && this.id == this.dock.connected_ship_id){
              return true;
         }else{
              return false;

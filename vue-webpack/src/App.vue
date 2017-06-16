@@ -29,7 +29,7 @@
                   </div>
                   <div class="buttons text-center">
                     <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
-                    <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+                    <button @click="play"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
                     <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
                     <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
                     <button @click="syncSimulation" class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
@@ -76,13 +76,15 @@ var timeline_id_global;
 var that;
 var timer;
 var timer_event;
+var timer_tasks;
 var play = true;
-var interval = 3000;
+var interval = 1000;
 var completedtasks = [];
 var counter = 0;
 var currentTask;
 var events = [];
 var canvas_sim_id;
+var first_played = true;// TODO: this will not be needed when
 
 
 export default {
@@ -105,6 +107,7 @@ export default {
               currenttimeline : 'timeline1',
               ctx: null,
               tasks:[],
+              schedule:[],
               completedtasks:[],
               ships:[new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status")],
               docks:[new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships")],
@@ -124,12 +127,12 @@ export default {
               dockStr: 1,
               completedevents :[],
               empty :[],
-              current_time : 0,
+              //current_time : 0,
               time_stamp_token : '',
               next_time_stamp : 0,
               interval_tasks : 2000,
               taskCheck:true,
-              //events: [],
+              all_events: [],
 
          }
     },
@@ -141,6 +144,9 @@ export default {
              }else {
                   return this.empty;
              }
+           },
+           current_time : function(){
+                return this.tasks[0].start_time;
            },
            interval_events: function() {
                return Math.floor(this.interval_tasks/this.events.length);
@@ -198,14 +204,15 @@ export default {
                .then(function(response){
 
                  if(response.status == 200){
-                      //that.getTimelines(response.data.id);
                       that.timelineid = response.data.current_timeline_id;
 
                       that.getDocks(response.data.id,response.data.current_timeline_id,response.data.scope.docks);
                       that.getStorages(response.data.id,response.data.current_timeline_id,response.data.scope.storages);
                       that.getShips(response.data.id,response.data.current_timeline_id,response.data.scope.ships);
-
                       //that.simulationLoop();
+                      //console.log(that.completedevents);
+                      //console.log(that.storages);
+                      //console.log(that.ships);
                  }else{
 
                  }
@@ -221,13 +228,19 @@ export default {
         getShips(sim_id,time_id,ships){
              //for(var i = 0;i < response.data.scope["ships"].length;i++){///simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all
 
+                           that = this;
+
                            that.ships = [];
+
+
 
                            for(var i = 0;i < ships.length;i++){
                                 var ship = new Ship();
                                 ship.id = ships[i].id;
                                 that.ships.push(ship);
                            }
+
+                           alert(that.ships.length);
 
 
                            for(var i = 0; i < that.ships.length;i++){
@@ -238,10 +251,14 @@ export default {
                                           //that.getTimelines(response.data.id);
 
 
-                                             var tempship = new Ship(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,response.data.containers_unload,response.data.containers_load,new Destination(response.data["destination"].id,response.data["destination"].estimated_arrival_time),response.data.status);
+                                             /*that.ships.splice(i,1,*/var tempship = new Ship(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,response.data.containers_unload,response.data.containers_load,new Destination(response.data["destination"].id,response.data["destination"].estimated_arrival_time),response.data.status);
 
                                              tempship.setDock(that.findDock(tempship.destination.id));
+
                                              that.ships.push(tempship);
+
+                                             console.log(tempship);
+                                             console.log(response);
 
                                      }else{
 
@@ -254,7 +271,10 @@ export default {
         getDocks(sim_id,time_id,docks){
              //for(var i = 0;i < response.data.scope["ships"].length;i++){///simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all
 
-                      that.docks = [];
+
+                         that = this;
+
+                         that.docks = [];
 
                            for(var i = 0;i < docks.length;i++){
                                 var dock = new Dock();
@@ -281,13 +301,13 @@ export default {
                                           //alert(connectedstorages[0].id);
                                           //alert(scheduledships[0].id);
 
-                                          var tempdock = new Dock(response.data.id,response.data.loaders_count,connectedstorages,response.data.container_count,response.data.connected_ship_id,scheduledships);
+                                          that.docks[i] = new Dock(response.data.id,response.data.loaders_count,connectedstorages,response.data.container_count,response.data.connected_ship_id,scheduledships);
 
                                           //alert(tempdock.connected_storages[0].id);
                                           //alert(tempdock.scheduled_ships[0].id);
 
-                                          tempdock.setY(i);
-                                          that.docks.push(tempdock);
+                                          //tempdock.setY(i);
+                                          that.docks[i].setY(i);
 
                                           //alert(that.docks[0].id);
                                           //alert(that.docks[0].scheduled_ships);
@@ -300,7 +320,7 @@ export default {
              //}
         },
         getStorages(sim_id,time_id,storages){
-                  that.storages = [];
+                      this.storages = [];
 
                        for(var i = 0;i < storages.length;i++){
                             var storage = new Storage();
@@ -308,22 +328,23 @@ export default {
                             that.storages.push(storage);
                        }
 
+                       //alert(storages.length+" storages length");
+                       //console.log(storages);
                        for(var i = 0; i < that.storages.length;i++){
                           axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/storage/'+sim_id+'/'+time_id+'/'+that.storages[i].id)
                                .then(function(response){
 
                                  var connections = [];
-
                                  if(response.status == 200){
                                       //that.getTimelines(response.data.id);
                                       for(var j = 0;j < response.data["connections"].length;j++){
                                           connections.push(new Connection(response.data["connections"][j].id,response.data["connections"][j].weight));
                                      }
 
-                                    var tempstorage = new Storage(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,connections,response.data.status);
-
-                                    tempstorage.setStoragePosition(i);
-                                    that.storages.push(tempstorage);
+                                    that.storages[i] = new Storage(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,connections,response.data.status);
+                                    //alert(i);
+                                    that.storages[i].setStoragePosition(i);
+                                    //that.storages[i] = tempstorage;
 
                                  }else{
                                     alert('server error with get docks please wait a moment')
@@ -331,15 +352,19 @@ export default {
 
                           });}
 
+                          //alert(this.storages.length+" storages length");
+
         },
-
+        play(){
+             if(first_played){
+                  first_played = false;
+                  this.getSimulation();
+                  this.simulationLoop();
+             }
+             that.getTasks();
+             this.playSim();
+        },
         simulationLoop(){
-
-             //c = document.getElementById('canvas');
-
-             //ctx = c.getContext('2d');
-             this.getSimulation();
-
              this.canvas  = new Canvas(this.ctx);
              //var testship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
              //var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
@@ -371,13 +396,17 @@ export default {
                   this.docks[i].drawDock(this.ctx);
              }
 
+             console.log(this.docks);
+
              for(var i = 0; i < this.storages.length;i++){
                  this.storages[i].drawStorage(this.ctx);
              }
 
-             for(var i = 0; i < this.ships.length;i++){
-                  this.ships[i].drawShip(this.ctx);
-             }
+             console.log(this.storages);
+
+          //    for(var i = 0; i < this.ships.length;i++){
+          //         this.ships[i].drawShip(this.ctx);
+          //    }
 
              var road = new Road(this.docks[this.docks.length-1],this.storages[this.storages.length-1]);
           //    var truck = new Truck(this.docks[0],this.storages[0]);
@@ -428,6 +457,13 @@ export default {
              for(var i = 0;i < this.docks.length;i++){
                   if(dockid == this.docks[i].id){
                        return this.docks[i];
+                  }
+             }
+        },
+        findShip(shipid){
+             for(var i = 0;i < this.ships.length;i++){
+                  if(shipid == this.ships[i].id){
+                       return this.ships[i];
                   }
              }
         },
@@ -484,16 +520,23 @@ export default {
                       for(var j = 0;j < response.data.tasks[i].events.length;j++){
                         events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp));
                         //event_lengths[i].push(response.data.tasks[i].events.length);
-
+                        that.all_events.push(events[j]);
 
                       }
                       that.tasks.push(new Task(counter,response.data.tasks[i].type,new Extra(response.data.tasks[i].extra.container_id,response.data.tasks[i].extra.source_id,response.data.tasks[i].extra.destination_id),response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].start_time,response.data.tasks[i].end_time,events))
                       events = [];
                       counter++;
+                      that.schedule.push(response.data.tasks[i].start_time);
                   }
 
-                  console.log(that.tasks);
-                  console.log(that.completedtasks);
+                  //var number = that.all_events.length*interval;
+                  //alert(number);
+                  //timer_tasks = setTimeout(that.getTasks(),number);
+
+                  //that.current_time = that.tasks[0].end_time;
+
+                  //console.log(that.tasks);
+                  //console.log(that.completedtasks);
 
                   //that.events.push(that.tasks[0].events);
 
@@ -513,92 +556,211 @@ export default {
 
 
        },
-       playSimulation(){
-
-            this.simulationLoop();
-
+       playSim(){
             that = this;
-            var nomoretasks = false;
-
-            if(nomoretasks){
-                 alert("all tasks have been completed");
-                 pauseSimulation();
-            }
+            var tempship;
+            var tempdock;
 
             if(play){
                  play = false;
 
-                 //setTimeout(internalCallback, factor);
-                 //clearInterval(timer);
-                 timer = setInterval(function (){
+                 timer = setInterval(function(){
 
-                      //var temp = that.tasks.shift();
+                      if(that.all_events.length > 0){
 
-                      if(that.tasks.length > 0){
+                           if(that.tasks.length != 0){
+                                if(that.tasks[0].description == "relocate the container from the storage to the dock" && that.tasks[0].start_time == that.all_events[0].time_stamp){
 
-                           that.current_time = that.tasks[0].end_time;
+                                    var truck = new Truck(that.findDock(that.tasks[0].extra.destination),that.findStorage(that.tasks[0].extra.source));
 
-                           console.log(that.current_time);
+                                    truck.setDirection();
+                                    truck.setDistance();
+                                    truck.setStart('storage');
 
-                           document.getElementById('slider').value++;
-                           //that.wait(2000);
-                           clearInterval(canvas_sim_id);
-                           clearInterval(timer_event);
-                           //if(that.tasks[0].events.length > 0){
-                           if(that.tasks[0].description == "relocate the container from the storage to the dock"){
+                                    canvas_sim_id = setInterval(frame, (((interval-10)*(that.tasks[0].events.length-1))/truck.distance));
 
-                                var truck = new Truck(that.findDock(that.tasks[0].extra.destination),that.findStorage(that.tasks[0].extra.source));
+                                    function frame() {
+                                             truck.moveTruckStorageToDock(that.ctx);
+                                    }
+                               }
+                               else if(that.tasks[0].description == "relocate the container from the dock to the storage" && that.tasks[0].start_time == that.all_events[0].time_stamp){
 
-                                truck.setDirection();
-                                truck.setDistance();
-                                //truck.drawTruck(that.ctx);
-                                truck.setStart('storage');
+                                    var truck = new Truck(that.findDock(that.tasks[0].extra.source),that.findStorage(that.tasks[0].extra.destination));
 
-                                canvas_sim_id = setInterval(frame, (interval-100)/truck.distance);
+                                    truck.setDirection();
+                                    truck.setDistance();
 
-                                function frame() {
-                                         truck.moveTruckStorageToDock(that.ctx);
-                                  }
+                                    truck.setStart('dock');
 
-                                //canvas_sim_id = setInterval(that.moveTruck(truck), (interval-100)/truck.distance);
+                                    canvas_sim_id = setInterval(frame, (((interval-10)*(that.tasks[0].events.length)-1)/truck.distance));
+
+                                    function frame() {
+                                             truck.moveTruckStorageToDock(that.ctx);
+                                    }
+
+                               }else if(that.tasks[0].description == "Ship arrives to the dock"){
+
+                                    tempship = that.getShipByEta(that.events[0].time_stamp);
+                                    //tempship.drawShip(that.ctx);
+                                    tempdock = that.findDock(that.tasks[0].extra.destination);
+                                    console.log(that.events[0].time_stamp);
+                                    console.log(that.ships);
+                                    tempdock.connected_ship_id = tempship.id;
+                                    tempship.setDock(tempdock);
+                                    tempship.drawShip(that.ctx);
+
+                                    //alert(tempdock.scheduled_ships);
+
+                               }
+                               else if(that.tasks[0].description == "Ship is leaving the dock"){
+
+                                    tempdock = that.findDock(that.tasks[0].extra.destination);
+                                    tempship = that.findShip(tempdock.connected_ship_id);
+                                    //alert(tempship);
+
+                                    tempship.removeShip(that.ctx);
+                               }
                            }
-                           else if(that.tasks[0].description == "relocate the container from the dock to the storage"){
 
-                                var truck = new Truck(that.findDock(that.tasks[0].extra.source),that.findStorage(that.tasks[0].extra.destination));
+                           that.completedevents.push(that.all_events.shift());
+                           that.tasks[0].events.shift();
 
-                                truck.setDirection();
-                                truck.setDistance();
-                                //truck.drawTruck(that.ctx);
-                                truck.setStart('dock');
-
-                                canvas_sim_id = setInterval(frame, (interval-100)/truck.distance);
-
-                                function frame() {
-                                         truck.moveTruckStorageToDock(that.ctx);
-                                }
-
+                           if(that.tasks[0].events.length == 0){
+                                that.completedtasks.push(that.tasks.shift());
+                                clearInterval(canvas_sim_id);
                            }
-                           that.completedtasks.push(that.tasks.shift());
-                           that.playEvent(that.tasks[0].events.length);
-                           //}
 
-
-                      }else if(that.next_time_stamp == 0 && that.taskCheck) {
-                           that.taskCheck = false;
-                           that.getTasks();
-
-                           //clearInterval(timer_event);
-                           //that.playEvent();
-                           //setTimeout(that.test, that.interval_events);
-                      }else if(that.next_time_stamp != 0){
-                           that.getTasks();
                       }else{
-                           nomoretasks = true;
+                           alert("press play to get more tasks");
+                           clearInterval(canvas_sim_id);
+                           play = true;
+                           clearInterval(timer);
                       }
-                 },interval);
-            }
 
+                 },interval);
+
+
+            }
        },
+     //   playSimulation(){
+       //
+     //        this.simulationLoop();
+       //
+     //        that = this;
+     //        var nomoretasks = false;
+       //
+     //        if(nomoretasks){
+     //             alert("all tasks have been completed");
+     //             pauseSimulation();
+     //        }
+       //
+     //        if(play){
+     //             play = false;
+       //
+     //             //setTimeout(internalCallback, factor);
+     //             //clearInterval(timer);
+     //             timer = setInterval(function (){
+       //
+     //                  //var temp = that.tasks.shift();
+       //
+     //                  if(that.tasks.length > 0){
+       //
+     //                       that.current_time = that.tasks[0].end_time;
+       //
+     //                       //console.log(that.current_time);
+       //
+     //                       document.getElementById('slider').value++;
+     //                       //that.wait(2000);
+     //                       clearInterval(canvas_sim_id);
+     //                       clearInterval(timer_event);
+     //                       //if(that.tasks[0].events.length > 0){
+     //                       if(that.tasks[0].description == "relocate the container from the storage to the dock"){
+       //
+     //                            var truck = new Truck(that.findDock(that.tasks[0].extra.destination),that.findStorage(that.tasks[0].extra.source));
+       //
+     //                            truck.setDirection();
+     //                            truck.setDistance();
+     //                            //truck.drawTruck(that.ctx);
+     //                            truck.setStart('storage');
+       //
+     //                            canvas_sim_id = setInterval(frame, (interval-100)/truck.distance);
+       //
+     //                            function frame() {
+     //                                     truck.moveTruckStorageToDock(that.ctx);
+     //                              }
+       //
+     //                            //canvas_sim_id = setInterval(that.moveTruck(truck), (interval-100)/truck.distance);
+     //                       }
+     //                       else if(that.tasks[0].description == "relocate the container from the dock to the storage"){
+       //
+     //                            var truck = new Truck(that.findDock(that.tasks[0].extra.source),that.findStorage(that.tasks[0].extra.destination));
+       //
+     //                            truck.setDirection();
+     //                            truck.setDistance();
+     //                            //truck.drawTruck(that.ctx);
+     //                            truck.setStart('dock');
+       //
+     //                            canvas_sim_id = setInterval(frame, (interval-100)/truck.distance);
+       //
+     //                            function frame() {
+     //                                     truck.moveTruckStorageToDock(that.ctx);
+     //                            }
+       //
+     //                       }else if(that.tasks[0].description == "Ship arrives to the dock"){
+     //                            //var tempship = that.getShipByEta(that.schedule[0]);
+     //                            //tempship.drawShip(that.ctx);
+     //                            var tempdock = that.findDock(that.tasks[0].extra.destination);
+       //
+     //                            //alert(tempdock.scheduled_ships);
+       //
+     //                            console.log(tempdock);
+       //
+     //                            for(var j = 0;j < tempdock.scheduled_ships.length;j++){
+     //                                 if(tempdock.scheduled_ships[j].eta == that.schedule[0]){
+     //                                      tempdock.connected_ship_id = tempdock.scheduled_ships[j].id;
+       //
+     //                                      var tempship = that.findShip(tempdock.connected_ship_id);;
+     //                                      tempship.setDock(tempdock);
+     //                                      tempship.drawShip(that.ctx);
+     //                                 }
+     //                            }
+       //
+       //
+     //                       }
+     //                       else if(that.tasks[0].description == "Ship is leaving the dock"){
+     //                            //var tempship = that.getShipByEta(that.tasks[0].start_time);
+     //                            //alert(tempship);
+     //                            //tempship.removeShip(that.ctx);
+     //                       }
+       //
+     //                       that.schedule.shift();
+     //                       that.completedtasks.push(that.tasks.shift());
+       //
+     //                       //var dockedship;
+     //                       if(that.tasks.length > 0){
+     //                            that.playEvent(that.tasks[0].events.length);
+     //                       }else{
+     //                            alert("click ok to load more tasks");
+     //                       }
+     //                       //}
+       //
+       //
+     //                  }else if(that.next_time_stamp == 0 && that.taskCheck) {
+     //                       that.taskCheck = false;
+     //                       that.getTasks();
+       //
+     //                       //clearInterval(timer_event);
+     //                       //that.playEvent();
+     //                       //setTimeout(that.test, that.interval_events);
+     //                  }else if(that.next_time_stamp != 0){
+     //                       that.getTasks();
+     //                  }else{
+     //                       nomoretasks = true;
+     //                  }
+     //             },interval);
+     //        }
+       //
+     //   },
        playEvent(n){
             var inter = 2900;
 
@@ -615,6 +777,16 @@ export default {
                            //clearInterval(timer_event);
                       //}
             },inter);
+       },
+       getShipByEta(eta){
+
+            for(var i = 0;i < this.ships.length;i++){
+                 if(this.ships[i].destination != undefined){
+                      if(eta == this.ships[i].destination.estimated_arrival_time){
+                          return this.ships[i];
+                      }
+                 }
+            }
        },
        wait(ms){
             var start = new Date().getTime();

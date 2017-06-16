@@ -52,16 +52,23 @@ export default class Storage {
     }
 
     this.setStoragePosition = function(index){
-         if(index % 2 == 0){
+
+         if(index == 0){
+              //var num = index/2;
+              //alert("index is 0");
+             if(index != 0){
+                  this.setY(1);
+             }
+         }else if(index % 2 == 0){
               //this.setX(index);
               var num = index/2;
-
+              //alert("index is even");
               if(index != 0){
                    this.setY(num);
               }
          }else{
               var num = (index - 1)/2;
-
+              //alert(index);
               this.setX(index);
 
               if(index != 1){
@@ -78,7 +85,7 @@ export default class Storage {
     }
 
     this.setX = function(index){
-         this.position_x = this.position_x + this.width * 2 - 10
+         this.position_x = this.position_x + this.width * 2 - 10;
          this.roadposition_x = this.position_x - 52;
          this.side = 'right';
          //this.setY(index/2);
