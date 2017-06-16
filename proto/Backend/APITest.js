@@ -1,6 +1,6 @@
 'use strict';
-// const conf = require('./meta/testConfig').development;
-const conf = require('./meta/testConfig').production;
+const conf = require('./meta/testConfig').development;
+// const conf = require('./meta/testConfig').production;
 const simulationCorrect = require('./meta/simulationCorrect');
 
 const expect = require('chai').expect;
@@ -15,6 +15,7 @@ describe('Docker API End-to-End test', function() {
 
         it('should create a new simulation and give back it\'s details', function(done) {
 
+            console.log(`${conf.apiURL}/simulation/new-simulation`);
             request({
                 method: 'PUT',
                 url: `${conf.apiURL}/simulation/new-simulation`,

@@ -36,7 +36,7 @@ class Retriever {
                 return new DockRetriever(timeline_id, simulaiton_id, db);
 
             case STORAGE_OPTIONS:
-                throw new Error("not implemented yet!");
+                return new StorageRetriever(timeline_id, simulaiton_id, db);
 
             case SHIP_OPTION:
 
@@ -46,6 +46,7 @@ class Retriever {
     }
 }
 
+// implemented
 class DockRetriever extends Retriever {
 
     // could kinda use the JS setter functions, but meh...
@@ -205,6 +206,7 @@ class DockRetriever extends Retriever {
 }
 
 // ridicoulous - > I had a Re!_R_!triever written and it wouldn't work :) 
+// implemented
 class ShipRetriver extends Retriever {
 
     setShipData(ships) {
@@ -288,6 +290,8 @@ class ShipRetriver extends Retriever {
     }
 }
 
+
+
 class StorageRetriever extends Retriever {
 
     getStorageDataQuery() {
@@ -299,10 +303,104 @@ class StorageRetriever extends Retriever {
             `AND type = "storage"; `
     }
 
+    setStorageData(storages) {
+        this.storages = storages;
+
+        // construct the associative array
+        this.storagesById = {};
+        for (let key in this.storages) {
+            this.storagesById[this.storages[key].id] = this.storages[key];
+        }
+    }
+
+    parseFlatResponse(response) {
+        let temp_storages = [];
+        console.log("received response");
+        console.log(response);
+        for (let key in response) {
+            let storage = {
+                id: response[key].id,
+                size: {
+                    x: response[key].x,
+                    y: response[key].y,
+                    z: response[key].z,
+                },
+                containers_max: response[key].containers_max,
+                containers_current: response[key].containers_current,
+            }
+            temp_storages.push(storage);
+        }
+        console.log(temp_storages);
+        this.setStorageData(temp_storages);
+    }
+
+    setConnections(connections) {
+        this.storageConnections = connections;
+    }
+
+    /**
+     * Returns a string db query for all the connections
+     */
+    getConnectionsQuery() {
+
+        // this this is not the this you would expect for some reason...
+        // it's a Query! 
+        console.log(this);
+        let arraySet = this.storages.map((o) => { return o.id; }).join('","');
+        console.log(arraySet);
+
+        return `SELECT * ` +
+            `FROM StorageDock ` +
+            `WHERE storage_id IN ("${arraySet}")`;
+    }
+
     getFlatData() {
         let retriever = this;
 
-        return retriever.db.runQuery(retriever.getStorageDataQuery(), [], "Retrieving the storage flat data");
+        return retriever.db.runQuery(retriever.getStorageDataQuery(), [], "Retrieving the storage flat data")
+            .then(ships => {
+                console.log("retrieved ships");
+                console.log(ships);
+
+                if (ships.length > 0) {
+                    retriever.parseFlatResponse(ships);
+
+                    return Promise.resolve(retriever.ships);
+                } else {
+
+                    return Promise.reject("Could not retrieve the ships");
+                }
+            });
+    }
+
+    getAggregataData() {
+
+
+        let retriever = this;
+
+        return this.db.runQuery(this.getConnectionsQuery(), [], "Getting the storage connections", true)
+            .then(connections => {
+
+                // get connections
+                console.log(connections);
+                retriever.setConnections(connections);
+
+                // map connections to correct docks
+                for (let key in connections) {
+                    if (!retriever.storagesById[connections[key].storage_id].connected_docks) {
+                        retriever.storagesById[connections[key].storage_id].connected_docks = [];
+                    }
+                    retriever.storagesById[connections[key].storage_id].connected_docks
+                        .push(connections[key]);
+                    // remove redundant properties - ?
+                    // delete connections[key].dock_id;
+                }
+
+                // return the promise of the next query
+                console.log("line 399");
+                console.log(retriever.storages);
+                return Promise.resolve(retriever.storages);
+            });
     }
 }
 
@@ -321,29 +419,23 @@ module.exports.handler = (event, context, callback) => {
     let option;
     let dataRetriever;
 
-    try {
 
-        // get the parameters
-        simulation_id = event.pathParameters.simulation_id;
-        timeline_id = event.pathParameters.timeline_id;
-        option = event.pathParameters.option;
+    // get the parameters
+    simulation_id = event.pathParameters.simulation_id;
+    timeline_id = event.pathParameters.timeline_id;
+    option = event.pathParameters.option;
 
-        // check if the option is one of the three
-        option = option.toLowerCase();
-        console.log(option);
-        // console.log(SHIP_OPTION);
-        if (option != DOCKS_OPTIONS && option != SHIP_OPTION && option != STORAGE_OPTIONS) {
-            console.log("the option was incorrectly specified, aborting...");
-            throw new Error("Wrong option!")
-        }
-        // prepare query for the db 
+    // check if the option is one of the three
+    option = option.toLowerCase();
+    console.log(option);
+    // console.log(SHIP_OPTION);
 
-        // make the retriever
-        dataRetriever = Retriever.constructRetriever(option, timeline_id, simulation_id, db);
+    // if not in any of the accepted options should abort
+    if (option != DOCKS_OPTIONS && option != SHIP_OPTION && option != STORAGE_OPTIONS) {
 
-    } catch (err) {
-
-        console.log(err);
+        console.log("the option was incorrectly specified, aborting...");
+        // throw new Error("Wrong option!")
+        // console.log(err);
         lhelper.done({
             statusCode: 400,
             body: {
@@ -352,6 +444,11 @@ module.exports.handler = (event, context, callback) => {
         }, true);
         return;
     }
+    // prepare query for the db 
+
+    // make the retriever
+    dataRetriever = Retriever.constructRetriever(option, timeline_id, simulation_id, db);
+
 
     db.start()
         .then(() => {
