@@ -37,7 +37,7 @@
                 </div>
            </div>
         <!-- <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :timelineid="timelineid" :simulationid="simulationid" :completedtasks="completedtasks" :completedevents="completedevents" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :events="events" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent> -->
-        <button @click="simulationLoop" >get simulation</button>
+        <!-- <button @click="simulationLoop" >get simulation</button> -->
       </div>
       <div class="col-md-4" id="InfoPart">
         <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
@@ -240,7 +240,7 @@ export default {
                                 that.ships.push(ship);
                            }
 
-                           alert(that.ships.length);
+                           //alert(that.ships.length);
 
 
                            for(var i = 0; i < that.ships.length;i++){
@@ -257,8 +257,8 @@ export default {
 
                                              that.ships.push(tempship);
 
-                                             console.log(tempship);
-                                             console.log(response);
+                                             //console.log(tempship);
+                                             //console.log(response);
 
                                      }else{
 
@@ -603,8 +603,8 @@ export default {
                                     tempship = that.getShipByEta(that.events[0].time_stamp);
                                     //tempship.drawShip(that.ctx);
                                     tempdock = that.findDock(that.tasks[0].extra.destination);
-                                    console.log(that.events[0].time_stamp);
-                                    console.log(that.ships);
+                                    //console.log(that.events[0].time_stamp);
+                                    //console.log(that.ships);
                                     tempdock.connected_ship_id = tempship.id;
                                     tempship.setDock(tempdock);
                                     tempship.drawShip(that.ctx);

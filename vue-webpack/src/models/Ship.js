@@ -38,7 +38,8 @@ export default class Ship {
          context.strokeRect(this.position_x+6,this.position_y+6,this.width-12,this.height-12);
          context.fillRect(this.position_x+6,this.position_y+6,this.width-12,this.height-12);
 
-         this.drawContainers(context);
+         //this.drawContainers(context);
+         this.setSize(context);
 
   }
 
@@ -92,6 +93,32 @@ export default class Ship {
              return false;
         }
 
+   }
+
+   this.selectContainer = function(context){
+
+   }
+
+   this.setSize = function(context){
+
+        var container_x = (this.width-12)/this.size.x;
+        var container_y = (this.height-12)/this.size.y;
+        var counter_x = this.position_x+6;
+        var counter_y = this.position_y+6;
+
+        for(var i = 0;i < this.size.x;i++){
+
+             var counter_y = this.position_y+6;
+
+             for(var j = 0;j < this.size.y;j++){
+                  context.fillStyle = '#ffffff';
+                  context.fillRect(counter_x,counter_y,container_x,container_y);
+                  context.fillStyle = '#000000';
+                  context.strokeRect(counter_x,counter_y,container_x,container_y);
+                  counter_y = counter_y + container_y;
+             }
+             counter_x = counter_x + container_x;
+        }
    }
 }
 }
