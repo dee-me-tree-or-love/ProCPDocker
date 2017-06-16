@@ -19,8 +19,25 @@
     </div> -->
     <!-- <div class="sim" v-else> -->
       <div class="col-md-8" id="CanvasPart">
-        <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :timelineid="timelineid" :simulationid="simulationid" :completedtasks="completedtasks" :completedevents="completedevents" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :events="events" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent>
-        <button @click="getSimulation" >get simulation</button>
+           <div class="col-md-12 topSpace" style="height:100%;border:1px solid black;" id="main-simulation">
+                <div class="topSpace" id="CanvasContainer" >
+                    <CanvasDrawingComponent  @context="setContext"  @componentsidebarcheck="setComponentBool"  :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
+                </div>
+                <div id="wrapper" class="topSpace">
+                  <div class="progress-bar text-center">
+                    <input type="range" min="0" max="100" value="0" step="1" id="slider" @mouseup="adjustTasksWithSlider"></input>
+                  </div>
+                  <div class="buttons text-center">
+                    <button @click="stepBackSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
+                    <button @click="playSimulation"  class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+                    <button @click="pauseSimulation"  class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
+                    <button @click="stepForwardSimulation"  class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
+                    <button @click="syncSimulation" class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
+                  </div>
+                </div>
+           </div>
+        <!-- <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :timelineid="timelineid" :simulationid="simulationid" :completedtasks="completedtasks" :completedevents="completedevents" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :events="events" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent> -->
+        <button @click="simulationLoop" >get simulation</button>
       </div>
       <div class="col-md-4" id="InfoPart">
         <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
@@ -43,6 +60,7 @@ import Storage from './models/Storage.js';
 import Size from './models/Size.js';
 import Destination from './models/Destination.js';
 import Event from './models/Event.js';
+import Extra from './models/Extra.js';
 import Scope from './models/Scope.js';
 import ConnectedStorage from './models/ConnectedStorage.js';
 import Connection from './models/Connection.js';
@@ -50,10 +68,21 @@ import ScheduledShip from './models/ScheduledShip.js';
 import Simulation from './models/Simulation.js';
 import Canvas from './models/Canvas.js';
 import Road from './models/Road.js';
+import CanvasDrawingComponent from './canvas_drawing_component.vue';
 
 var that;
 var sim_id_global;
 var timeline_id_global;
+var that;
+var timer;
+var timer_event;
+var play = true;
+var interval = 3000;
+var completedtasks = [];
+var counter = 0;
+var currentTask;
+var events = [];
+var canvas_sim_id;
 
 
 export default {
@@ -67,7 +96,6 @@ export default {
          //this.getTimelines(this.simulationid),
          this.timelineid = '569f56b9-9ccc-469d-9f63-43a5bd8aef1f'
          //this.waitForContext()
-         //console.log("mounted")
          //this.waitForContext()
     },
     data () {
@@ -84,6 +112,7 @@ export default {
               currentship:new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status"),
               currentdock:new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships"),
               currentstorage:new Storage("id","size","containers_max","containers_current","connections","status"),
+              trucks:[],
               eventsbool: false,
               shipsbool: false,
               storagesbool: false,
@@ -95,6 +124,11 @@ export default {
               dockStr: 1,
               completedevents :[],
               empty :[],
+              //currentTask : ,
+              time_stamp_token : '',
+              next_time_stamp : 0,
+              interval_tasks : 2000,
+              taskCheck:true,
               //events: [],
 
          }
@@ -107,6 +141,9 @@ export default {
              }else {
                   return this.empty;
              }
+           },
+           interval_events: function() {
+               return Math.floor(this.interval_tasks/this.events.length);
            },
           shipCount: function() {
               return parseInt(this.shipStr);
@@ -127,14 +164,12 @@ export default {
                    //this.ships[i].drawShip(this.ctx);
               //}
          },
-         setSidebarComponentBool(value){
+         setComponentBool(value){
               //alert(value);
               this.shipsbool= false;
               this.storagesbool= false;
               this.docksbool= false;
               this.eventsbool = false;
-
-              //console.log(this.docks[0]);
 
               if(value.includes("ship")){
                    this.shipsbool = true;
@@ -151,7 +186,7 @@ export default {
               }else if (value.includes("event")) {
                    this.eventsbool = true;
               }
-              //console.log("dock: " + this.docksbool + ", ship: " + this.shipsbool + ", storage: " + this.storagesbool + ", event: " + this.eventsbool);
+
          },
         getSimulation(){
 
@@ -161,7 +196,6 @@ export default {
 
              axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/'+this.simulationid+'?scope=ships%2Cdocks%2Cstorages%2Ccontainer_count')
                .then(function(response){
-                 console.log(response.data);
 
                  if(response.status == 200){
                       //that.getTimelines(response.data.id);
@@ -171,19 +205,16 @@ export default {
                       that.getStorages(response.data.id,response.data.current_timeline_id,response.data.scope.storages);
                       that.getShips(response.data.id,response.data.current_timeline_id,response.data.scope.ships);
 
-                      that.simulationLoop();
+                      //that.simulationLoop();
                  }else{
 
                  }
-                 //console.log(response.data.scope["ships"][0].eta);
-                  //response.data.tasks[i].id
 
                });
         },
         getTimelines(sim_id){
                  axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/'+sim_id+'/timelines')
                     .then(function(response){
-                      console.log(response.data);
                       this.timelineid = response.data.timelines.id;
                  });
         },
@@ -202,7 +233,6 @@ export default {
                            for(var i = 0; i < that.ships.length;i++){
                               axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/ship/'+sim_id+'/'+time_id+'/'+that.ships[i].id)
                                    .then(function(response){
-                                     console.log(response.data);
 
                                      if(response.status == 200){
                                           //that.getTimelines(response.data.id);
@@ -235,7 +265,6 @@ export default {
                            for(var i = 0; i < that.docks.length;i++){
                               axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/dock/'+sim_id+'/'+time_id+'/'+that.docks[i].id)
                                    .then(function(response){
-                                     console.log(response.data);
 
                                      var connectedstorages = [];
                                      var scheduledships = [];
@@ -271,8 +300,6 @@ export default {
              //}
         },
         getStorages(sim_id,time_id,storages){
-             //for(var i = 0;i < response.data.scope["ships"].length;i++){///simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all
-                  //console.log(response.data);
                   that.storages = [];
 
                        for(var i = 0;i < storages.length;i++){
@@ -284,7 +311,6 @@ export default {
                        for(var i = 0; i < that.storages.length;i++){
                           axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/storage/'+sim_id+'/'+time_id+'/'+that.storages[i].id)
                                .then(function(response){
-                                 console.log(response.data);
 
                                  var connections = [];
 
@@ -312,8 +338,7 @@ export default {
              //c = document.getElementById('canvas');
 
              //ctx = c.getContext('2d');
-             //console.log(this.ctx);
-             //this.getSimulation();
+             this.getSimulation();
 
              this.canvas  = new Canvas(this.ctx);
              //var testship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
@@ -327,19 +352,19 @@ export default {
              //tempship.setDock();
              //that.ships.push(tempship);
 
-             for(var i = 0;i < 10;i++){
-                  var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
-                  dock.setY(i);
-                  this.docks.push(dock);
-
-                  var storage = new Storage("id","size","containers_max","containers_current","connections","status");
-                  storage.setStoragePosition(i);
-                  this.storages.push(storage);
-
-                  var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
-                  tempship.setDock(dock);
-                  this.ships.push(tempship);
-             }
+          //    for(var i = 0;i < 10;i++){
+          //         var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
+          //         dock.setY(i);
+          //         this.docks.push(dock);
+             //
+          //         var storage = new Storage("id","size","containers_max","containers_current","connections","status");
+          //         storage.setStoragePosition(i);
+          //         this.storages.push(storage);
+             //
+          //         var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
+          //         tempship.setDock(dock);
+          //         this.ships.push(tempship);
+          //    }
 
 
              for(var i = 0; i < this.docks.length;i++){
@@ -355,38 +380,49 @@ export default {
              }
 
              var road = new Road(this.docks[this.docks.length-1],this.storages[this.storages.length-1]);
-             var truck = new Truck(this.docks[2],this.storages[7]);
+          //    var truck = new Truck(this.docks[0],this.storages[0]);
 
-             truck.setDirection();
+          //    truck.setDirection();
 
              road.drawRoad(this.ctx);
-             //truck.drawTruck(this.ctx);
-             var pos = 0;
-             var id = setInterval(frame, 33);
-             var check = true;
-
-             function frame() {
-                    if (pos == 500) {
-                      //clearInterval(id);
-                      check = false;
-                 } else if (pos == -1) {
-                         check = true;
-                 }
-
-                 if(check){
-                      pos++;
-                      truck.moveTruckDockToStorage(that.ctx);
-                 }else if (!check) {
-                      pos--;
-                      truck.moveTruckStorageToDock(that.ctx);
-                 }
-               }
+          //    truck.setDistance();
+          //    truck.drawTruck(this.ctx);
+          //    var pos = 0;
+          //    canvas_sim_id = setInterval(frame, 33);
+          //    var check = true;
+          //
+          //    function frame() {
+          //       if (pos == truck.distance) {
+          //             //clearInterval(id);
+          //             check = false;
+          //        } else if (pos == -1) {
+          //                check = true;
+          //        }
+          //
+          //        if(check){
+          //             pos++;
+          //             truck.moveTruckDockToStorage(that.ctx);
+          //        }else if (!check) {
+          //             pos--;
+          //             truck.moveTruckStorageToDock(that.ctx);
+          //        }
+          //      }
 
              //testship.moveForward(ctx);
              //testship.drawShip(this.ctx);
              //dock.drawDock(this.ctx);
              //storage.drawStorage(this.ctx);
 
+        },
+        moveTruck(truck){
+          truck.move(this.ctx);
+        },
+        findStorage(storageid){
+             for(var i = 0;i < this.storages.length;i++){
+                  if(storageid == this.storages[i].id){
+                       return this.storages[i];
+                  }
+             }
         },
         findDock(dockid){
              for(var i = 0;i < this.docks.length;i++){
@@ -434,13 +470,267 @@ export default {
             }).catch(function(error) {
                 console.log(error.response);
             });
-        }
-    }
+       },
+       getTasks() {
+            axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/tasks/'+this.simulationid+'/'+this.timelineid+'?limit=10&time_stamp='+this.next_time_stamp)
+              .then(function(response){
+               //console.log(response.data);
 
+               if(response.status == 200){
+
+                   //event_lengths = [];
+
+                  for(var i = 0;i < response.data.tasks.length;i++){
+                      for(var j = 0;j < response.data.tasks[i].events.length;j++){
+                        events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp));
+                        //event_lengths[i].push(response.data.tasks[i].events.length);
+
+
+                      }
+                      that.tasks.push(new Task(counter,response.data.tasks[i].type,new Extra(response.data.tasks[i].extra.container_id,response.data.tasks[i].extra.source_id,response.data.tasks[i].extra.destination_id),response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
+                      events = [];
+                      counter++;
+                  }
+
+                  console.log(that.tasks);
+                  console.log(that.completedtasks);
+
+                  //that.events.push(that.tasks[0].events);
+
+                  that.next_time_stamp = response.data.next_time_stamp;
+
+
+
+                  that.time_stamp_token = '&time_stamp=';
+
+               } else {
+                  //TODO: handle bad responses
+                  console.log("get tasks dropped out with error "+response.status);
+               }
+                 //response.data.tasks[i].id
+
+              });
+
+
+       },
+       playSimulation(){
+
+            this.simulationLoop();
+
+            that = this;
+            var nomoretasks = false;
+
+            if(nomoretasks){
+                 alert("all tasks have been completed");
+                 pauseSimulation();
+            }
+
+            if(play){
+                 play = false;
+
+                 //setTimeout(internalCallback, factor);
+                 //clearInterval(timer);
+                 timer = setInterval(function (){
+
+                      //var temp = that.tasks.shift();
+
+                      if(that.tasks.length > 0){
+
+                           document.getElementById('slider').value++;
+                           //that.wait(2000);
+                           clearInterval(canvas_sim_id);
+                           clearInterval(timer_event);
+                           //if(that.tasks[0].events.length > 0){
+                           if(that.tasks[0].description == "relocate the container from the storage to the dock"){
+
+                                var truck = new Truck(that.findDock(that.tasks[0].extra.destination),that.findStorage(that.tasks[0].extra.source));
+
+                                truck.setDirection();
+                                truck.setDistance();
+                                //truck.drawTruck(that.ctx);
+                                truck.setStart('storage');
+
+                                canvas_sim_id = setInterval(frame, (interval-100)/truck.distance);
+
+                                function frame() {
+                                         truck.moveTruckStorageToDock(that.ctx);
+                                  }
+
+                                //canvas_sim_id = setInterval(that.moveTruck(truck), (interval-100)/truck.distance);
+                           }
+                           else if(that.tasks[0].description == "relocate the container from the dock to the storage"){
+
+                                var truck = new Truck(that.findDock(that.tasks[0].extra.source),that.findStorage(that.tasks[0].extra.destination));
+
+                                truck.setDirection();
+                                truck.setDistance();
+                                //truck.drawTruck(that.ctx);
+                                truck.setStart('dock');
+
+                                canvas_sim_id = setInterval(frame, (interval-100)/truck.distance);
+
+                                function frame() {
+                                         truck.moveTruckStorageToDock(that.ctx);
+                                }
+
+                           }
+
+                           that.playEvent(that.tasks[0].events.length);
+                           //}
+                           that.completedtasks.push(that.tasks.shift());
+
+                      }else if(that.next_time_stamp == 0 && that.taskCheck) {
+                           that.taskCheck = false;
+                           that.getTasks();
+
+                           //clearInterval(timer_event);
+                           //that.playEvent();
+                           //setTimeout(that.test, that.interval_events);
+                      }else if(that.next_time_stamp != 0){
+                           that.getTasks();
+                      }else{
+                           nomoretasks = true;
+                      }
+                 },interval);
+            }
+
+       },
+       playEvent(n){
+            var inter = 2900;
+
+            that = this;
+            inter = (inter)/n;
+
+            timer_event = setInterval(function (){
+
+                      var tempevent = that.tasks[0].events.shift();
+
+                      if(that.events.length > 0){
+                           that.completedevents.push(tempevent);
+                      }//else{
+                           //clearInterval(timer_event);
+                      //}
+            },inter);
+       },
+       wait(ms){
+            var start = new Date().getTime();
+            var end = start;
+            while(end < start + ms) {
+                 end = new Date().getTime();
+            }
+       },
+       pauseSimulation(){
+            clearInterval(timer);
+            clearInterval(timer_event);
+            clearInterval(canvas_sim_id);
+            play = true;
+       },
+       stepBackSimulation(){
+            this.pauseSimulation();
+            if(that.completedtasks.length > 0){
+                 that.tasks.unshift(that.completedtasks.pop());
+                 document.getElementById('slider').value--;
+            }else {
+                 alert("no more tasks to reverse");
+            }
+       },
+
+       stepForwardSimulation(){
+            this.pauseSimulation();
+            if(that.tasks.length > 0){
+                 that.completedtasks.push(that.tasks.shift());
+                 document.getElementById('slider').value++;
+            }else {
+                 alert("no more tasks to perform");
+            }
+       },
+       syncSimulation(){
+          //TODO: create a global variable for simulation and get the ids
+          //var ts = this.completedtasks[this.completedtasks.length - 1].events[this.completedtasks[this.completedtasks.length - 1].events.length - 1].time_stamp;
+          //var s_id = this.simulation.sim_id;
+          //var t_id = this.simulation.timeline_id;
+          // axios({
+          //   method: 'patch',
+          //   url: 'https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/sync',
+          //   data: {
+          //     'simulation_id': s_id,
+          //     'timeline_id': t_id,
+          //     'time_stamp': ts
+          //   }
+          // }).then(function(response) {
+          //    if(response.status == 200) {
+          //       //TODO: success message maybe
+          //    } else {
+          //       //TODO: handle bad response
+          //    }
+          // });
+       },
+       adjustTasksWithSlider() {
+          that.pauseSimulation();
+          that = this;
+          var len = that.completedtasks.length;
+          var val = document.getElementById('slider').value;
+
+          if(len != val) {
+              if(len > val) {
+               //the user moves backwards the slider
+               for(var i = len; i >= val; i--) {
+                   that.tasks.unshift(that.completedtasks.pop());
+               }
+              } else {
+               //the user moves forwards the slider
+               console.log(val);
+               console.log(len);
+               console.log(that.tasks.length);
+               for(var i = len; i < val; i++) {
+                   if(len + that.tasks.length < val) {
+                        that.getTasks();
+                   }
+                   that.completedtasks.push(that.tasks.shift());
+               }
+              }
+          }
+          that.playSimulation();
+       },
+ },
+ components:{
+       'CanvasDrawingComponent': CanvasDrawingComponent
+ }
 }
+
 
 </script>
 <style lang="scss">
+#CanvasContainer{
+    width: 100%;
+    height: 80%;
+    overflow: scroll;
+    border: 1px solid black;
+}
+
+.buttons{
+ width: 100%;
+ height: 25%;
+}
+
+.progress-bar{
+ width: 100%;
+ height: 25%;
+ background-color: white;
+ display: flex;
+ flex-direction: row;
+ justify-content: center;
+}
+
+#wrapper{
+ width: 100%;
+ height: 25%;
+}
+
+#slider{
+ position: inherit;
+}
+
 #app {
     height: 100%;
     width: 100%;

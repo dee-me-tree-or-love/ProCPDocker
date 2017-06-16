@@ -41,6 +41,7 @@
                     time_stamp_token : '',
                     next_time_stamp : 0,
                     interval_tasks : 2000,
+                    taskCheck:true,
                }
           },
           computed:{
@@ -70,7 +71,7 @@
                                 //event_lengths[i].push(response.data.tasks[i].events.length);
                                 //console.log(response.data.tasks[i].events[0]);
                               }
-                              that.tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
+                              that.tasks.push(new Task(counter,response.data.tasks[i].type,new Extra(response.data.tasks[i].extra.container_id,response.data.tasks[i].extra.destination_id),response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
                               events = [];
 
 
@@ -82,8 +83,8 @@
                           //that.events.push(that.tasks[0].events);
 
 
-                         console.log(that.next_time_stamp);
-                         console.log(response.data.next_time_stamp);
+                         //console.log(that.next_time_stamp);
+                         //console.log(response.data.next_time_stamp);
 
                           that.next_time_stamp = response.data.next_time_stamp;
 
@@ -124,6 +125,12 @@
                playSimulation(){
 
                     that = this;
+                    var nomoretasks = false;
+
+                    if(nomoretasks){
+                         alert("all tasks have been completed");
+                         pauseSimulation();
+                    }
 
                     if(play){
                          play = false;
@@ -139,24 +146,24 @@
                               //console.log(that.tasks.length);
                               if(that.tasks.length > 0){
                                    that.completedtasks.push(temp);
-
-
-
                                    document.getElementById('slider').value++;
                                    //that.wait(2000);
                                    clearInterval(timer_event);
-
                                    //if(that.tasks[0].events.length > 0){
                                    that.playEvent(that.tasks[0].events.length);
                                    //}
-
-                              }else {
+                              }else if(that.next_time_stamp == 0 && that.taskCheck) {
+                                   that.taskCheck = false;
                                    that.getTasks();
                                    //console.log(that.events);
                                    //console.log(that.completedtasks[that.completedtasks.length-1]);
                                    //clearInterval(timer_event);
                                    //that.playEvent();
                                    //setTimeout(that.test, that.interval_events);
+                              }else if(that.next_time_stamp != 0){
+                                   that.getTasks();
+                              }else{
+                                   nomoretasks = true;
                               }
                          },interval);//that.interval_tasks);
 

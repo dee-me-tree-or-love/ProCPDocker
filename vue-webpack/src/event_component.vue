@@ -3,8 +3,8 @@
        <ul class="list-unstyled topSpace">
            <li>Event: {{ event.id }}</li>
            <li>Type: {{ event.type }}</li>
-           <li>Message: {{ event.extra }}</li>
-           <li>Timestamp: {{ event.description }}</li>
+           <li>Message: {{ event.message }}</li>
+           <li>Timestamp: {{ event.time_stamp }}</li>
       </ul>
   </div>
 </template>

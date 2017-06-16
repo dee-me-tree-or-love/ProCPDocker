@@ -11,6 +11,8 @@ export default class Truck {
      //if this is true then the direction from dock to storage is up
      //and if it is false then the direction is down.
      this.direction = true;
+     this.distance;
+     this.startplace = 'storage';
 
      this.check1 = true;
      this.check2 = true;
@@ -23,9 +25,38 @@ export default class Truck {
 
      this.setStart = function(startplace){
           if(startplace == 'storage'){
-               //
+               this.startplace = 'storage';
+               if(this.storage.side == 'right'){
+                    this.position_x = this.storage.roadposition_x+this.storage.roadwidth-7;
+                    this.position_y = this.storage.roadposition_y+2;
+               }else{
+                    this.position_x = this.storage.roadposition_x+2;
+                    this.position_y = this.storage.roadposition_y+2;
+               }
           }else{
-               //
+               this.startplace = 'dock';
+          }
+     }
+
+     this.move = function(context){
+
+          this.drawTruck(context);
+
+          if(this.startplace == 'storage'){
+               this.moveTruckStorageToDock(context);
+          }else{
+               this.moveTruckDockToStorage(context);
+          }
+     }
+
+     this.setDistance = function(){
+
+          var d = this.dock.roadposition_y-this.storage.roadposition_y;
+
+          if((d) < 0){
+               this.distance = 348 + (d * -1);
+          }else {
+               this.distance = 348 + d;
           }
      }
 
