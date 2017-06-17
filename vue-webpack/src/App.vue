@@ -248,7 +248,7 @@ export default {
                            //alert(tempdock.connected_storages[0].id);
                            //alert(tempdock.scheduled_ships[0].id);
                            tempdock.setY(i);
-                           that.getContainers(sim_id,time_id,'dock',tempdock.id,'',i);
+                           //that.getContainers(sim_id,time_id,'dock',tempdock.id,'',i);
 
                            that.docks.push(tempdock);
 
@@ -285,12 +285,12 @@ export default {
                                                   tempship.destination.estimated_arrival_time = 10;
                                              }
 
-
+                                             alert(tempship);
 
                                              tempship.setDock(that.findDock(tempship.destination.id));
                                              console.log(tempship);
                                              that.ships.push(tempship);
-                                             that.getContainers(sim_id,time_id,'ship',response.data.id,'/onboard',i);
+                                             //that.getContainers(sim_id,time_id,'ship',response.data.id,'/onboard',i);
 
                                              //console.log(tempship);
                                              //console.log(response);
@@ -354,7 +354,7 @@ export default {
                          }
                         var tempstorage = new Storage(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,connections,response.data.status);
                         //alert(i);
-                        that.getContainers(sim_id,time_id,'storage',tempstorage.id,'',i);
+                        //that.getContainers(sim_id,time_id,'storage',tempstorage.id,'',i);
                         tempstorage.setStoragePosition(i);
                         that.storages.push(tempstorage);
                      }else{
@@ -365,6 +365,7 @@ export default {
       },
       getContainers(sim_id,time_id,type,id,extra,index){
             //containers = [];
+            //alert(index);
              axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/'+type+'/'+sim_id+'/'+time_id+'/'+id+'/containers'+extra)
                   .then(function(response){
                    if(response.status == 200){
@@ -374,13 +375,16 @@ export default {
                              containers.push(new Container(response.data["containers"][j].id,response.data["containers"][j].description,response.data["containers"][j]["address"].location_id,response.data["containers"][j]["address"].x,response.data["containers"][j]["address"].y,response.data["containers"][j]["address"].z,response.data["containers"][j].weight,response.data["containers"][j].cargo_type));
                         }
                         //console.log(response);
-                        if(type == 'ship'){
-                             that.ships[index].containers = containers;
-                             //console.log(that.ships[index].containers);
-                        }else if(type == 'dock'){
+
+                        if(type == 'ship' && that.ships[index] != undefined){
+                             that.ships[index].containers.concat(containers);
+                             //alert('ships');
+                        }else if(type == 'dock' && that.docks[index] != undefined){
                              that.docks[index].containers = containers;
-                        }else {
+                             //alert('docks');
+                        }else if(type == 'storage' && that.storages[index] != undefined){
                              that.storages[index].containers = containers;
+                             //alert('storages');
                         }
                         //that.storages[i] = new Storage(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,connections,response.data.status);
                         //alert(i);
@@ -652,17 +656,17 @@ export default {
                                     tempship.removeShip(that.ctx);
                                }
                                else if(that.tasks[0].description == "unloading the container from the ship to dock"){
-                                    var tempship = that.findShip(that.tasks[0].extra.source);
-                                    var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
-                                    var tempdock = that.findDock(that.tasks[0].extra.destination);
-                                    tempdock.containers.push(tempcontainer);
+                                    //var tempship = that.findShip(that.tasks[0].extra.source);
+                                    //var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
+                                    //var tempdock = that.findDock(that.tasks[0].extra.destination);
+                                    //tempdock.containers.push(tempcontainer);
                                }
                                else if(that.tasks[0].description == "loading the container from the dock to the ship"){
-                                    var tempdock = that.findShip(that.tasks[0].extra.destination);
-                                    var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
-                                    var tempship = that.findDock(that.tasks[0].extra.source);
+                                    //var tempdock = that.findShip(that.tasks[0].extra.destination);
+                                    //var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
+                                    //var tempship = that.findDock(that.tasks[0].extra.source);
 
-                                    tempship.containers.push(tempcontainer);
+                                    //tempship.containers.push(tempcontainer);
                                }
                            }
 
