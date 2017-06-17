@@ -1,6 +1,6 @@
 import ScheduledShip from './ScheduledShip.js';
 import ConnectedStorage from './ConnectedStorage.js';
-
+import Container from './Container.js';
 
 export default class Dock {
   constructor(id,loaders_count,connected_storages,container_count,connected_ship_id,scheduled_ships) {
@@ -10,6 +10,7 @@ export default class Dock {
     this.container_count = container_count;
     this.connected_ship_id = connected_ship_id;
     this.scheduled_ships = scheduled_ships;
+    this.containers = [];
 
     this.height = 50;
     this.width = 170;

@@ -1,6 +1,7 @@
 import Destination from './Destination.js';
 import Size from './Size.js';
 import Dock from './Dock.js';
+import Container from './Container.js';
 
 export default class Ship {
   constructor(id,size,containers_max,containers_current,containers_unload,containers_load,destination,status) {
@@ -13,6 +14,7 @@ export default class Ship {
     this.destination = destination;
     this.status = status;
     this.dock = new Dock();
+    this.containers = [];
 
     this.height = 40;
     this.width = 120;

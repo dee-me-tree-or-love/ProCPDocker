@@ -1,5 +1,6 @@
 import Connection from './Connection.js';
 import Size from './Size.js';
+import Container from './Container.js';
 
 export default class Storage {
   constructor(id,size,containers_max,containers_current,connections,status) {
@@ -10,6 +11,7 @@ export default class Storage {
     this.connections = connections;
     this.status = status;
     this.side = 'left';
+    this.containers = [];
 
     this.height = 60;
     this.width = 100;
