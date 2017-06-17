@@ -282,7 +282,6 @@ export default {
               if (tempship.id == "72bc34f2-14c8-4245-b86e-0a5ea4687e9c" && tempship.destination != undefined) {
                 tempship.destination.estimated_arrival_time = 10;
               }
-
               alert(tempship);
 
               tempship.setDock(that.findDock(tempship.destination.id));
@@ -292,7 +291,6 @@ export default {
 
               //console.log(tempship);
               //console.log(response);
-
             } else {
 
             }
@@ -525,7 +523,6 @@ export default {
                 events.push(new Event(response.data.tasks[i].events[j].id, response.data.tasks[i].events[j].type, response.data.tasks[i].events[j].message, response.data.tasks[i].events[j].time_stamp, counter));
                 //event_lengths[i].push(response.data.tasks[i].events.length);
                 that.all_events.push(events[j]);
-
               }
               that.tasks.push(new Task(counter, response.data.tasks[i].type, new Extra(response.data.tasks[i].extra.container_id, response.data.tasks[i].extra.source_id, response.data.tasks[i].extra.destination_id), response.data.tasks[i].description,
                 response.data.tasks[i].status, response.data.tasks[i].start_time, response.data.tasks[i].end_time, events))
@@ -546,8 +543,6 @@ export default {
             //that.events.push(that.tasks[0].events);
 
             that.next_time_stamp = response.data.next_time_stamp;
-
-
 
             that.time_stamp_token = '&time_stamp=';
 
