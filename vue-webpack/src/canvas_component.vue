@@ -225,7 +225,6 @@
                          alert("no more tasks to reverse");
                     }
                },
-
                stepForwardSimulation(){
                     this.pauseSimulation();
                     if(that.tasks.length > 0){
@@ -237,24 +236,24 @@
                },
                syncSimulation(){
                   //TODO: create a global variable for simulation and get the ids
-                  //var ts = this.completedtasks[this.completedtasks.length - 1].events[this.completedtasks[this.completedtasks.length - 1].events.length - 1].time_stamp;
-                  //var s_id = this.simulation.sim_id;
-                  //var t_id = this.simulation.timeline_id;
-                  // axios({
-                  //   method: 'patch',
-                  //   url: 'https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/sync',
-                  //   data: {
-                  //     'simulation_id': s_id,
-                  //     'timeline_id': t_id,
-                  //     'time_stamp': ts
-                  //   }
-                  // }).then(function(response) {
-                  //    if(response.status == 200) {
-                  //       //TODO: success message maybe
-                  //    } else {
-                  //       //TODO: handle bad response
-                  //    }
-                  // });
+                  var ts = this.completedtasks[this.completedtasks.length - 1].events[this.completedtasks[this.completedtasks.length - 1].events.length - 1].time_stamp;
+                  var s_id = this.simulationid;
+                  var t_id = this.timelineid;
+                  axios({
+                    method: 'patch',
+                    url: 'https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/sync',
+                    data: {
+                      'simulation_id': s_id,
+                      'timeline_id': t_id,
+                      'time_stamp': ts
+                    }
+                  }).then(function(response) {
+                     if(response.status == 200) {
+                        //TODO: success message maybe
+                     } else {
+                        //TODO: handle bad response
+                     }
+                  });
                },
                adjustTasksWithSlider() {
                   that.pauseSimulation();
