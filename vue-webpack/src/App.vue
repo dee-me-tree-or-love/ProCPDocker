@@ -195,7 +195,7 @@ export default {
               }
 
          },
-        getSimulation(){
+         getSimulation(){
 
              //this.simulationid = '483e46a8-0994-4a39-9b57-612513468c76';
 
@@ -205,6 +205,7 @@ export default {
                .then(function(response){
 
                  if(response.status == 200){
+                      console.log(response.data);
                       that.timelineid = response.data.current_timeline_id;
 
                       that.getDocks(response.data.id,response.data.current_timeline_id,response.data.scope.docks);
@@ -522,21 +523,23 @@ export default {
                     storageArr.push(child.storage);
                 }
             });
-            console.log(shipArr);
+            var test = {
+              "docks": dockArr,
+              "storages": storageArr,
+              "ships": shipArr
+            };
+            console.log(test);
             axios({
               method: 'put',
               url: 'https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/new-simulation',
-              data: {
-                "docks": dockArr,
-                "storages": storageArr,
-                "ships": shipArr
-              },
+              data: test,
             }).then(function(response) {
                  if(response.status == 200) {
                     app.timeline_id_global = response.data.timeline_id;
                     app.sim_id_global = response.data.simulation_id;
-                    app.changeInit();
-                    app.getSimulation();
+                    console.log(response.data);
+                    //app.changeInit();
+                    //app.getSimulation();
                  } else {
                     alert("Fill in all fields!");
                  }
@@ -869,7 +872,6 @@ export default {
                  alert("no more tasks to reverse");
             }
        },
-
        stepForwardSimulation(){
             this.pauseSimulation();
             if(that.all_events.length > 0){
