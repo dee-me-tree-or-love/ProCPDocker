@@ -84,8 +84,8 @@ export default class Ship {
 
    this.setDock = function(dock){
         this.dock = dock;
-        this.position_x = dock.position_x + 8;
-        this.position_y = dock.position_y - 50;
+        this.position_x = this.dock.position_x + 8;
+        this.position_y = this.dock.position_y - 50;
    }
 
    this.checkClick = function(x,y){
