@@ -252,7 +252,9 @@ export default {
                                      if(response.status == 200){
                                           //that.getTimelines(response.data.id);
 
-
+                                             //var containers = [];
+                                             that.getContainers(sim_id,time_id,'ship',response.data.id,'/onboard',i);
+                                             //console.log(containers);
                                              var tempship = new Ship(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,response.data.containers_unload,response.data.containers_load,new Destination(response.data["destination"].id,response.data["destination"].estimated_arrival_time),response.data.status);
 
                                              //TODO take this out and change over to production
@@ -261,7 +263,7 @@ export default {
                                              }
 
                                              tempship.setDock(that.findDock(tempship.destination.id));
-                                             tempship.containers = that.getContainers(sim_id,time_id,'ship',tempship.id,'/onboard');
+                                             //console.log(tempship);
                                              that.ships.push(tempship);
 
                                              //console.log(tempship);
@@ -314,7 +316,7 @@ export default {
                                           //alert(tempdock.scheduled_ships[0].id);
 
                                           tempdock.setY(i);
-                                          tempdock.containers = that.getContainers(sim_id,time_id,'dock',tempdock.id,'');
+                                          tempdock.containers = that.getContainers(sim_id,time_id,'dock',tempdock.id,'',i);
                                           that.docks[i] = tempdock;
 
                                           //alert(that.docks[0].id);
@@ -351,7 +353,7 @@ export default {
 
                                     var tempstorage = new Storage(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,connections,response.data.status);
                                     //alert(i);
-                                    tempstorage.containers = that.getContainers(sim_id,time_id,'storage',tempstorage.id,'');
+                                    tempstorage.containers = that.getContainers(sim_id,time_id,'storage',tempstorage.id,'',i);
                                     tempstorage.setStoragePosition(i);
                                     that.storages[i] = tempstorage;
 
@@ -364,12 +366,14 @@ export default {
                           //alert(this.storages.length+" storages length");
 
         },
-        getContainers(sim_id,time_id,type,id,extra){
+        getContainers(sim_id,time_id,type,id,extra,index){
+
+             //containers = [];
 
              axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/'+type+'/'+sim_id+'/'+time_id+'/'+id+'/containers'+extra)
                   .then(function(response){
 
-                   var containers = [];
+
                    if(response.status == 200){
                          //that.getTimelines(response.data.id);
                         var containers = [];
@@ -379,9 +383,17 @@ export default {
                         }
 
                         //console.log(response);
-                        //console.log(containers);
+                        console.log(containers);
 
-                        return containers;
+                        if(type == 'ship'){
+                             that.ships[index].containers = containers;
+                             console.log(that.ships[index].containers);
+                        }else if(type == 'dock'){
+                             that.docks[index].containers = containers;
+                        }else {
+                             that.storages[index].containers = containers;
+                        }
+
                         //that.storages[i] = new Storage(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,connections,response.data.status);
                         //alert(i);
                         //that.storages[i].setStoragePosition(i);
@@ -390,8 +402,12 @@ export default {
                    }else{
                        alert('server error with get containers please wait a moment')
                    }
+                   //console.log(containers);
+                   //return containers;
 
              });
+             //console.log(containers);
+             //return containers;
         },
         play(){
              if(first_played){
@@ -599,8 +615,8 @@ export default {
        },
        playSim(){
             that = this;
-            var tempship;
-            var tempdock;
+            //var tempship;
+            //var tempdock;
 
             if(play){
                  play = false;
@@ -641,15 +657,16 @@ export default {
 
                                }else if(that.tasks[0].description == "Ship arrives to the dock"){
 
-                                    tempship = that.getShipByEta(that.events[0].time_stamp);
+                                    var tempship = that.getShipByEta(that.events[0].time_stamp);
                                     //tempship.drawShip(that.ctx);
-                                    alert(that.events[0].time_stamp);
+                                    //alert(that.events[0].time_stamp);
 
-                                    tempdock = that.findDock(that.tasks[0].extra.destination);
+                                    var tempdock = that.findDock(that.tasks[0].extra.destination);
                                     //console.log(that.events[0].time_stamp);
                                     //console.log(that.ships);
                                     tempdock.connected_ship_id = tempship.id;
                                     tempship.setDock(tempdock);
+                                    console.log(tempship);
                                     tempship.drawShip(that.ctx);
 
                                     //alert(tempdock.scheduled_ships);
@@ -657,11 +674,24 @@ export default {
                                }
                                else if(that.tasks[0].description == "Ship is leaving the dock"){
 
-                                    tempdock = that.findDock(that.tasks[0].extra.destination);
-                                    tempship = that.findShip(tempdock.connected_ship_id);
+                                    var tempdock = that.findDock(that.tasks[0].extra.destination);
+                                    var tempship = that.findShip(tempdock.connected_ship_id);
                                     //alert(tempship);
 
                                     tempship.removeShip(that.ctx);
+                               }
+                               else if(that.tasks[0].description == "unloading the container from the ship to dock"){
+                                    var tempship = that.findShip(that.tasks[0].extra.source);
+                                    var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
+                                    var tempdock = that.findDock(that.tasks[0].extra.destination);
+                                    tempdock.containers.push(tempcontainer);
+                               }
+                               else if(that.tasks[0].description == "loading the container from the dock to the ship"){
+                                    var tempdock = that.findShip(that.tasks[0].extra.destination);
+                                    var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
+                                    var tempship = that.findDock(that.tasks[0].extra.source);
+
+                                    tempship.containers.push(tempcontainer);
                                }
                            }
 
@@ -824,7 +854,7 @@ export default {
        getShipByEta(eta){
 
             for(var i = 0;i < this.ships.length;i++){
-                 console.log(this.ships[i]);
+                 //console.log(this.ships[i]);
                  if(this.ships[i].destination != undefined){
                       if(eta == this.ships[i].destination.estimated_arrival_time){
                           return this.ships[i];

@@ -107,6 +107,7 @@ export default class Ship {
         var container_y = (this.height-12)/this.size.y;
         var counter_x = this.position_x+6;
         var counter_y = this.position_y+6;
+        var counter = 0;
 
         for(var i = 0;i < this.size.x;i++){
 
@@ -117,9 +118,22 @@ export default class Ship {
                   context.fillRect(counter_x,counter_y,container_x,container_y);
                   context.fillStyle = '#000000';
                   context.strokeRect(counter_x,counter_y,container_x,container_y);
+                  //this.containers[counter].x = i;
+                  //this.containers[counter].y = j;
+                  counter++;
                   counter_y = counter_y + container_y;
              }
              counter_x = counter_x + container_x;
+        }
+   }
+
+   this.findContainer = function(id){
+        for(var i = 0;i < this.containers.length;i++){
+            if(id == this.containers[i].id){
+                  var c = this.containers[i];
+                  this.containers.splice(i,1);
+                  return c;
+            }
         }
    }
 }

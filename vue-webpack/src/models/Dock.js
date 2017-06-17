@@ -81,5 +81,15 @@ this.setY = function(index){
       }
 
  }
+
+ this.findContainer = function(id){
+      for(var i = 0;i < this.containers.length;i++){
+          if(id == this.containers[i].id){
+               var c = this.containers[i];
+               this.containers.splice(i,1);
+               return c;
+          }
+      }
+}
  }
 }
