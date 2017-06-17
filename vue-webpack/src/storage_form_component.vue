@@ -14,11 +14,11 @@ import Storage from './models/Storage.js';
 export default {
   data() {
     return {
-      storageX: "",
-      storageY: "",
-      storageZ: "",
-      storageID: "",
-      storageFilled: "",
+      storageX: "5",
+      storageY: "5",
+      storageZ: "5",
+      storageID: "1",
+      storageFilled: "60",
     }
   },
   computed: {

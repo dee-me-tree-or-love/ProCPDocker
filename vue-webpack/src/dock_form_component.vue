@@ -11,8 +11,8 @@ import Dock from './models/Dock.js';
 export default {
   data() {
     return {
-      dockID: "",
-      numberLoaders: "",
+      dockID: "1",
+      numberLoaders: "2",
     }
   },
   computed: {

@@ -17,14 +17,14 @@ import Ship from './models/Ship.js';
 export default {
   data() {
     return {
-      shipID: "",
-      eta: 0,
-      shipsX: "",
-      shipsY: "",
-      shipsZ: "",
-      shipsFilled: 0,
-      load: 0,
-      unload: 0,
+      shipID: "1",
+      eta: 6,
+      shipsX: "2",
+      shipsY: "4",
+      shipsZ: "4",
+      shipsFilled: 50,
+      load: 20,
+      unload: 10,
     }
   },
   computed: {

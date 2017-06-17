@@ -1,6 +1,6 @@
 <template>
   <div class="fluid-container" id="app">
-     <!-- <div class="init" v-if="init">
+     <div id="init" v-if="init">
       <div class="col-md-4 topSpace text-center">
         <span>Number of ships: </span><input type="number" v-model="shipStr">
         <ShipFormComponent v-for="shipCount in shipCount" ref="ship{{shipCount}}"></ShipFormComponent>
@@ -17,7 +17,7 @@
         <input type="button" value="New simulation" @click="initSim">
       </div>
     </div>
-    <div class="sim" v-else> -->
+    <div id="sim" v-else>
       <div class="col-md-8" id="CanvasPart">
            <div class="col-md-12 topSpace" style="height:100%;border:1px solid black;" id="main-simulation">
                 <div class="topSpace" id="CanvasContainer" >
@@ -38,13 +38,13 @@
            </div>
         <!-- <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :timelineid="timelineid" :simulationid="simulationid" :completedtasks="completedtasks" :completedevents="completedevents" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :events="events" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent> -->
         <!-- <button @click="simulationLoop" >get simulation</button> -->
-      <!-- </div> -->
-      <div class="col-md-4" id="InfoPart">
+      <div class="col-md-4 topSpace" id="InfoPart">
         <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
         <EventContainerComponent v-if="eventsbool" :events="events"></EventContainerComponent>
         <StorageComponent v-else-if="storagesbool" :storage="currentstorage"></StorageComponent>
         <DockComponent v-else-if="docksbool" :dock="currentdock"></DockComponent>
         <ShipComponent v-else :ship="currentship"></ShipComponent>
+      </div>
       </div>
      </div>
   </div>
@@ -875,21 +875,34 @@ export default {
 }
 
 #main-simulation{
-     height:100%;
-     border:1px solid black;
+    width: 70%;
+    height:100%;
+    border:1px solid black;
 }
 
 #CanvasPart {
-    height: 87%;
+    width: 100%;
+    height: 86%;
 }
 
 #InfoPart {
-    height: 87%;
+    width: 30%;
+    height: 100%;
 }
 
 .init_components{
   height: 100%;
   width: 33%;
   float: left;
+}
+
+#sim {
+    width: 100%;
+    height: 100%;
+}
+
+#init {
+  width: 100%;
+  height: 100%;
 }
 </style>
