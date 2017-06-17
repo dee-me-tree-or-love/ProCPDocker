@@ -12,7 +12,7 @@ export default {
   data() {
     return {
       dockID: "1",
-      numberLoaders: "2",
+      numberLoaders: 2,
     }
   },
   computed: {
