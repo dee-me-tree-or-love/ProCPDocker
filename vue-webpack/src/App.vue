@@ -132,6 +132,7 @@ export default {
       interval_tasks: 2000,
       taskCheck: true,
       all_events: [],
+      all_containers: [],
 
     }
   },
@@ -375,7 +376,19 @@ export default {
               //console.log(containers);
               that.ships[index].containers = containers;
             } else if (type == 'dock') {
-              //console.log(response);
+                 var c = 10;
+                 while(that.docks[index].containers_current > c){
+                      c = c + 10;
+                      axios.get(response.data["pagination_url"]).then(function(response){
+
+                           for (var j = 0; j < response.data["containers"].length; j++) {
+                            containers.push(new Container(response.data["containers"][j].id, response.data["containers"][j].description, response.data["containers"][j]["address"].location_id, response.data["containers"][j]["address"].x, response.data[
+                               "containers"][j]["address"].y, response.data["containers"][j]["address"].z, response.data["containers"][j].weight, response.data["containers"][j].cargo_type));
+                           }
+
+                           //console.log(response);
+                      });
+                 }
               that.docks[index].containers = containers;
             } else if (type == 'storage') {
                  var c = 10;
@@ -629,34 +642,41 @@ export default {
     },
     playSim() {
       that = this;
-      var tempship;
+      //var tempship;
       //var tempdock;
-      var tempcontainer;
+      //var tempstorage;
+      //var tempcontainer;
       var container_check = false;
 
       if (play) {
       play = false;
         timer = setInterval(function() {
 
-          if(tempcontainer != undefined){
-               tempcontainer.deselectContainer(that.ctx);
-
-               if(that.completedtasks[that.completedtasks.length-1].description == "Ship is leaving the dock"){
-                    tempship.removeShip(that.ctx);
-                    for(var j = 0;j < that.ships.length;j++){
-                        if(tempship.id == that.ships[j]){
-                             that.ships.splice(j,1);
-                        }
-                   }
-               }
-          }
+          // if(tempcontainer != undefined){
+          //      tempcontainer.deselectContainer(that.ctx);
+          //
+          //      if(that.completedtasks[that.completedtasks.length-1].description == "Ship is leaving the dock"){
+          //           tempship.removeShip(that.ctx);
+          //           for(var j = 0;j < that.ships.length;j++){
+          //               if(tempship.id == that.ships[j]){
+          //                    that.ships.splice(j,1);
+          //               }
+          //          }
+          //      }
+          // }
 
           if (that.all_events.length > 0) {
 
             if (that.tasks.length != 0) {
               if (that.tasks[0].description == "relocate the container from the storage to the dock" && that.tasks[0].start_time == that.all_events[0].time_stamp) {
 
-                var truck = new Truck(that.findDock(that.tasks[0].extra.destination), that.findStorage(that.tasks[0].extra.source));
+                var tempdock = that.findDock(that.tasks[0].extra.destination);
+                var tempstorage = that.findStorage(that.tasks[0].extra.source);
+
+                var tempcontainer = tempstorage.findContainer(that.tasks[0].extra.container);
+                tempdock.containers.push(tempcontainer);
+
+                var truck = new Truck(tempdock,tempstorage);
 
                 truck.setDirection();
                 truck.setDistance();
@@ -669,14 +689,21 @@ export default {
                 }
               } else if (that.tasks[0].description == "relocate the container from the dock to the storage" && that.tasks[0].start_time == that.all_events[0].time_stamp) {
 
-                var truck = new Truck(that.findDock(that.tasks[0].extra.source), that.findStorage(that.tasks[0].extra.destination));
+                var tempdock = that.findDock(that.tasks[0].extra.source);
+                var tempstorage = that.findStorage(that.tasks[0].extra.destination);
+
+                var tempcontainer = tempdock.findContainer(that.tasks[0].extra.container);
+                tempstorage.containers.push(tempcontainer);
+
+
+                var truck = new Truck(tempdock, tempstorage);
 
                 truck.setDirection();
                 truck.setDistance();
 
                 truck.setStart('dock');
 
-                canvas_sim_id = setInterval(frame, (((interval - 10) * (that.tasks[0].events.length) - 2) / truck.distance));
+                canvas_sim_id = setInterval(frame, (((interval - 10) * (that.tasks[0].events.length) - 3) / truck.distance));
 
                 function frame() {
                   truck.moveTruckDockToStorage(that.ctx);
@@ -684,7 +711,7 @@ export default {
 
               } else if (that.tasks[0].description == "Ship arrives to the dock") {
 
-                tempship = that.findShip(that.tasks[0].extra.source);
+                var tempship = that.findShip(that.tasks[0].extra.source);
                 //tempship.drawShip(that.ctx);
                 //alert(that.events[0].time_stamp);
 
@@ -701,27 +728,30 @@ export default {
               } else if (that.tasks[0].description == "Ship is leaving the dock") {
 
                 var tempdock = that.findDock(that.tasks[0].extra.destination);
-                tempship = that.findShip(tempdock.connected_ship_id);
+                var tempship = that.findShip(tempdock.connected_ship_id);
                 //alert(tempship);
 
                 tempship.removeShip(that.ctx);
 
               } else if (that.tasks[0].description == "unloading the container from the ship to dock") {
 
-                tempship = that.findShip(that.tasks[0].extra.source);
-                console.dir(tempship);
-                tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
+                var tempship = that.findShip(that.tasks[0].extra.source);
+                //console.dir(tempship);
+                var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
                 var tempdock = that.findDock(that.tasks[0].extra.destination);
                 tempcontainer.selectContainer(that.ctx,'#A90000');
                 tempdock.containers.push(tempcontainer);
-                //setTimeout(function(){tempcontainer.deselectContainer(that.ctx);},interval-100);
+                setTimeout(function(){tempcontainer.deselectContainer(that.ctx);},interval);
                 //container_check = true;
               } else if (that.tasks[0].description == "loading the container from the dock to the ship") {
 
-                tempship = that.findShip(that.tasks[0].extra.destination);
+                var tempship = that.findShip(that.tasks[0].extra.destination);
 
                 var tempdock = that.findDock(that.tasks[0].extra.source);
-                tempcontainer = tempdock.findContainer(that.tasks[0].extra.container);
+                console.log(tempdock);
+                console.log(tempship);
+                console.log(that.storages);
+                var tempcontainer = tempdock.findContainer(that.tasks[0].extra.container);
                 tempcontainer.selectContainer(that.ctx,'#006F0A');
                 //container_check = true;
                 tempcontainer.setContainer(tempship.position_x+6,tempship.position_y+6,(tempship.width-12)/tempship.size.x,(tempship.height-12)/tempship.size.y);
