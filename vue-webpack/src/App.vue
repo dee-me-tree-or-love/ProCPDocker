@@ -508,33 +508,48 @@ export default {
       this.init = !this.init;
     },
     initSim() {
-      var shipArr = [];
-      var dockArr = [];
-      var storageArr = [];
       var app = this;
+      var init = {
+        "docks": [],
+        "storages": [],
+        "ships": []
+      }
 
       //set up the request data
       this.$children.forEach((child) => {
         if (child.ship) {
-          shipArr.push(child.ship);
+          init.ships.push({
+            "id": child.ship.id,
+            "eta": child.ship.eta,
+            "x": child.ship.x,
+            "y": child.ship.y,
+            "z": child.ship.z,
+            "filled": child.ship.filled,
+            "unload": child.ship.unload,
+            "load": child.ship.load
+          });
         } else if (child.dock) {
-          dockArr.push(child.dock);
-        } else {
-          storageArr.push(child.storage);
+          init.docks.push({
+            "id": child.dock.id,
+            "number_loaders": child.dock.number_loaders
+          });
+        } else if (child.storage){
+          init.storages.push({
+            "x": child.storage.x,
+            "y": child.storage.y,
+            "z": child.storage.z,
+            "id": child.storage.id,
+            "filled": child.storage.filled
+          })
         }
       });
-      var dataArray = {
-        "storages": storageArr,
-        "ships": shipArr,
-        "docks": dockArr
-      };
+      var json = JSON.stringify(init);
 
       axios({
         method: 'put',
         url: 'https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/new-simulation',
-        data: dataArray,
+        data: json,
       }).then(function(response) {
-        //console.log(response);
         if (response.status == 200) {
           app.timelineid = response.data.timeline_id;
           app.simulationid = response.data.simulation_id;
@@ -546,6 +561,23 @@ export default {
       }).catch(function(error) {
         console.log(error);
       });
+
+      //alternative
+      // var xhr = new XMLHttpRequest();
+      // xhr.open("PUT", "https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/new-simulation", true);
+      // xhr.setRequestHeader('Content-type', 'application/json');
+      // xhr.onload = function () {
+      //     var response = JSON.parse(xhr.responseText);
+      //     if (xhr.readyState == 4 && xhr.status == "200") {
+      //       app.timelineid = response.data.timeline_id;
+      //       app.simulationid = response.data.simulation_id;
+      //       app.changeInit();
+      //       app.getSimulation();
+      //     } else {
+      //         console.error(response);
+      //     }
+      // };
+      // xhr.send(json);
     },
     getTasks() {
       axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/tasks/' + this.simulationid + '/' + this.timelineid + '?limit=10&time_stamp=' + this.next_time_stamp)
