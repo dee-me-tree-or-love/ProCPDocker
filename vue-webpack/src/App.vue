@@ -756,7 +756,7 @@ export default {
                 //container_check = true;
                 tempcontainer.setContainer(tempship.position_x+6,tempship.position_y+6,(tempship.width-12)/tempship.size.x,(tempship.height-12)/tempship.size.y);
                 tempship.containers.push(tempcontainer);
-                //setTimeout(function(){tempcontainer.deselectContainer(that.ctx);},interval-100);
+                setTimeout(function(){tempcontainer.deselectContainer(that.ctx);},interval);
               }
             }
 
