@@ -459,13 +459,35 @@ class TaskProducer {
         return task;
     }
 
+    static createTaskWithSrc(inter, container, src_id, dest_id, descr, stime, events) {
+        let task = {
+            id: uuid(),
+            interval_id: inter,
+            type: "container",
+            extra: {
+                container_id: container.id,
+                source_id: src_id,
+                destination_id: dest_id
+            },
+            description: descr,
+            status: "waiting",
+            start_time: stime,
+            events: events,
+            end_time: stime + events.length,
+        }
+        task.events.sort((a, b) => {
+            return a.start_time - b.start_time;
+        })
+        return task;
+    }
+
     static createScheduleTask(inter, ship_id, dock_id, descr, stime, events) {
         let task = {
             id: uuid(),
             interval_id: inter,
             type: "schedule",
             extra: {
-                ship_id: ship_id,
+                source_id: ship_id,
                 destination_id: dock_id
             },
             description: descr,
@@ -690,8 +712,8 @@ class TaskProducer {
                         events,
                         eventStartTime);
                     // aggregate it all into the task
-                    tasks.push(TaskProducer.createTask(interval_id, dock.containers_toforward[i],
-                        storageId,
+                    tasks.push(TaskProducer.createTaskWithSrc(interval_id, dock.containers_toforward[i],
+                        dock.id, storageOption.id,
                         "relocate the container from the dock to the storage", taskStartTime, events));
 
 
@@ -725,8 +747,8 @@ class TaskProducer {
                         events,
                         eventStartTime);
                     // aggregate it all into the task
-                    tasks.push(TaskProducer.createTask(interval_id, dock.containers_toforward[i],
-                        dock.id,
+                    tasks.push(TaskProducer.createTaskWithSrc(interval_id, dock.containers_toforward[i],
+                        dock.id, storageOption.id,
                         "relocate the container from the dock to the storage", taskStartTime, events));
                 }
                 // tasks = tasks.concat(tranferFromDockTasks);

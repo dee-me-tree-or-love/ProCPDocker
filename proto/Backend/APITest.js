@@ -1,6 +1,6 @@
 'use strict';
-const conf = require('./meta/testConfig').development;
-// const conf = require('./meta/testConfig').production;
+// const conf = require('./meta/testConfig').development;
+const conf = require('./meta/testConfig').production;
 const simulationCorrect = require('./meta/simulationCorrect');
 
 const expect = require('chai').expect;
@@ -22,9 +22,11 @@ describe('Docker API End-to-End test', function() {
                 json: simulationCorrect
             }, function(error, response, body) {
 
-                // console.log(">>")
-                // console.log(body.timeline_id);
-                // console.log("<<")
+                console.log(">>")
+                console.log(`${conf.apiURL}/simulation/new-simulation`);
+                console.log(body.timeline_id);
+                console.log(body.simulation_id);
+                console.log("<<")
 
                 expect(response.statusCode).to.equal(200);
                 expect(body).to.be.an('object');
