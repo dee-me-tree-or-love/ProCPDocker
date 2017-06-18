@@ -13,7 +13,7 @@ describe('Docker API End-to-End test', function() {
     this.timeout(10000);
     describe('PUT /simulation/new-simulation', function() {
 
-        it.only('should create a new simulation and give back it\'s details', function(done) {
+        it('should create a new simulation and give back it\'s details', function(done) {
 
 
             request({

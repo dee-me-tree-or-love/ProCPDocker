@@ -541,7 +541,7 @@ class TaskProducer {
                 moveToDockTasks = moveToDockTasks.concat(this.produceTransferToDockTasks(docks[i], docks[i].processintervals[j]));
                 unloadTasks = unloadTasks.concat(
                     this.produceContainerMovingTasks(docks[i], docks[i].processintervals[j],
-                        docks[i].id, docks[i].processintervals[j].eta));
+                        docks[i].processintervals[j].ship.id, docks[i].id, docks[i].processintervals[j].eta));
 
                 // concatinating
                 let phase1tasks = moveToDockTasks.concat(unloadTasks);
@@ -566,7 +566,7 @@ class TaskProducer {
 
                 loadTasks = loadTasks.concat(
                     this.produceContainerMovingTasks(docks[i], docks[i].processintervals[j],
-                        docks[i].processintervals[j].ship.id, phase2StartTime, true)
+                        docks[i].id, docks[i].processintervals[j].ship.id, phase2StartTime, true)
                 );
 
                 let movingTasks = unloadTasks.concat(loadTasks);
@@ -843,9 +843,9 @@ class TaskProducer {
     // the containers are being placed to the ship under any circumstances
 
 
-    produceContainerMovingTasks(dock, processinterval, destination_id, start_time, load) {
+    produceContainerMovingTasks(dock, processinterval, source_id, destination_id, start_time, load) {
 
-        let pickContainers = (interval_id, tasks, containers, destination, start_time, startIndex, endIndex, increment, load) => {
+        let pickContainers = (interval_id, tasks, containers, source, destination, start_time, startIndex, endIndex, increment, load) => {
 
             if (startIndex >= containers.length) {
                 return;
@@ -857,9 +857,10 @@ class TaskProducer {
             // console.log("load? -> ", load);
             // console.log("desc: " + desc);
             for (let i = startIndex; i < endIndex && i < containers.length; i++) {
-                tasks.push(TaskProducer.createTask(
+                tasks.push(TaskProducer.createTaskWithSrc(
                     interval_id,
                     containers[i],
+                    source,
                     destination,
                     desc,
                     start_time, [
@@ -869,7 +870,7 @@ class TaskProducer {
             pickContainers(interval_id, tasks, containers, destination, start_time + 1, endIndex, endIndex + increment, increment, load);
         };
 
-        let makeMoveTasksPerPint = (dock, pint, destination_id, stime, load) => {
+        let makeMoveTasksPerPint = (dock, pint, source, destination_id, stime, load) => {
             // console.log(dock);
             let tasks = [];
             let containers = pint.ship.containers_unload;
@@ -881,7 +882,7 @@ class TaskProducer {
             let start_time = stime;
             let startIndex = 0;
             let endIndex = startIndex + dock.number_loaders;
-            pickContainers(pint.id, tasks, containers, destination, start_time, startIndex, endIndex, dock.number_loaders, load);
+            pickContainers(pint.id, tasks, containers, source, destination, start_time, startIndex, endIndex, dock.number_loaders, load);
             return tasks;
         };
 
@@ -897,7 +898,7 @@ class TaskProducer {
             start_time++;
         }
 
-        moveTasks = moveTasks.concat(makeMoveTasksPerPint(dock, processinterval, destination_id, start_time, load));
+        moveTasks = moveTasks.concat(makeMoveTasksPerPint(dock, processinterval, source_id, destination_id, start_time, load));
         return moveTasks;
     }
 }
