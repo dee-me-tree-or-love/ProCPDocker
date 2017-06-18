@@ -162,7 +162,7 @@ export default {
   methods: {
     setContext(value) {
       this.ctx = value;
-      //alert(this.ctx);
+      //this.ctx);
       //for(var i = 0;i < this.ships.length;i++){
       //this.ships[i].setY(i);
       //this.ships[i].drawShip(this.ctx);
@@ -199,13 +199,15 @@ export default {
       axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/' + this.simulationid + '?scope=ships%2Cdocks%2Cstorages%2Ccontainer_count')
         .then(function(response) {
           if (response.status == 200) {
-            console.log(response.data);
+            //console.log(response.data);
             that.timelineid = response.data.current_timeline_id;
 
             that.getDocks(response.data.id, response.data.current_timeline_id, response.data.scope.docks);
             that.getStorages(response.data.id, response.data.current_timeline_id, response.data.scope.storages);
-            console.log(that.docks);
-            that.getShips(response.data.id, response.data.current_timeline_id, response.data.scope.ships);
+            //console.log(that.docks);
+            setTimeout(function(){
+               that.getShips(response.data.id, response.data.current_timeline_id, response.data.scope.ships);
+            },2000);
             //that.simulationLoop();
             //console.log(that.completedevents);
             //console.log(that.storages);
@@ -223,13 +225,15 @@ export default {
       //for(var i = 0;i < response.data.scope["ships"].length;i++){///simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all
       that = this;
       that.docks.length = 0;
+      //alert(that.docks);
+     //  for (var i = 0; i < docks.length; i++) {
+     //    var dock = new Dock();
+     //    dock.id = docks[i].id;
+     //    that.docks.push(dock);
+     //  }
+     var docks_counter = 0;
       for (var i = 0; i < docks.length; i++) {
-        var dock = new Dock();
-        dock.id = docks[i].id;
-        that.docks.push(dock);
-      }
-      for (var i = 0; i < that.docks.length; i++) {
-        axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/dock/' + sim_id + '/' + time_id + '/' + that.docks[i].id)
+        axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/dock/' + sim_id + '/' + time_id + '/' + docks[i].id)
           .then(function(response) {
             var connectedstorages = [];
             var scheduledships = [];
@@ -244,11 +248,11 @@ export default {
               var tempdock = new Dock(response.data.id, response.data.loaders_count, connectedstorages, response.data.container_count, response.data.connected_ship_id, scheduledships);
               //alert(tempdock.connected_storages[0].id);
               //alert(tempdock.scheduled_ships[0].id);
-              tempdock.setY(i);
-              //that.getContainers(sim_id,time_id,'dock',tempdock.id,'',i);
+              tempdock.setY(docks_counter);
+              that.getContainers(sim_id,time_id,'dock',tempdock.id,'',docks_counter);
 
               that.docks.push(tempdock);
-
+              docks_counter++;
               //this.timelineid = response.data.timelines.id;
 
 
@@ -265,7 +269,7 @@ export default {
 
       //that.ships = [];
       that.ships.length = 0;
-
+      var ships_counter = 0;
       for (var i = 0; i < ships.length; i++) {
         axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/ship/' + sim_id + '/' + time_id + '/' + ships[i].id)
           .then(function(response) {
@@ -282,12 +286,17 @@ export default {
               if (tempship.id == "72bc34f2-14c8-4245-b86e-0a5ea4687e9c" && tempship.destination != undefined) {
                 tempship.destination.estimated_arrival_time = 10;
               }
-              alert(tempship);
-
-              tempship.setDock(that.findDock(tempship.destination.id));
-              console.log(tempship);
+              //alert(tempship);
+              var tempdock = that.findDock(tempship.destination.id);
+              //console.log(tempship.destination.id);
+              //console.dir(that.docks);
+              tempship.setDock(tempdock);
+              //console.log(tempship);
               that.ships.push(tempship);
-              //that.getContainers(sim_id,time_id,'ship',response.data.id,'/onboard',i);
+
+              that.getContainers(sim_id,time_id,'ship',response.data.id,'/onboard',ships_counter);
+
+              ships_counter++;
 
               //console.log(tempship);
               //console.log(response);
@@ -298,20 +307,21 @@ export default {
           });
       }
 
-      console.log(that.ships);
+      //console.log(that.ships);
       //}
     },
     getStorages(sim_id, time_id, storages) {
       this.storages.length = 0;
-      for (var i = 0; i < storages.length; i++) {
-        var storage = new Storage();
-        storage.id = storages[i].id;
-        that.storages.push(storage);
-      }
+     //  for (var i = 0; i < storages.length; i++) {
+     //    var storage = new Storage();
+     //    storage.id = storages[i].id;
+     //    that.storages.push(storage);
+     //  }
       //alert(storages.length+" storages length");
       //console.log(storages);
-      for (var i = 0; i < that.storages.length; i++) {
-        axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/storage/' + sim_id + '/' + time_id + '/' + that.storages[i].id)
+      var storages_counter = 0;
+      for (var i = 0; i < storages.length; i++) {
+        axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/storage/' + sim_id + '/' + time_id + '/' + storages[i].id)
           .then(function(response) {
             var connections = [];
             if (response.status == 200) {
@@ -321,9 +331,10 @@ export default {
               }
               var tempstorage = new Storage(response.data.id, new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z), response.data.containers_max, response.data.containers_current, connections, response.data.status);
               //alert(i);
-              //that.getContainers(sim_id,time_id,'storage',tempstorage.id,'',i);
-              tempstorage.setStoragePosition(i);
+              that.getContainers(sim_id,time_id,'storage',tempstorage.id,'',storages_counter);
+              tempstorage.setStoragePosition(storages_counter);
               that.storages.push(tempstorage);
+              storages_counter++;
             } else {
               alert('server error with get docks please wait a moment')
             }
@@ -343,17 +354,29 @@ export default {
               containers.push(new Container(response.data["containers"][j].id, response.data["containers"][j].description, response.data["containers"][j]["address"].location_id, response.data["containers"][j]["address"].x, response.data[
                 "containers"][j]["address"].y, response.data["containers"][j]["address"].z, response.data["containers"][j].weight, response.data["containers"][j].cargo_type));
             }
-            //console.log(response);
 
-            if (type == 'ship' && that.ships[index] != undefined) {
-              that.ships[index].containers.concat(containers);
-              //alert('ships');
-            } else if (type == 'dock' && that.docks[index] != undefined) {
+            //console.log(response);
+            //console.dir(containers);
+            if (type == 'ship') {
+                 var c = 10;
+                 while(that.ships[index].containers_current > c){
+                      c = c + 10;
+                      axios.get(response.data["pagination_url"]).then(function(response){
+
+                           for (var j = 0; j < response.data["containers"].length; j++) {
+                             containers.push(new Container(response.data["containers"][j].id, response.data["containers"][j].description, response.data["containers"][j]["address"].location_id, response.data["containers"][j]["address"].x, response.data[
+                               "containers"][j]["address"].y, response.data["containers"][j]["address"].z, response.data["containers"][j].weight, response.data["containers"][j].cargo_type));
+                           }
+                      });
+                 }
+              console.log(containers);
+              that.ships[index].containers = containers;
+            } else if (type == 'dock') {
+              //console.log(response);
               that.docks[index].containers = containers;
-              //alert('docks');
-            } else if (type == 'storage' && that.storages[index] != undefined) {
+            } else if (type == 'storage') {
+              //console.log(response);
               that.storages[index].containers = containers;
-              //alert('storages');
             }
             //that.storages[i] = new Storage(response.data.id,new Size(response.data["size"].x, response.data["size"].y, response.data["size"].z),response.data.containers_max,response.data.containers_current,connections,response.data.status);
             //alert(i);
@@ -373,8 +396,8 @@ export default {
         first_played = false;
         //this.getSimulation();
         this.simulationLoop();
+        that.getTasks();
       }
-      that.getTasks();
       this.playSim();
     },
     simulationLoop() {
@@ -386,19 +409,19 @@ export default {
       //var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
       //tempship.setDock();
       //that.ships.push(tempship);
-      //    for(var i = 0;i < 10;i++){
-      //         var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
-      //         dock.setY(i);
-      //         this.docks.push(dock);
-      //
-      //         var storage = new Storage("id","size","containers_max","containers_current","connections","status");
-      //         storage.setStoragePosition(i);
-      //         this.storages.push(storage);
-      //
-      //         var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
-      //         tempship.setDock(dock);
-      //         this.ships.push(tempship);
-      //    }
+     //     for(var i = 0;i < 10;i++){
+     //          var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
+     //          dock.setY(i);
+     //          this.docks.push(dock);
+         //
+     //          var storage = new Storage("id","size","containers_max","containers_current","connections","status");
+     //          storage.setStoragePosition(i);
+     //          this.storages.push(storage);
+         //
+     //          var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
+     //          tempship.setDock(dock);
+     //          this.ships.push(tempship);
+     //     }
       for (var i = 0; i < this.docks.length; i++) {
         this.docks[i].drawDock(this.ctx);
       }
@@ -495,7 +518,7 @@ export default {
         url: 'https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/new-simulation',
         data: dataArray,
       }).then(function(response) {
-        console.log(response);
+        //console.log(response);
         if (response.status == 200) {
           app.timelineid = response.data.timeline_id;
           app.simulationid = response.data.simulation_id;
@@ -560,11 +583,13 @@ export default {
       that = this;
       //var tempship;
       //var tempdock;
+      var tempcontainer = undefined;
+      var container_check = false;
 
       if (play) {
-        play = false;
-
+      play = false;
         timer = setInterval(function() {
+
 
           if (that.all_events.length > 0) {
 
@@ -621,15 +646,19 @@ export default {
 
                 tempship.removeShip(that.ctx);
               } else if (that.tasks[0].description == "unloading the container from the ship to dock") {
+                //console.log(that.tasks[0].extra.container);
                 //var tempship = that.findShip(that.tasks[0].extra.source);
-                //var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
+                //tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
                 //var tempdock = that.findDock(that.tasks[0].extra.destination);
+                //tempcontainer.selectContainer(that.ctx);
                 //tempdock.containers.push(tempcontainer);
+                //container_check = true;
               } else if (that.tasks[0].description == "loading the container from the dock to the ship") {
-                //var tempdock = that.findShip(that.tasks[0].extra.destination);
-                //var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
-                //var tempship = that.findDock(that.tasks[0].extra.source);
 
+                //var tempdock = that.findShip(that.tasks[0].extra.destination);
+                //tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
+                //var tempship = that.findDock(that.tasks[0].extra.source);
+                //container_check = true;
                 //tempship.containers.push(tempcontainer);
               }
             }
@@ -642,8 +671,12 @@ export default {
               clearInterval(canvas_sim_id);
             }
 
+            if (that.all_events.length == 1){
+                 that.getTasks();
+            }
+
           } else {
-            alert("press play to get more tasks");
+            //alert("press play to get more tasks");
             clearInterval(canvas_sim_id);
             play = true;
             clearInterval(timer);
@@ -653,23 +686,6 @@ export default {
 
 
       }
-    },
-    playEvent(n) {
-      var inter = 2900;
-
-      that = this;
-      inter = (inter) / n;
-
-      timer_event = setInterval(function() {
-
-        var tempevent = that.tasks[0].events.shift();
-
-        if (that.events.length > 0) {
-          that.completedevents.push(tempevent);
-        } //else{
-        //clearInterval(timer_event);
-        //}
-      }, inter);
     },
     getShipByEta(eta) {
 

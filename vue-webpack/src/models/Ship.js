@@ -118,8 +118,9 @@ export default class Ship {
                   context.fillRect(counter_x,counter_y,container_x,container_y);
                   context.fillStyle = '#000000';
                   context.strokeRect(counter_x,counter_y,container_x,container_y);
-                  //this.containers[counter].x = i;
-                  //this.containers[counter].y = j;
+                  this.containers[counter].setContainer(counter_x,counter_y,container_x,container_y);
+                  this.containers[counter].x = i;
+                  this.containers[counter].y = j;
                   counter++;
                   counter_y = counter_y + container_y;
              }
