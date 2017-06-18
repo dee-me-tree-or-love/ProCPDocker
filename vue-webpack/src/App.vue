@@ -1,5 +1,9 @@
 <template>
 <div class="fluid-container" id="app">
+  <div class="jumbotron text-center">
+  <h1>Docker</h1>
+  <p>Set up your environment!</p>
+</div>
   <div id="init" v-if="init">
     <div class="col-md-4 topSpace text-center">
       <span>Number of ships: </span><input type="number" v-model="shipStr">
@@ -14,7 +18,7 @@
       <DockFormComponent v-for="dockCount in dockCount" ref="dock{{dockCount}}"></DockFormComponent>
     </div>
     <div class="col-md-12 text-center topSpace">
-      <input type="button" value="New simulation" @click="initSim">
+      <input type="button" class="btn" value="New simulation" @click="initSim">
     </div>
   </div>
   <div id="sim" v-else>

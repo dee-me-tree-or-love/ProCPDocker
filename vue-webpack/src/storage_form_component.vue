@@ -1,10 +1,10 @@
 <template lang="html">
   <div id="storages" class="col-md-12 ship-form topSpace">
-    <input v-model="storageID" placeholder="ID">
-    <input v-model="storageX" placeholder="X">
-    <input v-model="storageY" placeholder="Y">
-    <input v-model="storageZ" placeholder="Z">
-    <input v-model="storageFilled" placeholder="Filled %">
+    <span>ID</span><input v-model="storageID" placeholder="ID">
+    <span>X</span><input v-model="storageX" placeholder="X">
+    <span>Y</span><input v-model="storageY" placeholder="Y">
+    <span>Z</span><input v-model="storageZ" placeholder="Z">
+    <span>Filled %</span><input v-model="storageFilled" placeholder="Filled %">
   </div>
 </template>
 

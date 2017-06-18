@@ -1,7 +1,7 @@
 <template lang="html">
   <div id="storages" class="col-md-12 ship-form topSpace">
-    <input v-model="dockID" placeholder="ID">
-    <input v-model="numberLoaders" placeholder="Number of Loaders">
+    <span>ID</span><input v-model="dockID" placeholder="ID">
+    <span>Number of Loaders</span><input v-model="numberLoaders" placeholder="Number of Loaders">
   </div>
 </template>
 
