@@ -21,8 +21,8 @@ export default class Container {
          this.position_y = counter_y;
     }
 
-    this.selectContainer = function(context){
-         context.fillStyle = '#A90000';
+    this.selectContainer = function(context,colour){
+         context.fillStyle = colour;
          context.fillRect(this.position_x,this.position_y,this.width,this.height);
          context.fillStyle = '#000000';
          context.strokeRect(this.position_x,this.position_y,this.width,this.height);
