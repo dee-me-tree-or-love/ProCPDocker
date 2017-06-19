@@ -21,6 +21,9 @@
       <input type="button" class="btn btn-success" value="New simulation" @click="initSim">
     </div>
   </div>
+  <div id="loading" v-else-if="!api_simulation">
+    <div class="loader"></div>
+  </div>
   <div id="sim" v-else>
     <div class="col-md-8" id="CanvasPart">
       <div class="col-md-12 topSpace" style="height:100%;border:1px solid black;" id="main-simulation">
@@ -144,8 +147,6 @@ export default {
       api_ships:false,
       api_ship_containers: false,
       api_storage_containers: false,
-      api_simulation: false,
-
     }
   },
   computed: {
@@ -171,6 +172,15 @@ export default {
     dockCount: function() {
       return parseInt(this.dockStr);
     },
+    api_simulation: function() {
+      //for debugging uncomment the line below
+      //return true;
+      if(this.api_ships && this.api_docks && this.api_storages && this.api_ship_containers && this.api_storage_containers){
+        return true;
+      } else {
+        return false;
+      }
+    }
   },
   methods: {
     setContext(value) {
@@ -972,5 +982,29 @@ html{
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+// loading page css
+#loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader {
+    border: 28px solid #f3f3f3; /* Light grey */
+    border-top: 28px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 240px;
+    height: 240px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 </style>
