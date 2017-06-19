@@ -88,6 +88,7 @@ var canvas_sim_id;
 var first_played = true; // TODO: this will not be needed when
 
 
+
 export default {
   name: 'app',
   mounted() {
@@ -138,6 +139,12 @@ export default {
       storage_pagination_url:"https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/storage/",
       ship_pagination_url:"https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/ship/",
       dock_pagination_url:"https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/dock/",
+      api_storages:false,
+      api_docks:false,
+      api_ships:false,
+      api_ship_containers: false,
+      api_storage_containers: false,
+      api_simulation: false,
 
     }
   },
@@ -213,7 +220,9 @@ export default {
             //console.log(that.docks);
             setTimeout(function(){
                that.getShips(response.data.id, response.data.current_timeline_id, response.data.scope.ships);
-            },2000);
+          },2000);
+               that.api_simulation = true;
+               console.log(that.api_simulation);
             //that.simulationLoop();
             //console.log(that.completedevents);
             //console.log(that.storages);
@@ -255,6 +264,13 @@ export default {
               that.getDockContainers(sim_id, time_id,tempdock.id,docks_counter,0);
 
               docks_counter++;
+
+              if(docks_counter == docks.length){
+                   console.log("docks");
+                   that.api_docks = true;
+                   console.log(that.api_docks);
+              }
+
               //this.timelineid = response.data.timelines.id;
 
 
@@ -289,6 +305,11 @@ export default {
 
               ships_counter++;
 
+              if(ships_counter == ships.length){
+                   that.api_ships = true;
+                   console.log("api ships");
+                   console.log(that.api_ships);
+              }
 
               console.dir(that.ships);
 
@@ -323,6 +344,13 @@ export default {
               that.getStorageContainers(sim_id, time_id,tempstorage.id,storages_counter,0);
 
               storages_counter++;
+
+              if(storages_counter == storages.length){
+                   that.api_storages = true;
+                   console.log("api storages");
+                   console.log(that.api_storages);
+              }
+
             } else {
               alert('server error with get docks please wait a moment')
             }
@@ -346,6 +374,10 @@ export default {
                    //that.storages[index].containers.concat(containers);
                    if(response.data["pagination_token"] != null){
                         that.getStorageContainers(sim_id, time_id, id,index,response.data["pagination_token"]);
+                   }else{
+                             that.api_containers = true;
+                             console.log("api storages containers");
+                             console.log(that.api_storage_containers);
                    }
               });
 
@@ -365,6 +397,10 @@ export default {
                    //that.ships[index].containers.concat(containers);
                    if(response.data["pagination_token"] != ""){
                         that.getShipContainers(sim_id, time_id, id,index,response.data["pagination_token"]);
+                   }else{
+                             that.api_containers = true;
+                             console.log("api ship containers");
+                             console.log(that.api_ship_containers);
                    }
               });
 
@@ -385,6 +421,9 @@ export default {
                    if(response.data["pagination_token"] != null){
                         that.getDockContainers(sim_id, time_id, id,index,response.data["pagination_token"]);
                    }
+                   else{
+
+                   }
               });
 
     },
@@ -399,26 +438,9 @@ export default {
     },
     simulationLoop() {
       this.canvas = new Canvas(this.ctx);
-      //var testship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
-      //var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
-      //var storage = new Storage("id","size","containers_max","containers_current","connections","status");
+
       this.canvas.drawBackground();
-      //var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
-      //tempship.setDock();
-      //that.ships.push(tempship);
-     //     for(var i = 0;i < 10;i++){
-     //          var dock = new Dock("id","loaders_count","connected_storages","container_count","connected_ship_id","scheduled_ships");
-     //          dock.setY(i);
-     //          this.docks.push(dock);
-         //
-     //          var storage = new Storage("id","size","containers_max","containers_current","connections","status");
-     //          storage.setStoragePosition(i);
-     //          this.storages.push(storage);
-         //
-     //          var tempship = new Ship("id","size","containers_max","containers_current","containers_unload","containers_load","destination","status");
-     //          tempship.setDock(dock);
-     //          this.ships.push(tempship);
-     //     }
+
       for (var i = 0; i < this.docks.length; i++) {
         this.docks[i].drawDock(this.ctx);
       }
@@ -426,40 +448,11 @@ export default {
       for (var i = 0; i < this.storages.length; i++) {
         this.storages[i].drawStorage(this.ctx);
       }
-      //console.log(this.storages);
-      //    for(var i = 0; i < this.ships.length;i++){
-      //         this.ships[i].drawShip(this.ctx);
-      //    }
+
       var road = new Road(this.docks[this.docks.length - 1], this.storages[this.storages.length - 1]);
       //    var truck = new Truck(this.docks[0],this.storages[0]);
       //    truck.setDirection();
       road.drawRoad(this.ctx);
-      //    truck.setDistance();
-      //    truck.drawTruck(this.ctx);
-      //    var pos = 0;
-      //    canvas_sim_id = setInterval(frame, 33);
-      //    var check = true;
-      //
-      //    function frame() {
-      //       if (pos == truck.distance) {
-      //             //clearInterval(id);
-      //             check = false;
-      //        } else if (pos == -1) {
-      //                check = true;
-      //        }
-      //
-      //        if(check){
-      //             pos++;
-      //             truck.moveTruckDockToStorage(that.ctx);
-      //        }else if (!check) {
-      //             pos--;
-      //             truck.moveTruckStorageToDock(that.ctx);
-      //        }
-      //      }
-      //testship.moveForward(ctx);
-      //testship.drawShip(this.ctx);
-      //dock.drawDock(this.ctx);
-      //storage.drawStorage(this.ctx);
     },
     moveTruck(truck) {
       truck.move(this.ctx);
@@ -644,7 +637,7 @@ export default {
                 var tempcontainer = tempstorage.findContainer(that.tasks[0].extra.container);
 
                 tempdock.containers.push(tempcontainer);
-                //console.log(tempcontainer);
+
                 var truck = new Truck(tempdock,tempstorage);
 
                 truck.setDirection();
@@ -720,6 +713,7 @@ export default {
                 var tempship = that.findShip(that.tasks[0].extra.destination);
                 console.dir(tempship);
                 console.dir(tempdock);
+                console.dir(that.storages);
                 tempcontainer.setContainer(tempship.position_x+6,tempship.position_y+6,(tempship.width-12)/tempship.size.x,(tempship.height-12)/tempship.size.y);
                 tempcontainer.selectContainer(that.ctx,'#006F0A');
                 //container_check = true;
