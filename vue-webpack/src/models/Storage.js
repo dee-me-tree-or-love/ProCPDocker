@@ -96,9 +96,9 @@ export default class Storage {
     this.findContainer = function(id){
          for(var i = 0;i < this.containers.length;i++){
               if(id == this.containers[i].id){
-                   var c = this.containers[i];
-                   this.containers.splice(i,1);
-                   return c;
+                  var c = this.containers[i];
+                  this.containers.splice(i,1);
+                  return c;
               }
          }
     }

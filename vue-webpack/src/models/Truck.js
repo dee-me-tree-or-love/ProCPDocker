@@ -53,7 +53,7 @@ export default class Truck {
 
           var d = this.dock.roadposition_y-this.storage.roadposition_y;
 
-          if((d) < 0){
+          if(d < 0){
                this.distance = 348 + (d * -1);
           }else {
                this.distance = 348 + d;
