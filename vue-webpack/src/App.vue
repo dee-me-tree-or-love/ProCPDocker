@@ -504,6 +504,8 @@ export default {
       });
       var json = JSON.stringify(init);
 
+      app.changeInit();
+
       axios({
         method: 'put',
         url: 'https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/simulation/new-simulation',
@@ -512,7 +514,6 @@ export default {
         if (response.status == 200) {
           app.timelineid = response.data.timeline_id;
           app.simulationid = response.data.simulation_id;
-          app.changeInit();
           app.getAll();
         } else {
           alert("Fill in all fields!");
