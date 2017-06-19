@@ -18,7 +18,7 @@
       <DockFormComponent v-for="dockCount in dockCount" ref="dock{{dockCount}}"></DockFormComponent>
     </div>
     <div class="col-md-12 text-center topSpace">
-      <input type="button" class="btn btn-success" value="New simulation" @click="initSim">
+      <input type="button" class="btn btn-success" style="margin-bottom:30px;" value="New simulation" @click="initSim">
     </div>
   </div>
   <div id="loading" v-else-if="!api_simulation">
