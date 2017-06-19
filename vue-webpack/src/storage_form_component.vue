@@ -1,10 +1,10 @@
 <template lang="html">
-  <div id="storages" class="col-md-12 ship-form topSpace">
-    <span>ID</span><input v-model="storageID" placeholder="ID">
+  <div id="storages" class="col-md-12 form-component topSpace">
+    <span class="topSpace">ID</span><input v-model="storageID" placeholder="ID">
     <span>X</span><input v-model="storageX" placeholder="X">
     <span>Y</span><input v-model="storageY" placeholder="Y">
     <span>Z</span><input v-model="storageZ" placeholder="Z">
-    <span>Filled %</span><input v-model="storageFilled" placeholder="Filled %">
+    <span>Filled %</span><input v-model="storageFilled" placeholder="Filled %" class="margin-bot">
   </div>
 </template>
 
@@ -37,13 +37,4 @@ export default {
 </script>
 
 <style lang="css">
-
-.storage-form{
-  border: 1px solid black;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
 </style>

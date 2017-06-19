@@ -1,7 +1,7 @@
 <template lang="html">
-  <div id="storages" class="col-md-12 ship-form topSpace">
-    <span>ID</span><input v-model="dockID" placeholder="ID">
-    <span>Number of Loaders</span><input v-model="numberLoaders" placeholder="Number of Loaders">
+  <div id="storages" class="col-md-12 form-component topSpace">
+    <span>ID</span class="topSpace"><input v-model="dockID" placeholder="ID" class="top">
+    <span>Number of Loaders</span><input v-model="numberLoaders" placeholder="Number of Loaders" class="margin-bot">
   </div>
 </template>
 
@@ -28,13 +28,4 @@ export default {
 </script>
 
 <style lang="css">
-
-.dock-form{
-  border: 1px solid black;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
 </style>

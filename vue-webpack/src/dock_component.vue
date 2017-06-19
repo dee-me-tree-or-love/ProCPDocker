@@ -23,8 +23,9 @@
 
 <style media="screen">
   #DockComponentContainer{
-     height: 50%;
+     height: 49%;
      width: 100%;
      border: 1px solid black;
+     border-radius: 7px;
   }
 </style>

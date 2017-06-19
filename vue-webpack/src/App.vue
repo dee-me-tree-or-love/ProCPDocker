@@ -1,7 +1,7 @@
 <template>
 <div class="fluid-container" id="app">
   <div id="init" v-if="init">
-    <div class="jumbotron text-center">
+    <div class="jumbotron text-center no-margin-bot">
     <h1>Docker</h1>
     <p>Set up your environment!</p>
   </div>
@@ -18,7 +18,7 @@
       <DockFormComponent v-for="dockCount in dockCount" ref="dock{{dockCount}}"></DockFormComponent>
     </div>
     <div class="col-md-12 text-center topSpace">
-      <input type="button" class="btn" value="New simulation" @click="initSim">
+      <input type="button" class="btn btn-success" value="New simulation" @click="initSim">
     </div>
   </div>
   <div id="sim" v-else>
@@ -28,9 +28,9 @@
           <CanvasDrawingComponent @context="setContext" @componentsidebarcheck="setComponentBool" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasDrawingComponent>
         </div>
         <div id="wrapper" class="topSpace">
-          <div class="progress-bar text-center">
+          <!-- <div class="progress-bar text-center">
             <input type="range" min="0" max="100" value="0" step="1" id="slider" @mouseup="adjustTasksWithSlider"></input>
-          </div>
+          </div> -->
           <div class="buttons text-center">
             <button @click="stepBackSimulation" class="btn btn-info btn-lg"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
             <button @click="play" class="btn btn-success btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
@@ -40,8 +40,6 @@
           </div>
         </div>
       </div>
-      <!-- <CanvasComponent   @context="setContext" @componentsidebarcheck="setSidebarComponentBool" :timelineid="timelineid" :simulationid="simulationid" :completedtasks="completedtasks" :completedevents="completedevents" :currentship="currentship" :currentdock="currentdock" :currentstorage="currentstorage" :tasks="tasks" :events="events" :ships="ships" :docks="docks" :storages="storages" :storagesbool="storagesbool" :docksbool="docksbool" :eventsbool="eventsbool" :shipsbool="shipsbool"></CanvasComponent> -->
-      <!-- <button @click="simulationLoop" >get simulation</button> -->
       <div class="col-md-4 topSpace" id="InfoPart">
         <TaskContainerComponent :tasks="tasks"></TaskContainerComponent>
         <EventContainerComponent v-if="eventsbool" :events="events"></EventContainerComponent>
@@ -880,6 +878,10 @@ export default {
 
 </script>
 <style lang="scss">
+html{
+  background-color: #eee;
+}
+
 #CanvasContainer {
     width: 100%;
     height: 80%;
@@ -931,6 +933,7 @@ export default {
     width: 70%;
     height: 100%;
     border: 1px solid black;
+    border-radius: 7px;
 }
 
 #CanvasPart {
@@ -957,5 +960,23 @@ export default {
 #init {
     width: 100%;
     height: 100%;
+    background-color: #eee;
+}
+
+.no-margin-bot {
+  margin-bottom: 0;
+}
+
+.margin-bot {
+  margin-bottom: 3%;
+}
+
+.form-component {
+  border: 1px solid black;
+  border-radius: 7px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 </style>

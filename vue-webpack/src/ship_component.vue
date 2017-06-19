@@ -23,10 +23,11 @@
 #ShipComponentContainer{
     border: 1px solid black;
     width: 100%;
-    height: 50%;
+    height: 49%;
     overflow-y:scroll;
     overflow-x:hidden;
     border:1px solid black;
     overflow:false;
+    border-radius: 7px;
 }
 </style>
