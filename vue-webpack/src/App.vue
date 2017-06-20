@@ -769,49 +769,75 @@ export default {
     stepBackSimulation() {
       var that = this;
       that.pauseSimulation();
-      //var len = that.completedtasks.length - 1;
+      var reverseTask = that.completedtasks.length - 1;
 
       if(that.completedtasks.length > 0){
-        if(that.completedtasks[0].description == "relocate the container from the storage to the dock") {
-          var tempdock = that.findDock(that.completedtasks[0].extra.destination);
-          var tempstorage = that.findStorage(that.completedtasks[0].extra.source);
-          tempstorage.containers.push(tempdock.containers.shift());
-        } else if(that.tasks[0].description == "relocate the container from the dock to the storage"){
-          var tempdock = that.findDock(that.completedtasks[0].extra.source);
-          var tempstorage = that.findStorage(that.completedtasks[0].extra.destination);
-          tempdock.containers.push(tempstorage.containers.shift());
-        } else if(that.tasks[0].description == "unloading the container from the ship to dock"){
-          var tempship = that.findShip(that.completedtasks[0].extra.source);
-          var tempdock = that.findDock(that.completedtasks[0].extra.destination);
-          tempship.containers.push(tempdock.containers.shift());
-        } else if(that.tasks[0].description == "loading the container from the dock to the ship"){
-          var tempdock = that.findDock(that.completedtasks[0].extra.source);
-          var tempship = that.findShip(that.completedtasks[0].extra.destination);
-          tempdock.containers.push(tempship.containers.shift());
-        } else if(that.tasks[0].description == "Ship arrives to the dock"){
-          var tempship = that.findShip(that.completedtasks[0].extra.source);
-          var tempdock = that.findDock(that.completedtasks[0].extra.destination);
+        if(that.completedtasks[reverseTask].description == "relocate the container from the storage to the dock") {
+          var tempdock = that.findDock(that.completedtasks[reverseTask].extra.destination);
+          var tempstorage = that.findStorage(that.completedtasks[reverseTask].extra.source);
+          tempstorage.containers.push(tempdock.containers[tempdock.containers.length - 1]);
+        } else if(that.completedtasks[reverseTask].description == "relocate the container from the dock to the storage"){
+          var tempdock = that.findDock(that.completedtasks[reverseTask].extra.source);
+          var tempstorage = that.findStorage(that.completedtasks[reverseTask].extra.destination);
+          tempdock.containers.push(tempstorage.containers[tempstorage.containers.length - 1]);
+        } else if(that.completedtasks[reverseTask].description == "unloading the container from the ship to dock"){
+          var tempship = that.findShip(that.completedtasks[reverseTask].extra.source);
+          var tempdock = that.findDock(that.completedtasks[reverseTask].extra.destination);
+          tempship.containers.push(tempdock.containers[tempdock.containers.length - 1]);
+        } else if(that.completedtasks[reverseTask].description == "loading the container from the dock to the ship"){
+          var tempdock = that.findDock(that.completedtasks[reverseTask].extra.source);
+          var tempship = that.findShip(that.completedtasks[reverseTask].extra.destination);
+          tempdock.containers.push(tempship.containers[tempship.containers.length - 1]);
+        } else if(that.completedtasks[reverseTask].description == "Ship arrives to the dock"){
+          var tempship = that.findShip(that.completedtasks[reverseTask].extra.source);
+          var tempdock = that.findDock(that.completedtasks[reverseTask].extra.destination);
           tempdock.connected_ship_id = "";
           tempship.removeShip(that.ctx);
-        } else if(that.tasks[0].description == "Ship is leaving the dock"){
-          var tempdock = that.findDock(that.completedtasks[0].extra.destination);
+        } else if(that.completedtasks[reverseTask].description == "Ship is leaving the dock"){
+          var tempdock = that.findDock(that.completedtasks[reverseTask].extra.destination);
           var tempship = that.findShip(tempdock.connected_ship_id);
           tempdock.connected_ship_id = tempship.id;
           tempship.drawShip(that.ctx);
         }
-        var len = that.tasks[0].events.length - 1;
-        while(that.all_events[0].time_stamp != that.tasks[0].events[len].time_stamp){
+
+        var len = (that.tasks[0].end_time - that.tasks[0].start_time) - 1;
+        while(that.all_events[0].time_stamp != (that.tasks[0].end_time - 1)){
           that.all_events.shift();
         }
         that.all_events.shift();
+
         for (var i = len; i >= 0; i--) {
-          that.all_events.push(that.tasks[0].events[i]);
+          that.all_events.unshift(that.completedevents[that.completedevents.length - 1]);
         }
-        len = that.completedtasks[0].events.length;
+
+        var temp = [];
+        len = (that.completedtasks[0].end_time - that.completedtasks[0].start_time) - 1;
         for (var i = len; i >= 0; i--) {
-          that.all_events.push(that.completedtasks[0].events[i]);
+          temp.unshift(that.completedevents.shift());
         }
-        that.tasks.push(that.completedtasks.shift());
+        for (var i = 0; i <= len; i++) {
+          that.completedtasks[reverseTask].events.unshift(temp[i]);
+          that.all_events.unshift(temp[i]);
+        }
+
+        // console.log(that.all_events);
+        // while(that.all_events[that.all_events.length - 1].time_stamp != that.tasks[0].start_time){
+        //   that.tasks[0].events.unshift(that.all_events[that.all_events.length - 1]);
+        //   that.all_events.splice(that.all_events.length - 1, 1);
+        // }
+        // that.tasks[0].events.unshift(that.all_events[that.all_events.length - 1]);
+        // that.all_events.splice(that.all_events.length - 1, 1);
+        //
+        // console.log(that.all_events);
+        // while (that.all_events[that.all_events.length - 1].time_stamp != that.completedtasks[0].start_time) {
+        //   that.completedtasks[that.completedtasks.length - 1].events.unshift(that.all_events[that.all_events.length - 1]);
+        //   that.all_events.splice(that.all_events.length - 1, 1);
+        // }
+        // that.completedtasks[that.completedtasks.length - 1].events.unshift(that.all_events[that.all_events.length - 1]);
+        // that.all_events.splice(that.all_events.length - 1, 1);
+
+        that.tasks.unshift(that.completedtasks[reverseTask]);
+        that.completedtasks.splice(reverseTask, 1)
       } else {
         alert("No more tasks to reverse");
       }
