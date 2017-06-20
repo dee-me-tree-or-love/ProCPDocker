@@ -171,8 +171,7 @@ module.exports.handler = (event, context, callback) => {
         // Handle errors
         .catch(error => {
 
-            db.rollback();
-            lhelper.done({
+           lhelper.done({
                 statusCode: 400,
                 body: error
             }, true);

@@ -23,12 +23,13 @@
 
 <style>
 #EventComponentContainer{
-     height: 50%;
+     height: 49%;
      width: 100%;
      overflow-y:scroll;
      overflow-x:hidden;
      border:1px solid black;
      overflow:false;
+     border-radius: 7px;
 }
 
 </style>

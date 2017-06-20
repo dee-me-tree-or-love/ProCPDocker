@@ -1,6 +1,6 @@
 import ScheduledShip from './ScheduledShip.js';
 import ConnectedStorage from './ConnectedStorage.js';
-
+import Container from './Container.js';
 
 export default class Dock {
   constructor(id,loaders_count,connected_storages,container_count,connected_ship_id,scheduled_ships) {
@@ -10,11 +10,17 @@ export default class Dock {
     this.container_count = container_count;
     this.connected_ship_id = connected_ship_id;
     this.scheduled_ships = scheduled_ships;
+    this.containers = [];
 
     this.height = 50;
     this.width = 170;
     this.position_x = 132;
     this.position_y = 80;
+
+    this.roadheight = 10;
+    this.roadwidth = 470;
+    this.roadposition_x = 192;
+    this.roadposition_y = 100;
 
     this.loadingwidth = this.height-20;
     this.loadingheight = this.height-20;
@@ -36,6 +42,9 @@ export default class Dock {
        context.closePath();
 
        this.drawLoadingZone(context);
+
+       context.fillStyle = '#ffffff';
+       context.fillRect(this.roadposition_x,this.roadposition_y,this.roadwidth,this.roadheight);
 
  }
 
@@ -59,8 +68,9 @@ export default class Dock {
 }
 
 this.setY = function(index){
-     this.position_y = ((index+1)*(150))+this.position_y;//+20;
+     this.position_y = ((index)*(150))+this.position_y;//+20;
      this.loadingposition_y = this.position_y+10;//+30;
+     this.roadposition_y = this.position_y+20;
 }
 
  this.checkClick = function(x,y){
@@ -71,5 +81,17 @@ this.setY = function(index){
       }
 
  }
+
+ this.findContainer = function(id){
+      for(var i = 0;i < this.containers.length;i++){
+           if(this.containers[i] != undefined){
+                if(id == this.containers[i].id){
+                     var c = this.containers[i];
+                     this.containers.splice(i,1);
+                     return c;
+                }
+           }
+      }
+}
  }
 }

@@ -39,8 +39,15 @@
                return {
                     currentTask,
                     time_stamp_token : '',
-                    next_time_stamp : '',
+                    next_time_stamp : 0,
+                    interval_tasks : 2000,
+                    taskCheck:true,
                }
+          },
+          computed:{
+               interval_events: function() {
+                   return Math.floor(this.interval_tasks/this.events.length);
+               },
           },
           methods: {
                setContext(value){
@@ -50,7 +57,7 @@
                     this.$emit('componentsidebarcheck', value);
                },
                getTasks() {
-                    axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/tasks/'+this.simulationid+'/'+this.timelineid+'?limit=10'+this.time_stamp_token+this.next_time_stamp)
+                    axios.get('https://fvrwbtsci9.execute-api.eu-central-1.amazonaws.com/prd/tasks/'+this.simulationid+'/'+this.timelineid+'?limit=10&time_stamp='+this.next_time_stamp)
                       .then(function(response){
                         //console.log(response.data);
 
@@ -62,19 +69,32 @@
                               for(var j = 0;j < response.data.tasks[i].events.length;j++){
                                 events.push(new Event(response.data.tasks[i].events[j].id,response.data.tasks[i].events[j].type,response.data.tasks[i].events[j].message,response.data.tasks[i].events[j].time_stamp));
                                 //event_lengths[i].push(response.data.tasks[i].events.length);
+                                //console.log(response.data.tasks[i].events[0]);
                               }
-                              that.tasks.push(new Task(counter,response.data.tasks[i].type,"extra object",response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
+                              that.tasks.push(new Task(counter,response.data.tasks[i].type,new Extra(response.data.tasks[i].extra.container_id,response.data.tasks[i].extra.destination_id),response.data.tasks[i].description,response.data.tasks[i].status,response.data.tasks[i].time_to_complete,events))
                               events = [];
+
+
+
                               counter++;
                               //console.log(that.tasks[i]);
                           }
 
+                          //that.events.push(that.tasks[0].events);
+
+
+                         //console.log(that.next_time_stamp);
+                         //console.log(response.data.next_time_stamp);
+
                           that.next_time_stamp = response.data.next_time_stamp;
+
+
 
                           that.time_stamp_token = '&time_stamp=';
 
                         } else {
                           //TODO: handle bad responses
+                          console.log("get tasks dropped out with error "+response.status);
                         }
                          //response.data.tasks[i].id
 
@@ -105,44 +125,84 @@
                playSimulation(){
 
                     that = this;
+                    var nomoretasks = false;
+
+                    if(nomoretasks){
+                         alert("all tasks have been completed");
+                         pauseSimulation();
+                    }
 
                     if(play){
                          play = false;
 
                          //setTimeout(internalCallback, factor);
-
+                         //clearInterval(timer);
                          timer = setInterval(function (){
+                              //console.log("tasks interval time : "+that.interval_tasks);
                               var temp = that.tasks.shift();
+
+
+                              //console.log(temp = that.tasks.shift());
+                              //console.log(that.tasks.length);
                               if(that.tasks.length > 0){
                                    that.completedtasks.push(temp);
-
                                    document.getElementById('slider').value++;
                                    //that.wait(2000);
-                                   //that.playEvent(that.tasks[0].events[0].length);
-                              }else {
+                                   clearInterval(timer_event);
+                                   //if(that.tasks[0].events.length > 0){
+                                   that.playEvent(that.tasks[0].events.length);
+                                   //}
+                              }else if(that.next_time_stamp == 0 && that.taskCheck) {
+                                   that.taskCheck = false;
                                    that.getTasks();
-                                   //that.wait(2000);
-                                   //console.log(JSON.stringify(that.tasks));
-                                   //that.playEvent(that.tasks[0].events[0].length);
+                                   //console.log(that.events);
+                                   //console.log(that.completedtasks[that.completedtasks.length-1]);
+                                   //clearInterval(timer_event);
+                                   //that.playEvent();
+                                   //setTimeout(that.test, that.interval_events);
+                              }else if(that.next_time_stamp != 0){
+                                   that.getTasks();
+                              }else{
+                                   nomoretasks = true;
                               }
-                         },interval);
+                         },interval);//that.interval_tasks);
 
                          //this.$emit('currentTask', currentTask);
                     }
 
                },
-               playEvent(time){
+               playEvent(n){
 
-                    clearInterval(timer_event);
+                    //var testtime = interval/time;
+                    var inter = 1900;
+
+                    that = this;
+
+                    //if(that.events.length == 0){
+                         //inter = 1900;
+                    //}else{
+                    inter = (inter)/n;
+                    //}
+
+                    console.log(n);
+                    console.log(inter);
+
                     timer_event = setInterval(function (){
-                              var tempevent = that.tasks.shift();
-                              if(time > 0){
+
+                              //console.log(that.events);
+                              //console.log(that.completedevents);
+
+                              var tempevent = that.tasks[0].events.shift();
+
+                              if(that.events.length > 0){
+
                                    that.completedevents.push(tempevent);
 
-                              }else{
-                                   clearInterval(timer_event);
-                              }
-                    },interval/time);
+
+                              }//else{
+                                   //clearInterval(timer_event);
+                              //}
+                    },inter);
                },
                wait(ms){
                     var start = new Date().getTime();
@@ -165,7 +225,6 @@
                          alert("no more tasks to reverse");
                     }
                },
-
                stepForwardSimulation(){
                     this.pauseSimulation();
                     if(that.tasks.length > 0){
@@ -177,24 +236,24 @@
                },
                syncSimulation(){
                   //TODO: create a global variable for simulation and get the ids
-                  //var ts = this.completedtasks[this.completedtasks.length - 1].events[this.completedtasks[this.completedtasks.length - 1].events.length - 1].time_stamp;
-                  //var s_id = this.simulation.sim_id;
-                  //var t_id = this.simulation.timeline_id;
-                  // axios({
-                  //   method: 'patch',
-                  //   url: 'https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/sync',
-                  //   data: {
-                  //     'simulation_id': s_id,
-                  //     'timeline_id': t_id,
-                  //     'time_stamp': ts
-                  //   }
-                  // }).then(function(response) {
-                  //    if(response.status == 200) {
-                  //       //TODO: success message maybe
-                  //    } else {
-                  //       //TODO: handle bad response
-                  //    }
-                  // });
+                  var ts = this.completedtasks[this.completedtasks.length - 1].events[this.completedtasks[this.completedtasks.length - 1].events.length - 1].time_stamp;
+                  var s_id = this.simulationid;
+                  var t_id = this.timelineid;
+                  axios({
+                    method: 'patch',
+                    url: 'https://r62t8jfw01.execute-api.eu-central-1.amazonaws.com/mock/sync',
+                    data: {
+                      'simulation_id': s_id,
+                      'timeline_id': t_id,
+                      'time_stamp': ts
+                    }
+                  }).then(function(response) {
+                     if(response.status == 200) {
+                        //TODO: success message maybe
+                     } else {
+                        //TODO: handle bad response
+                     }
+                  });
                },
                adjustTasksWithSlider() {
                   that.pauseSimulation();

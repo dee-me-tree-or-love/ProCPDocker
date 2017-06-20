@@ -121,7 +121,7 @@
   }
   ```
 <!-- TODO: Are we sure that we need it? -->
-## /simulation/{simulation_id}/timelines/{timeline_id}
+## /simulation/{simulation_id}/timelines/{timeline_id} :no_entry_sign:
   #### METHOD: GET
   #### DESCRIPTION  
   Retrieve the timeline of the simulation with the given ID
@@ -145,7 +145,7 @@
   ```
 <!-- TODO: maybe also /{ ...| complete }/all to retrieve everything at once? -->
 <!-- TODO: maybe without }/timelines/{ part? -->
-## /simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all
+## /simulation/{simulation_id}/timelines/{timeline_id}/{ docks | ships | storages }/all ![](check.png)
   #### METHOD: GET
   #### DESCRIPTION  
   Retrieve the timeline of the simulation with the given ID
@@ -311,10 +311,11 @@
           "weight":0
         }
       ],
-      "status":""            /* TODO: think of different option what can happen */
     }
   }
   ```
+  <!-- removed the bottom from the json above -->
+  <!--  "status":""            /* TODO: think of different option what can happen */ -->
   #### RETURNS 404 RESOURCE NOT FOUND
   If the parameters: either simulation, timeline or storage, are not found.
   ```
@@ -407,7 +408,8 @@
     "loaders_count":0,
     "connected_storages":[
       {
-        "id":"",
+        "storage_id":"",
+        "dock_id":"",
         "weight":0
       }
     ],
@@ -415,8 +417,8 @@
     "connected_ship_id":"",
     "scheduled_ships":[
       {
-        "id":"",
-        "time_arrived":0
+        "ship_id":"",
+        "eta":0
       }
     ]
   }

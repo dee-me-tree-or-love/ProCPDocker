@@ -40,6 +40,9 @@ module.exports.linearLoad = (container, container_hold) => {
 };
 
 
+/**
+ * @deprecated
+ */
 module.exports.weightBasedLoad = (container, container_hold) => {
 
     let width, length, height;
@@ -51,6 +54,7 @@ module.exports.weightBasedLoad = (container, container_hold) => {
     // console.log(`per level: ${width*length}`);
     // console.log(`total: ${number_containers}`);
 
+    // TODO: move it into a separate method
     let height_level = Math.floor(Math.floor(number_containers / width) / length) % height;
     // console.log(`height to put to: ${height_level}`);
 
@@ -107,8 +111,12 @@ module.exports.weightBasedLoad = (container, container_hold) => {
                     start_l: '',
                     end_w: '',
                     end_l: '',
-                    getWidth: function() { return this.end_w - this.start_w },
-                    getLength: function() { return this.end_l - this.start_l }
+                    getWidth: function() {
+                        return this.end_w - this.start_w
+                    },
+                    getLength: function() {
+                        return this.end_l - this.start_l
+                    }
                 }
             }
             // console.log(`is width parallel: ${isParallelToWidth}; iteration number: ${iterationNumber}`)
@@ -187,31 +195,285 @@ module.exports.weightBasedLoad = (container, container_hold) => {
 
     return { x: bestX, y: bestY, z: bestZ }
     // return { x: 0, y: 0, z: 0 }
-}
+};
+
+const validate = require('jsonschema').validate;
+const Validator = require('jsonschema').Validator;
+module.exports.ShipLoader = class ShipLoader {
+
+    /**
+     *
+     * @param {Object} ship
+     * @param {Array} ship.containers_in
+     */
+    constructor(ship) {
+
+        // make a copy
+        if (ship.containers_current) {
+
+            ship.containers_in = ship.containers_current.slice();
+        }
+
+        if (typeof ship.containers_in === 'undefined') ship.containers_in = [];
+        this.ship = Object.assign({}, ship);
+        this.totalMass = 0;
+        this.allPossibilities = [];
+        this.center = {
+            x: (ship.x / 2),
+            y: (ship.y / 2),
+            z: (ship.z / 2)
+        };
+    }
+
+    getTotalMass() {
+
+        if (typeof this.ship.containers_in === 'undefined') {
+
+            return 0;
+        }
+        return this.ship.containers_in.map(container => {
+
+            if (typeof container.weight === 'undefined') {
+
+                return 0;
+            }
+            return container.weight;
+        }).reduce((a, b) => {
+
+            return a + b;
+        }, 0);
+    }
+
+    getDistanceBetweenTwoPoints(point1, point2) {
+
+        const schema = {
+            id: '/point',
+            type: 'object',
+            properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+            },
+            required: ['x', 'y', 'z']
+        };
+        let valid = (
+            validate(point1 || {}, schema).errors.length === 0 &&
+            validate(point2 || {}, schema).errors.length === 0
+        );
+        if (!valid) throw new Error('Invalid Input');
+
+        let x = Math.pow((point1.x - point2.x), 2);
+        let y = Math.pow((point1.y - point2.y), 2);
+        let z = Math.pow((point1.z - point2.z), 2);
+
+        return Math.sqrt(x + y + z);
+
+    }
+
+    // sum of x*weight y*weight z*weight
+    getDimensionToWeightForShip() {
+
+        // if (this.ship.containers_in.length === 0) {
+
+        //     return this.center;
+        // }
+
+        let dimensionToWeight = {
+            x: 0,
+            z: 0,
+            y: 0
+        };
+
+        for (let i = 0; i < this.ship.containers_in.length; i++) {
+
+            let c = this.ship.containers_in[i];
+            let container = {
+                address: {
+                    x: c.address.x + 1,
+                    y: c.address.y + 1,
+                    z: c.address.z + 1
+                },
+                weight: c.weight
+            };
+            const weightToCoordinateContainer = this._getContainerCoordinatesToWeight(container);
+            dimensionToWeight.x += weightToCoordinateContainer.x;
+            dimensionToWeight.y += weightToCoordinateContainer.y;
+            dimensionToWeight.z += weightToCoordinateContainer.z;
+        }
+        return dimensionToWeight;
+    }
+
+    _getContainerCoordinatesToWeight(container) {
+
+        const container_dimensions = {
+            id: '/container_dimensions',
+            type: 'object',
+            properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+            },
+            required: ['x', 'y', 'z']
+        };
+        const container_schema = {
+            id: '/container',
+            type: 'object',
+            properties: {
+                weight: { type: 'number' },
+                address: { '$ref': '/container_dimensions' }
+            },
+            required: ['weight', 'address']
+        };
+        const V = new Validator();
+        V.addSchema(container_dimensions, '/container_dimensions');
+
+        let valid = V.validate(container, container_schema).errors.length === 0;
+        if (!valid) throw new Error('Invalid Input');
+        return {
+            x: container.address.x * container.weight,
+            y: container.address.y * container.weight,
+            z: container.address.z * container.weight,
+        }
+    }
+
+    calculateCentersOfGravityForOptions(weight) {
+
+        // Get the sum of all {container coordinate}*{container weight}
+        let dimensionToWeight = this.getDimensionToWeightForShip();
+        // Get total mass of all containers
+        let totalMass = this.getTotalMass();
+        // Add the new container
+        totalMass += weight;
+        // See where we can put the container
+        const options = this.getPlacementPossibilities();
+        // Prepare for the answers
+        let moments = [];
+        console.log('>>>>>>>>>>>>>>>>>>>>');
+        console.log(dimensionToWeight);
+        console.log('Total mass ' + totalMass);
+        console.log('Container on board: ' + this.ship.containers_in.length);
+        console.log('<<<<<<<<<<<<<<<<<<<<');
+        // Put container on every spot
+        options.forEach(option => {
+            let dimensionToWeightForOption = Object.assign({}, dimensionToWeight);
+            dimensionToWeightForOption.y += option.y * weight;
+            dimensionToWeightForOption.z += option.z * weight;
+            dimensionToWeightForOption.x += option.x * weight;
+            // Add the new container and it's {container coordinate}*{container weight} number
+            let x = dimensionToWeightForOption.x / totalMass;
+            let y = dimensionToWeightForOption.y / totalMass;
+            let z = dimensionToWeightForOption.z / totalMass;
+            moments.push({
+                address: option, // Save the option
+                newCenter: { x, y, z } // and it's center of gravity
+            });
+        });
+        return moments;
+    }
+
+    getLocationForContainer(weight) {
+
+        let options = this.calculateCentersOfGravityForOptions(weight);
+        let best = {
+            number: Number.MAX_VALUE,
+            address: {}
+        };
+        options.forEach(option => {
+            let distanceToMiddle = this.getDistanceBetweenTwoPoints(option.newCenter, this.center);
+            if (distanceToMiddle < best.number) {
+
+                best.number = distanceToMiddle;
+                best.address = option.address;
+            }
+        });
+        return best.address;
+    }
+
+    getPlacementPossibilities() {
+        let options = [];
+        let zMappingMatrix = {};
+
+        // get the list of all the options in the bottom level
+        for (let xPos = 0; xPos < this.ship.x; xPos++) {
+
+            // check the mapping option
+            if (!zMappingMatrix[xPos]) {
+
+                zMappingMatrix[xPos] = {};
+            }
+
+            for (let yPos = 0; yPos < this.ship.y; yPos++) {
+
+                if (!zMappingMatrix[xPos][yPos]) {
+
+                    zMappingMatrix[xPos][yPos] = {};
+                }
+                let option = { x: xPos, y: yPos, z: 0 };
+
+                zMappingMatrix[xPos][yPos].option = option;
+                options.push(option);
+
+            }
+        }
+
+        for (let key in this.ship.containers_in) {
+            let xPos = this.ship.containers_in[key].address.x;
+            let yPos = this.ship.containers_in[key].address.y;
+            let zPos = this.ship.containers_in[key].address.z;
+            // if the z entry of the options is less or equal to the discovered one, update to +1
+            if (zMappingMatrix[xPos][yPos].option.z <= zPos) {
+                zMappingMatrix[xPos][yPos].option.z = zPos + 1;
+
+                // check if it is even possible to put it on top without violating the maximum height of the ship
+                if (zMappingMatrix[xPos][yPos].option.z >= this.ship.z) {
+
+                    // remove the option from the list
+                    options.splice(options.indexOf(zMappingMatrix[xPos][yPos].option), 1);
+                }
+            }
+        }
+        this.allPossibilities = options;
+        return this.allPossibilities;
+    }
+
+    /**
+     * get the list of calculated centers of mass per each option
+     * @returns {Array} of objects having two xyz points: option, center_of_mass
+     */
+    getPlacementOptionsReport() {
+        if (this.allPossibilities == []) {
+            this.getPlacementPossibilities();
+        }
+
+
+    }
+
+
+};
 
 
 // this.weightBasedLoad({ weight: 10 }, { x: 2, y: 3, z: 10, containers_in: [{ x: 0, y: 1, z: 3, weight: 10 }, { x: 0, y: 1, z: 2, weight: 10 }, { x: 0, y: 2, z: 3, weight: 15 }, { x: 1, y: 0, z: 3, weight: 19 }] })
 // this.weightBasedLoad({}, { x: 2, y: 3, z: 10, containers_in: [] })
 
 
-
-let st = {
-    containers_current: [],
-    x: 3,
-    y: 2,
-    z: 34,
-};
-let conts = [];
-
-for (let i = 0; i < 10; i++) {
-    let cont = { weight: Math.floor(Math.random() * 20), address: { x: 0, y: 0, z: 0 } };
-    conts.push(cont);
-}
-// conts.sort((a, b) => { return b.weight - a.weight });
-
-for (let key in conts) {
-    conts[key].address = Object.assign(conts[key].address, this.calculateLocation(conts[key], st, this.weightBasedLoad))
-    st.containers_current.push(conts[key]);
-}
-
-console.log(st.containers_current);
+//
+// let st = {
+//     containers_current: [],
+//     x: 3,
+//     y: 2,
+//     z: 34,
+// };
+// let conts = [];
+//
+// for (let i = 0; i < 10; i++) {
+//     let cont = { weight: Math.floor(Math.random() * 20), address: { x: 0, y: 0, z: 0 } };
+//     conts.push(cont);
+// }
+// // conts.sort((a, b) => { return b.weight - a.weight });
+//
+// for (let key in conts) {
+//     conts[key].address = Object.assign(conts[key].address, this.calculateLocation(conts[key], st, this.weightBasedLoad))
+//     st.containers_current.push(conts[key]);
+// }
+//
+// console.log(st.containers_current);

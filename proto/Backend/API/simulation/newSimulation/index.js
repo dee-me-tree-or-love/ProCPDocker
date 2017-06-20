@@ -27,7 +27,7 @@ module.exports.handler = (event, context, callback) => {
             body: {
                 message: "Malformed JSON. Please check for syntax errors"
             }
-        },true);
+        }, true);
         return;
     }
     let config = event.body;
@@ -38,7 +38,7 @@ module.exports.handler = (event, context, callback) => {
         lhelper.done({
             statusCode: 400,
             body: errors
-        },true);
+        }, true);
         return;
     }
 
@@ -112,9 +112,34 @@ module.exports.handler = (event, context, callback) => {
     let containers_to_storage = [];
     config.ships.forEach(ship => {
 
-        ship.containers_current = ContainerFactory.create(ship.containers_current, ship.id);
+        let containers_current = ContainerFactory.create(ship.containers_current, ship.id);
+        ship.containers_current = [];
+        // place them to the correct place
+
+        containers_current.forEach(c => {
+            let SL = new ContainerLoader.ShipLoader(ship);
+            let address = SL.getLocationForContainer(c.weight);
+            console.log("-----------");
+            console.log(c.weight);
+            console.log(c.id);
+            console.log(address);
+            console.log("-----------");
+
+            // append the address location id
+            address.location_id = c.address.location_id;
+            // reassign the old address to the new value
+            c.address = address;
+
+            ship.containers_current.push(c);
+        });
+
+        console.log("---------------------")
+        console.log(ship.containers_current)
+        console.log("---------------------")
+
         ship.containers_unload = ship.containers_current.slice(0, ship.containers_unload);
         ship.containers_load = ContainerFactory.create(ship.containers_load);
+
 
         all_containers = all_containers.concat(ship.containers_current);
         all_containers = all_containers.concat(ship.containers_load);
@@ -132,10 +157,10 @@ module.exports.handler = (event, context, callback) => {
                         statusCode: 400,
                         body: {
                             message: "There are no free storages left for the containers to load to ships. " +
-                            "Increase storage capacity. " +
-                            "All containers \"TO LOAD\" should already be on the port and part of the filled storages"
+                                "Increase storage capacity. " +
+                                "All containers \"TO LOAD\" should already be on the port and part of the filled storages"
                         }
-                    },true);
+                    }, true);
                     return;
                 }
 
@@ -243,21 +268,21 @@ module.exports.handler = (event, context, callback) => {
     };
 
     new Promise((resolve, reject) => {
-        // Begin transaction
-        connection.beginTransaction(function (err) {
-            if (err) {
+            // Begin transaction
+            connection.beginTransaction(function(err) {
+                if (err) {
 
-                reject(err);
-            } else {
+                    reject(err);
+                } else {
 
-                resolve();
-            }
-        });
-    })
+                    resolve();
+                }
+            });
+        })
         .then(() => {
             return new Promise((resolve, reject) => {
                 // Begin transaction
-                connection.beginTransaction(function (err) {
+                connection.beginTransaction(function(err) {
                     if (err) {
 
                         reject(err);
@@ -460,12 +485,11 @@ module.exports.handler = (event, context, callback) => {
                     Body: original_conf
                 };
                 let s3 = new S3();
-                s3.putObject(params, function (err, data) {
+                s3.putObject(params, function(err, data) {
                     if (err) {
 
                         reject(err);
-                    }
-                    else {
+                    } else {
 
                         lhelper.done({
                             statusCode: 200,
@@ -482,7 +506,7 @@ module.exports.handler = (event, context, callback) => {
         // Handle errors
         .catch(error => {
 
-            connection.rollback(function () {
+            connection.rollback(function() {
                 connection.end();
                 lhelper.done({
                     statusCode: 400,
@@ -491,3 +515,31 @@ module.exports.handler = (event, context, callback) => {
             });
         });
 };
+
+// this.handler({
+//     body: JSON.stringify(
+
+//         {
+//             "docks": [{
+//                 "id": "1",
+//                 "number_loaders": 2
+//             }],
+//             "storages": [{
+//                 "x": 20,
+//                 "y": 2,
+//                 "z": 2,
+//                 "id": "s1",
+//                 "filled": 60
+//             }],
+//             "ships": [{
+//                 "id": "ship1",
+//                 "eta": 6,
+//                 "x": 2,
+//                 "y": 5,
+//                 "z": 1,
+//                 "filled": 50,
+//                 "unload": 0,
+//                 "load": 40
+//             }]
+//         })
+// })

@@ -1,6 +1,7 @@
 export default class Extra {
-  constructor(container,storage) {
+  constructor(container,source,destination) {
     this.container = container;
-    this.storage = storage;
+    this.source = source;
+    this.destination = destination;
   }
 }

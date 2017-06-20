@@ -1,10 +1,10 @@
 <template lang="html">
-  <div id="storages" class="col-md-12 ship-form topSpace">
-    <input v-model="storageID" placeholder="ID">
-    <input v-model="storageX" placeholder="X">
-    <input v-model="storageY" placeholder="Y">
-    <input v-model="storageZ" placeholder="Z">
-    <input v-model="storageFilled" placeholder="Filled %">
+  <div id="storages" class="col-md-12 form-component topSpace">
+    <span class="topSpace">ID</span><input v-model="storageID" placeholder="ID">
+    <span>X</span><input v-model="storageX" placeholder="X">
+    <span>Y</span><input v-model="storageY" placeholder="Y">
+    <span>Z</span><input v-model="storageZ" placeholder="Z">
+    <span>Filled %</span><input v-model="storageFilled" placeholder="Filled %" class="margin-bot">
   </div>
 </template>
 
@@ -14,11 +14,11 @@ import Storage from './models/Storage.js';
 export default {
   data() {
     return {
-      storageX: "",
-      storageY: "",
-      storageZ: "",
-      storageID: "",
-      storageFilled: "",
+      storageX: "5",
+      storageY: "5",
+      storageZ: "5",
+      storageID: "1",
+      storageFilled: "60",
     }
   },
   computed: {
@@ -37,13 +37,4 @@ export default {
 </script>
 
 <style lang="css">
-
-.storage-form{
-  border: 1px solid black;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
 </style>
