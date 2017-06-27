@@ -72,6 +72,8 @@ export default class Ship {
    this.removeShip = function(context){
         context.fillStyle = '#0289b3';
         context.fillRect(this.position_x-2,this.position_y-2,this.width+this.bezierCurve+4,this.height+4);
+        this.width = 0;
+        this.height = 0;
    }
 
    this.moveForward = function(context){

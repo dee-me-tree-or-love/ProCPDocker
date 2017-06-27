@@ -27,6 +27,7 @@
     <h3>your simulation is loading please wait...</h3>
   </div>
   <div id="sim" v-else>
+    <!-- <div class="navbar navbar-default" style="margin-bottom:0px;text-align:center;"><h3>Docker Simulation</h3></div> -->
     <div class="col-md-8" id="CanvasPart">
       <div class="col-md-12 topSpace" style="height:100%;border:1px solid black;" id="main-simulation">
         <div class="topSpace" id="CanvasContainer">
@@ -81,23 +82,24 @@ var timer;
 var timer_event;
 var timer_tasks;
 var play = true;
-var interval = 1000;
+var interval = 2000;
 var completedtasks = [];
 var counter = 0;
 var currentTask;
 var events = [];
 var canvas_sim_id;
 var first_played = true; // TODO: this will not be needed when
+var last_chance = false;
 
 
 
 export default {
   name: 'app',
   mounted() {
-    this.eventsbool = false,
+    this.eventsbool = true,
       this.shipsbool = false,
       this.storagesbool = false,
-      this.docksbool = true,
+      this.docksbool = false,
       this.simulationid = '483e46a8-0994-4a39-9b57-612513468c76',
       //this.getTimelines(this.simulationid),
       this.timelineid = '569f56b9-9ccc-469d-9f63-43a5bd8aef1f'
@@ -134,7 +136,7 @@ export default {
       //current_time : 0,
       time_stamp_token: '',
       next_time_stamp: 0,
-      interval_tasks: 2000,
+      interval_tasks: 1000,
       taskCheck: true,
       all_events: [],
       all_containers: [],
@@ -176,23 +178,17 @@ export default {
       //for debugging uncomment the line below
       //return true;
       if(this.api_ships && this.api_docks && this.api_storages && this.api_ship_containers && this.api_storage_containers && this.api_dock_containers){
-        return true;
+          return true;
       } else {
-        return false;
+          return false;
       }
     }
   },
   methods: {
     setContext(value) {
       this.ctx = value;
-      //this.ctx);
-      //for(var i = 0;i < this.ships.length;i++){
-      //this.ships[i].setY(i);
-      //this.ships[i].drawShip(this.ctx);
-      //}
     },
     setComponentBool(value) {
-      //alert(value);
       this.shipsbool = false;
       this.storagesbool = false;
       this.docksbool = false;
@@ -229,6 +225,7 @@ export default {
                   that.setAllDocks(r_docks.data);
                   that.setAllStorages(r_storages.data);
                   that.setAllShips(r_ships.data);
+                  that.getTasks();
 
              } else {
                   //TODO : some response if things dont work out
@@ -323,8 +320,7 @@ export default {
                    that.storages[index].containers.push(new Container(response.data["containers"][j].id, response.data["containers"][j].description, response.data["containers"][j]["address"].location_id, response.data["containers"][j]["address"].x, response.data[
                        "containers"][j]["address"].y, response.data["containers"][j]["address"].z, response.data["containers"][j].weight, response.data["containers"][j].cargo_type));
                    }
-                   //console.log(response.data["pagination_token"]);
-                   //that.storages[index].containers.concat(containers);
+
                    if(response.data["pagination_token"] != null){
                         that.getStorageContainers(sim_id, time_id, id,index,response.data["pagination_token"]);
                    }else{
@@ -355,8 +351,7 @@ export default {
                    that.ships[index].containers.push(new Container(response.data["containers"][j].id, response.data["containers"][j].description, response.data["containers"][j]["address"].location_id, response.data["containers"][j]["address"].x, response.data[
                        "containers"][j]["address"].y, response.data["containers"][j]["address"].z, response.data["containers"][j].weight, response.data["containers"][j].cargo_type));
                    }
-                   //console.log(response.data["pagination_url"]);
-                   //that.ships[index].containers.concat(containers);
+
                    if(response.data["pagination_token"] != ""){
                         that.getShipContainers(sim_id, time_id, id,index,response.data["pagination_token"]);
                    }else{
@@ -387,8 +382,7 @@ export default {
                    that.docks[index].containers.push(new Container(response.data["containers"][j].id, response.data["containers"][j].description, response.data["containers"][j]["address"].location_id, response.data["containers"][j]["address"].x, response.data[
                        "containers"][j]["address"].y, response.data["containers"][j]["address"].z, response.data["containers"][j].weight, response.data["containers"][j].cargo_type));
                    }
-                   //console.log(response.data["pagination_token"]);
-                   //that.docks[index].containers.concat(containers);
+
                    if(response.data["pagination_token"] != null){
                         that.getDockContainers(sim_id, time_id, id,index,response.data["pagination_token"]);
                    }
@@ -412,9 +406,8 @@ export default {
     play() {
       if (first_played) {
         first_played = false;
-        //this.getSimulation();
         this.simulationLoop();
-        that.getTasks();
+        //that.getTasks();
       }
       this.playSim();
     },
@@ -426,23 +419,22 @@ export default {
       for (var i = 0; i < this.docks.length; i++) {
         this.docks[i].drawDock(this.ctx);
       }
-      //console.log(this.docks);
+
       for (var i = 0; i < this.storages.length; i++) {
         this.storages[i].drawStorage(this.ctx);
       }
 
       var road = new Road(this.docks[this.docks.length - 1], this.storages[this.storages.length - 1]);
-      //    var truck = new Truck(this.docks[0],this.storages[0]);
-      //    truck.setDirection();
+
       road.drawRoad(this.ctx);
-    },
-    moveTruck(truck) {
-      truck.move(this.ctx);
-    },
-    findStorage(storageid) {
-      for (var i = 0; i < this.storages.length; i++) {
-        if (storageid == this.storages[i].id) {
-          return this.storages[i];
+      },
+      moveTruck(truck) {
+         truck.move(this.ctx);
+      },
+      findStorage(storageid) {
+         for (var i = 0; i < this.storages.length; i++) {
+            if (storageid == this.storages[i].id) {
+               return this.storages[i];
         }
       }
     },
@@ -542,9 +534,7 @@ export default {
           //console.log(response.data);
 
           if (response.status == 200) {
-
-            //event_lengths = [];
-
+          console.log(response);
             for (var i = 0; i < response.data.tasks.length; i++) {
               for (var j = 0; j < response.data.tasks[i].events.length; j++) {
                 //TODO set the task id for events.task_id and tasks.id to replace counter
@@ -558,27 +548,16 @@ export default {
               counter++;
               that.schedule.push(response.data.tasks[i].start_time);
             }
-
-            //var number = that.all_events.length*interval;
-            //alert(number);
-            //timer_tasks = setTimeout(that.getTasks(),number);
-
-            //that.current_time = that.tasks[0].end_time;
-
-            //console.log(that.tasks);
-            //console.log(that.completedtasks);
-
-            //that.events.push(that.tasks[0].events);
-
+            last_chance = true;
+            console.dir(last_chance);
             that.next_time_stamp = response.data.next_time_stamp;
-            //alert(that.next_time_stamp);
+            console.dir(that.next_time_stamp);
             that.time_stamp_token = '&time_stamp=';
 
           } else {
             //TODO: handle bad responses
             console.log("get tasks dropped out with error " + response.status);
           }
-          //response.data.tasks[i].id
 
         });
 
@@ -586,27 +565,34 @@ export default {
     },
     playSim() {
       that = this;
+
+      var counter = 0;
       var container_check = false;
 
       if (play) {
       play = false;
         timer = setInterval(function() {
+
           if (that.all_events.length > 0) {
-            if (that.tasks.length != 0) {
-              if (that.tasks[0].description == "relocate the container from the storage to the dock" && that.tasks[0].start_time == that.all_events[0].time_stamp) {
+
+
+
+              if (that.tasks[0].description == "relocate the container from the storage to the dock" && that.tasks[0].start_time == that.all_events[0].time_stamp) {//that.tasks[0].events[1].time_stamp == that.all_events[1].time_stamp
 
                 var tempdock = that.findDock(that.tasks[0].extra.destination);
                 var tempstorage = that.findStorage(that.tasks[0].extra.source);
                 var tempcontainer = tempstorage.findContainer(that.tasks[0].extra.container);
-                tempdock.containers.push(tempcontainer);
 
+                tempdock.containers.push(tempcontainer);
+                tempstorage.containers_current--;
+                tempdock.container_count++;
                 var truck = new Truck(tempdock,tempstorage);
 
                 truck.setDirection();
                 truck.setDistance();
                 truck.setStart('storage');
 
-                canvas_sim_id = setInterval(frame, (((interval - 10) * (that.tasks[0].events.length - 1)) / truck.distance));
+                canvas_sim_id = setInterval(frame, (((interval - 200) * (that.tasks[0].events.length - 2)) / truck.distance));
 
                 function frame() {
                   truck.moveTruckStorageToDock(that.ctx);
@@ -618,13 +604,17 @@ export default {
                 var tempcontainer = tempdock.findContainer(that.tasks[0].extra.container);
                 tempstorage.containers.push(tempcontainer);
 
+                tempstorage.containers_current++;
+                tempdock.container_count--;
+
+
                 var truck = new Truck(tempdock, tempstorage);
 
                 truck.setDirection();
                 truck.setDistance();
                 truck.setStart('dock');
 
-                canvas_sim_id = setInterval(frame, (((interval - 10) * (that.tasks[0].events.length) - 1) / truck.distance));
+                canvas_sim_id = setInterval(frame, (((interval - 200) * (that.tasks[0].events.length) - 2) / truck.distance));
 
                 function frame() {
                   truck.moveTruckDockToStorage(that.ctx);
@@ -633,7 +623,9 @@ export default {
               } else if (that.tasks[0].description == "Ship arrives to the dock") {
 
                 var tempship = that.findShip(that.tasks[0].extra.source);
+
                 var tempdock = that.findDock(that.tasks[0].extra.destination);
+
                 tempdock.connected_ship_id = tempship.id;
                 tempship.setDock(tempdock);
                 tempship.drawShip(that.ctx);
@@ -649,25 +641,31 @@ export default {
                 var tempship = that.findShip(that.tasks[0].extra.source);
                 var tempcontainer = tempship.findContainer(that.tasks[0].extra.container);
                 var tempdock = that.findDock(that.tasks[0].extra.destination);
+
+                tempship.containers_current--;
+                tempship.containers_unload--;
+                tempdock.container_count++;
+                //console.dir(tempcontainer);
                 tempcontainer.selectContainer(that.ctx,'#A90000');
                 tempdock.containers.push(tempcontainer);
-                setTimeout(function(){tempcontainer.deselectContainer(that.ctx);},(interval - 500));
+                setTimeout(function(){tempcontainer.deselectContainer(that.ctx);},interval-500);
 
               } else if (that.tasks[0].description == "loading the container from the dock to the ship") {
 
                 var tempdock = that.findDock(that.tasks[0].extra.source);
                 var tempcontainer = tempdock.findContainer(that.tasks[0].extra.container);
                 var tempship = that.findShip(that.tasks[0].extra.destination);
-                console.dir(tempship);
-                console.dir(tempdock);
-                console.dir(that.storages);
+                console.dir("the container id ="+that.tasks[0].extra.container);
+                tempship.containers_current++;
+                tempship.containers_load--;
+                tempdock.container_count--;
+                //console.dir(tempcontainer);
                 tempcontainer.setContainer(tempship.position_x+6,tempship.position_y+6,(tempship.width-12)/tempship.size.x,(tempship.height-12)/tempship.size.y);
                 tempcontainer.selectContainer(that.ctx,'#006F0A');
-                //container_check = true;
                 tempship.containers.push(tempcontainer);
-                setTimeout(function(){tempcontainer.deselectContainer(that.ctx);},(interval - 500));
+                setTimeout(function(){tempcontainer.deselectContainer(that.ctx);},(interval-500));
+
               }
-            }
 
             that.completedevents.push(that.all_events.shift());
             that.tasks[0].events.shift();
@@ -677,7 +675,7 @@ export default {
               clearInterval(canvas_sim_id);
             }
 
-            if (that.all_events.length == 2){
+            if (that.all_events.length == 5){
                  that.getTasks();
             }
 
@@ -694,7 +692,6 @@ export default {
     getShipByEta(eta) {
 
       for (var i = 0; i < this.ships.length; i++) {
-        //console.log(this.ships[i]);
         if (this.ships[i].destination != undefined) {
           if (eta == this.ships[i].destination.estimated_arrival_time) {
             return this.ships[i];
